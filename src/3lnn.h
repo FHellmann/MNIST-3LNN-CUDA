@@ -43,20 +43,36 @@ Network *createNetwork(const int size_of_input_vector,
 		const int number_of_nodes_in_hidden_layer,
 		const int number_of_nodes_in_output_layer);
 
+/**
+ * Sets v as the input value for the input layers.
+ *
+ * @details v has to match the size of the input layer.
+ */
 void feedInput(Network* nn,
 		Vector *v);
 
+/**
+ * Inits the layer of layerType with random values.
+ */
 void initWeights(Network* nn,
 		const LayerType layerType);
 
 /**
+ * Creates a zeroed-out layer.
  *
+ * @param nodeCount Number of nodes, obviously.
+ * @param weightCount Number of weights per node.
+ * @param layerType Type of the new layer.
+ * @param actFctType Type of the activation function.
  */
 Layer* createLayer(const int nodeCount,
 		const int weightCount,
 		const LayerType layerType,
 		const ActFctType actFctType);
 
+/**
+ * @returns Returns the first layer of the network nn of layer type layerType. If no layer with the given type exists, returns NULL.
+ */
 Layer* getLayer(Network* nn,
 		const LayerType layerType);
 
