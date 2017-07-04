@@ -1,11 +1,7 @@
 #include "3lnn.h"
 
-/**
- * @details Creates the Neural Network by creating the different layers
- * @param inpCount Number of nodes in the INPUT layer
- * @param hidCount Number of nodes in the HIDDEN layer
- * @param outCount Number of nodes in the OUTPUT layer
- */
+void initNetwork(Network* nn, const int inpCount, const int hidCount, const int outCount);
+
 Network* createNetwork(const int inpCount, const int hidCount, const int outCount){
     // Allocate memory block for the network
     Network *nn = new Network();
@@ -48,9 +44,6 @@ void initWeights(Network* nn, const LayerType layerType) {
 	}
 }
 
-/**
- *
- */
 Layer* createLayer(const int nodeCount, const int weightCount, const LayerType layerType, const ActFctType actFctType) {
 	Layer* layer = new Layer(layerType, actFctType);
 
