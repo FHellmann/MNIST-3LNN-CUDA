@@ -6,7 +6,7 @@
  */
 #include <string>
 #include <tclap/CmdLine.h>
-#include "3lnn.h"
+#include "NeuralNetwork.hpp"
 #include "3lnn_io.h"
 
 using namespace std;

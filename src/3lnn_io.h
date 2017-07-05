@@ -10,11 +10,16 @@
 
 #include <string>
 #include <ostream>
+#include <fstream>
+#include <yaml-cpp/yaml.h>
+#include "NeuralNetwork.hpp"
 
-class Network;
+using namespace std;
 
-std::ostream& operator<< (std::ostream& out, Network const& net);
-bool saveNet(std::string const& path, Network const& net);
-Network* loadNet(std::string const& path);
+class NeuralNetwork;
+
+std::ostream& operator<< (std::ostream& out, NeuralNetwork const& net);
+bool saveNet(std::string const& path, NeuralNetwork const& net);
+NeuralNetwork* loadNet(std::string const& path);
 
 #endif /* 3LNN_IO_H_ */

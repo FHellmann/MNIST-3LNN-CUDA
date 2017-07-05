@@ -5,13 +5,8 @@
  *      Author: Stefan
  */
 #include "3lnn_io.h"
-#include "3lnn.h"
-#include <fstream>
-#include <yaml-cpp/yaml.h>
 
-using namespace std;
-
-ostream& operator<< (ostream& out, Network const& net) {
+ostream& operator<< (ostream& out, NeuralNetwork const& net) {
 
 	YAML::Emitter netDef;
 
@@ -67,7 +62,7 @@ ostream& operator<< (ostream& out, Network const& net) {
 	return out << netDef.c_str();
 }
 
-bool saveNet(string const& path, Network const& net) {
+bool saveNet(string const& path, NeuralNetwork const& net) {
 	ofstream fout(path);
 
 	fout << net;
@@ -107,35 +102,28 @@ Layer* loadLayer (YAML::Node const& layerNode, LayerType const layerType) {
 	return layer;
 }
 
-Network* loadNet(std::string const& path) {
+NeuralNetwork* loadNet(std::string const& path) {
 
 	YAML::Node netDef = YAML::LoadFile(path);
 
-	Network* net = new Network;
-	for (YAML::const_iterator entry = netDef.begin(); entry != netDef.end(); ++entry) {
+	Layer* inpLayer;
+	Layer* hidLayer;
+	Layer* outLayer;
+	double learningRate = 0.5;
 
+	for (YAML::const_iterator entry = netDef.begin(); entry != netDef.end(); ++entry) {
 		string const key = entry->first.as<string>();
 		if ("learningRate" == key) {
-
-			net->learningRate = entry->second.as<double>();
-
+			learningRate = entry->second.as<double>();
 		} else if ("INPUT" == key) {
-
-			Layer* inputLayer = loadLayer(entry->second, INPUT);
-			net->layers.push_back(inputLayer);
-
+			inpLayer = loadLayer(entry->second, INPUT);
 		} else if ("HIDDEN" == key) {
-
-			Layer* hiddenLayer = loadLayer(entry->second, HIDDEN);
-			net->layers.push_back(hiddenLayer);
-
+			hidLayer = loadLayer(entry->second, HIDDEN);
 		} else if ("OUTPUT" == key) {
-
-			Layer* outputLayer = loadLayer(entry->second, OUTPUT);
-			net->layers.push_back(outputLayer);
-
+			outLayer = loadLayer(entry->second, OUTPUT);
 		}
 	}
 
+	NeuralNetwork* net(inpLayer, hidLayer, outLayer, learningRate);
 	return net;
 }

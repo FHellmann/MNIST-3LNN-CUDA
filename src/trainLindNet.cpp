@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <yaml-cpp/yaml.h>
 #include "MNISTDataset.h"
-#include "3lnn.h"
+#include "NeuralNetwork.hpp"
 #include "3lnn_io.h"
 
 using namespace std;
@@ -80,7 +80,7 @@ int main (int argc, char* argv[]) {
 	}
 
 	// Save the trained net.
-	Network* lindNet = createNetwork(4, 20, 10);
+	NeuralNetwork* lindNet(4, 20, 10, 0.5);
 	cout << *lindNet << endl;
 	saveNet(netDefinitionPath.getValue(), *lindNet);
 	delete lindNet;
