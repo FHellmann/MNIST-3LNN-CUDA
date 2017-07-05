@@ -11,14 +11,17 @@
 #include <vector>
 #include <tclap/CmdLine.h>
 #include <algorithm>
+#include <yaml-cpp/yaml.h>
 #include "MNISTDataset.h"
 
 using namespace std;
 using namespace TCLAP;
 
+unsigned char KEY_ESC = 27;
+
 int main (int argc, char* argv[]) {
 
-	CmdLine parser("Foobar info text");
+	CmdLine parser("Train the LindNet with the MNIST database.");
 
 	ValueArg<string> mnistPath (
 			"",
@@ -52,12 +55,27 @@ int main (int argc, char* argv[]) {
 //	cout << "Foobar end" << endl;
 //	cv::waitKey(0);
 
+	cout << "Press ESC or q to quit." << endl;
 	MNISTLableDataset::iterator it = trainingLabels.begin();
 	for (cv::Mat img : trainingImages) {
 		cv::imshow("Hand writing", img);
 		cout << "Lable: " << (int)*(it++) << endl;
-		cv::waitKey(0);
+		unsigned char key = cv::waitKey(0);
+		if (key == KEY_ESC || key == 'q') {
+			break;
+		}
 	}
+
+	YAML::Emitter netDef;
+	netDef << YAML::BeginMap;
+	netDef << YAML::Key << "INPUT";
+	netDef << YAML::Value;
+	netDef << YAML::Flow << YAML::BeginSeq;
+	netDef << 1 << 5 << 3 << 0.12345;
+	netDef << YAML::EndSeq;
+	netDef << YAML::EndMap;
+
+	cout << netDef.c_str() << endl;
 
 	exit (EXIT_SUCCESS);
 }
