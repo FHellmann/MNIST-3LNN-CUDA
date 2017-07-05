@@ -72,6 +72,7 @@ int main (int argc, char* argv[]) {
 
 	// Save the trained net.
 	Network* lindNet = createNetwork(4, 20, 10);
+	cout << *lindNet << endl;
 	saveNet("lindNet.yaml", *lindNet);
 	delete lindNet;
 

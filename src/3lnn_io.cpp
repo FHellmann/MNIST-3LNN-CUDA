@@ -6,11 +6,13 @@
  */
 #include "3lnn_io.h"
 #include "3lnn.h"
+#include <fstream>
 #include <yaml-cpp/yaml.h>
 
 using namespace std;
 
-bool saveNet(string const& path, Network const& net) {
+ostream& operator<< (ostream& out, Network const& net) {
+
 	YAML::Emitter netDef;
 
 	netDef << YAML::BeginMap;
@@ -44,6 +46,13 @@ bool saveNet(string const& path, Network const& net) {
 	}
 	netDef << YAML::EndMap;
 
-	cout << netDef.c_str() << endl;
+	return out << netDef.c_str();
+}
+
+bool saveNet(string const& path, Network const& net) {
+	ofstream fout(path);
+
+	fout << net;
+
 	return true;
 }
