@@ -34,6 +34,15 @@ int main (int argc, char* argv[]) {
 			"path",
 			parser);
 
+	ValueArg<string> netDefinitionPath (
+			"",
+			"lindNet",
+			"yaml file for saving the resulting net.",
+			false,
+			"lindNet.yaml",
+			"path",
+			parser);
+
 	try {
 		parser.parse(argc, argv);
 	} catch (ArgParseException const& e) {
@@ -73,7 +82,7 @@ int main (int argc, char* argv[]) {
 	// Save the trained net.
 	Network* lindNet = createNetwork(4, 20, 10);
 	cout << *lindNet << endl;
-	saveNet("lindNet.yaml", *lindNet);
+	saveNet(netDefinitionPath.getValue(), *lindNet);
 	delete lindNet;
 
 	exit (EXIT_SUCCESS);
