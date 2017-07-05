@@ -28,7 +28,20 @@
 								<option defaultValue="nvcc.compiler.optimization.level.none" id="nvcc.compiler.optimization.level.1126881222" name="Optimization Level" superClass="nvcc.compiler.optimization.level" valueType="enumerated"/>
 								<option id="nvcc.compiler.pic.72337597" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic"/>
 								<option id="nvcc.compiler.cpp11option.1629333431" name="Enable C++11 support (-std=c++11)" superClass="nvcc.compiler.cpp11option" value="true" valueType="boolean"/>
-								<option id="nvcc.compiler.undef.symbol.79854435" name="Undefined symbols (-U)" superClass="nvcc.compiler.undef.symbol" valueType="undefDefinedSymbols"/>
+								<option id="nvcc.compiler.undef.symbol.79854435" name="Undefined symbols (-U)" superClass="nvcc.compiler.undef.symbol"/>
+								<option id="nvcc.compiler.include.paths.2023792299" superClass="nvcc.compiler.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/include/c++/5"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu/c++/5"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/5/backward"/>
+									<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+									<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
+								</option>
+								<option id="nvcc.compiler.def.symbols.390746796" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1527245790" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.631074203" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.389341790" superClass="nvcc.compiler.input.c"/>
@@ -350,7 +363,7 @@
 									<listOptionValue builtIn="false" value="&quot;__INTMAX_TYPE__=long int&quot;"/>
 									<listOptionValue builtIn="false" value="__has_include(STR)=__has_include__(STR)"/>
 									<listOptionValue builtIn="false" value="&quot;__INT8_TYPE__=signed char&quot;"/>
-									<listOptionValue builtIn="false" value="__cplusplus=199711L"/>
+									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
 									<listOptionValue builtIn="false" value="__FLT_DECIMAL_DIG__=9"/>
 									<listOptionValue builtIn="false" value="__DEC64_MAX__=9.999999999999999E384DD"/>
 									<listOptionValue builtIn="false" value="__SIZEOF_INT__=4"/>
