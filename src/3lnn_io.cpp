@@ -74,3 +74,68 @@ bool saveNet(string const& path, Network const& net) {
 
 	return true;
 }
+
+Layer* loadLayer (YAML::Node const& layerNode, LayerType const layerType) {
+
+	YAML::Node nodeList = layerNode["Nodes"];
+	size_t nodeCount = nodeList.size();
+	size_t weightCount = 0;
+	if (nodeCount > 0) {
+		weightCount = nodeList[0]["weights"].size();
+	}
+
+	ActFctType actFct = NONE;
+	string const actFctName = layerNode["activationFunction"].as<string>();
+	if (actFctName == "SIGMOID") {
+		actFct = SIGMOID;
+	} else if (actFctName == "TANH") {
+		actFct = TANH;
+	} else if (actFctName == "NONE") {
+		actFct = NONE;
+	} else {
+		cerr << "Unknown activation function type '" << actFctName << "'. Using NONE." << endl;
+	}
+
+	Layer* layer = createLayer(nodeCount, weightCount, layerType, actFct);
+	for (int i = 0; i < nodeList.size(); ++i) {
+		layer->nodes[i]->bias = nodeList[i]["bias"].as<double>();
+		for (int j = 0; j < weightCount; ++j) {
+			layer->nodes[i]->weights[j] = nodeList[i]["weights"][j].as<double>();
+		}
+	}
+
+	return layer;
+}
+
+Network* loadNet(std::string const& path) {
+
+	YAML::Node netDef = YAML::LoadFile(path);
+
+	Network* net = new Network;
+	for (YAML::const_iterator entry = netDef.begin(); entry != netDef.end(); ++entry) {
+
+		string const key = entry->first.as<string>();
+		if ("learningRate" == key) {
+
+			net->learningRate = entry->second.as<double>();
+
+		} else if ("INPUT" == key) {
+
+			Layer* inputLayer = loadLayer(entry->second, INPUT);
+			net->layers.push_back(inputLayer);
+
+		} else if ("HIDDEN" == key) {
+
+			Layer* hiddenLayer = loadLayer(entry->second, HIDDEN);
+			net->layers.push_back(hiddenLayer);
+
+		} else if ("OUTPUT" == key) {
+
+			Layer* outputLayer = loadLayer(entry->second, OUTPUT);
+			net->layers.push_back(outputLayer);
+
+		}
+	}
+
+	return net;
+}
