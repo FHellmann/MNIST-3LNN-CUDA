@@ -30,6 +30,23 @@ ostream& operator<< (ostream& out, Network const& net) {
 				netDef << YAML::Key << "HIDDEN";
 				break;
 		}
+		netDef << YAML::Value << YAML::BeginMap;
+		// Activation function
+		netDef << YAML::Key << "activationFunction";
+		switch (layer->actFctType) {
+		case SIGMOID:
+			netDef << YAML::Value << "SIGMOID";
+			break;
+		case TANH:
+			netDef << YAML::Value << "TANH";
+			break;
+		case NONE:
+			netDef << YAML::Value << "NONE";
+			break;
+		default:
+			cerr << "Activation function type not handled, yet." << endl;
+		}
+		netDef << YAML::Key << "Nodes";
 		netDef << YAML::Value;
 		netDef << YAML::BeginSeq;
 		for (Node* node : layer->nodes) {
@@ -43,6 +60,7 @@ ostream& operator<< (ostream& out, Network const& net) {
 			netDef << YAML::EndMap;
 		}
 		netDef << YAML::EndSeq;
+		netDef << YAML::EndMap;
 	}
 	netDef << YAML::EndMap;
 
