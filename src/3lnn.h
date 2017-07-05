@@ -1,3 +1,12 @@
+/*
+ * 3lnn.h
+ *
+ *  Created on: 28.06.2017
+ *      Author: Fabio
+ */
+#ifndef THREE_LNN_H_
+#define THREE_LNN_H_
+
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
@@ -107,3 +116,4 @@ void updateNodeWeights(Network *nn,
 
 int getNetworkClassification(Network *nn);
 
+#endif

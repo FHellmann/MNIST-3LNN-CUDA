@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <yaml-cpp/yaml.h>
 #include "MNISTDataset.h"
+#include "3lnn.h"
+#include "3lnn_io.h"
 
 using namespace std;
 using namespace TCLAP;
@@ -39,6 +41,7 @@ int main (int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
+	// Read the training data.
 	string imagePath = mnistPath.getValue() + "/train-images-idx3-ubyte";
 	MNISTImageDataset trainingImages(imagePath);
 	trainingImages.load();
@@ -55,6 +58,7 @@ int main (int argc, char* argv[]) {
 //	cout << "Foobar end" << endl;
 //	cv::waitKey(0);
 
+	// TODO: Do some training.
 	cout << "Press ESC or q to quit." << endl;
 	MNISTLableDataset::iterator it = trainingLabels.begin();
 	for (cv::Mat img : trainingImages) {
@@ -66,16 +70,10 @@ int main (int argc, char* argv[]) {
 		}
 	}
 
-	YAML::Emitter netDef;
-	netDef << YAML::BeginMap;
-	netDef << YAML::Key << "INPUT";
-	netDef << YAML::Value;
-	netDef << YAML::Flow << YAML::BeginSeq;
-	netDef << 1 << 5 << 3 << 0.12345;
-	netDef << YAML::EndSeq;
-	netDef << YAML::EndMap;
-
-	cout << netDef.c_str() << endl;
+	// Save the trained net.
+	Network* lindNet = createNetwork(4, 20, 10);
+	saveNet("lindNet.yaml", *lindNet);
+	delete lindNet;
 
 	exit (EXIT_SUCCESS);
 }
