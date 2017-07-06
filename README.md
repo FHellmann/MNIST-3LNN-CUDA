@@ -8,7 +8,7 @@ Depends on
 - OpenCV 2
 - TCLAP
 
-## Building this :shit:
+## Build
 1. Init the submodules:
 ```
 git submodule init
