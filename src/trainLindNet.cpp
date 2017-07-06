@@ -14,6 +14,9 @@ using namespace TCLAP;
 
 unsigned char KEY_ESC = 27;
 
+void trainNetwork(NeuralNetwork&, MNISTImageDataset const&,
+		MNISTLableDataset const&);
+
 int main(int argc, char* argv[]) {
 
 	CmdLine parser("Train the LindNet with the MNIST database.");
@@ -48,23 +51,47 @@ int main(int argc, char* argv[]) {
 //	cv::imshow("Hand writing", foobar);
 //	cout << "Foobar end" << endl;
 //	cv::waitKey(0);
+	NeuralNetwork lindNet(28*28, 20, 10, 0.5);
 
-// TODO: Do some training.
-	cout << "Press ESC or q to quit." << endl;
-	MNISTLableDataset::iterator it = trainingLabels.begin();
-	for (cv::Mat img : trainingImages) {
-		cv::imshow("Hand writing", img);
-		cout << "Lable: " << (int) *(it++) << endl;
-		unsigned char key = cv::waitKey(0);
-		if (key == KEY_ESC || key == 'q') {
-			break;
-		}
-	}
+	// Do some training.
+	trainNetwork(lindNet, trainingImages, trainingLabels);
 
 	// Save the trained net.
-	NeuralNetwork lindNet(4, 20, 10, 0.5);
-	cout << lindNet << endl;
 	lindNet.saveYAML(netDefinitionPath.getValue());
 
 	exit(EXIT_SUCCESS);
+}
+
+void trainNetwork(NeuralNetwork& net, MNISTImageDataset const& images,
+		MNISTLableDataset const& labels) {
+
+	int errCount = 0;
+
+	size_t showProgressEach = 1000;
+
+	// Loop through all images in the file
+	for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
+
+		// Convert the MNIST image to a standardized vector format and feed into the network
+		net.feedInput(images[imgCount]);
+
+		// Feed forward all layers (from input to hidden to output) calculating all nodes' output
+		net.feedForward();
+
+		// Back propagate the error and adjust weights in all layers accordingly
+		net.backPropagate(labels[imgCount]);
+
+		// Classify image by choosing output cell with highest output
+		int classification = net.getNetworkClassification();
+		if (classification != labels[imgCount])
+			errCount++;
+
+		// Display progress during training
+		//displayTrainingProgress(imgCount, errCount, 80);
+		//displayImage(&img, lbl, classification, 7,6);
+		if ((imgCount % showProgressEach) == 0)
+			cout << "x"; cout.flush();
+	}
+
+	cout << endl;
 }

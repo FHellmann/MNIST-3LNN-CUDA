@@ -29,6 +29,7 @@ public:
 	size_t size() const;
 	std::string getPath() const;
 	T& operator[](int const& idx);
+	T const& operator[](int const& idx) const;
 
 	typedef typename std::vector<T>::iterator iterator;
 

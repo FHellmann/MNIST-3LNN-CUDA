@@ -111,3 +111,4 @@ CTestTestfile.cmake
 /Release/
 /trainer-Debug/
 /query-Debug/
+/trainer-Release/

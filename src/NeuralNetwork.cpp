@@ -38,6 +38,18 @@ NeuralNetwork::~NeuralNetwork() {
 	layers.clear();
 }
 
+void NeuralNetwork::feedInput(cv::Mat const& image) {
+
+	Layer* inputLayer = getLayer(INPUT);
+	size_t const numPixels = image.cols * image.rows;
+
+	size_t const loopCount = min(numPixels, inputLayer->nodes.size());
+	cv::MatConstIterator_<uint8_t> it = image.begin<uint8_t>();
+	for (int i = 0; i < loopCount; ++i, ++it) {
+		inputLayer->nodes[i]->output = static_cast<double>(*it);
+	}
+}
+
 void NeuralNetwork::feedForward() {
 	getLayer(HIDDEN)->calcLayer();
 	getLayer(OUTPUT)->calcLayer();
@@ -281,8 +293,8 @@ NeuralNetwork::Layer* NeuralNetwork::Layer::LoadLayer(
 	Layer* newLayer = new Layer(layerType, actFctType);
 	newLayer->nodes.reserve(nodeCount);
 	for (int i = 0; i < nodeList.size(); ++i) {
-		NeuralNetwork::Layer::Node* node = new NeuralNetwork::Layer::Node(nodeList[i]["bias"].as<double>(),
-				0.0);
+		NeuralNetwork::Layer::Node* node = new NeuralNetwork::Layer::Node(
+				nodeList[i]["bias"].as<double>(), 0.0);
 		node->weights.reserve(weightCount);
 		for (int j = 0; j < weightCount; ++j) {
 			node->weights.push_back(nodeList[i]["weights"][j].as<double>());

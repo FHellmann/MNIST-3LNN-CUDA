@@ -155,6 +155,11 @@ T& MNISTDataset<T>::operator[](int const& idx) {
 }
 
 template<typename T>
+T const& MNISTDataset<T>::operator[](int const& idx) const {
+	return m_Images[idx];
+}
+
+template<typename T>
 typename MNISTDataset<T>::iterator MNISTDataset<T>::begin() {
 	return m_Images.begin();
 }

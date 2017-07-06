@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <yaml-cpp/yaml.h>
+#include <opencv2/core/core.hpp>
 
 class NeuralNetwork {
 public:
@@ -47,15 +48,7 @@ public:
 	 *
 	 * @details v has to match the size of the input layer.
 	 */
-	/*
-	 void feedInput(Vector* v) {
-	 Layer *inputLayer = getLayer(INPUT);
-
-	 for (int i=0; i < inputLayer->nodes.size(); i++) {
-	 inputLayer->nodes.at(i)->output = v->vals.at(i);
-	 }
-	 }
-	 */
+	void feedInput(cv::Mat const& image);
 
 	/**
 	 * Feeds input layer values forward to hidden to output layer
