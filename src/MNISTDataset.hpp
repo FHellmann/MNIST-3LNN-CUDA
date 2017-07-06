@@ -1,9 +1,3 @@
-/*
- * MNISTDataset.hpp
- *
- *  Created on: Jul 4, 2017
- *      Author: Stefan
- */
 #ifndef MNISTDATASET_HPP_
 #define MNISTDATASET_HPP_
 

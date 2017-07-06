@@ -1,10 +1,3 @@
-/*
- * MNISTLoader.h
- *
- *  Created on: Jul 4, 2017
- *      Author: Stefan
- */
-
 #ifndef MNISTLOADER_H_
 #define MNISTLOADER_H_
 

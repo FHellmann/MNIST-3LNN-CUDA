@@ -1,9 +1,3 @@
-/*
- * main.cpp
- *
- *  Created on: Jul 4, 2017
- *      Author: Stefan
- */
 #include <string>
 #include <fstream>
 #include <opencv2/core/core.hpp>
