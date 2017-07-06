@@ -11,15 +11,15 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 
-template <typename T>
+template<typename T>
 class MNISTDataset {
 public:
 	enum IdxDatatype {
-		UBYTE  = 0x08,
-		SBYTE  = 0x09,
-		SHORT  = 0x0B,
-		INT    = 0x0C,
-		FLOAT  = 0x0D,
+		UBYTE = 0x08,
+		SBYTE = 0x09,
+		SHORT = 0x0B,
+		INT = 0x0C,
+		FLOAT = 0x0D,
 		DOUBLE = 0x0E,
 	};
 
@@ -35,7 +35,7 @@ public:
 	IdxDatatype getDatatype() const;
 	size_t size() const;
 	std::string getPath() const;
-	T& operator[] (int const& idx);
+	T& operator[](int const& idx);
 
 	typedef typename std::vector<T>::iterator iterator;
 

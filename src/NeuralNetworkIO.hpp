@@ -6,7 +6,7 @@
 
 using namespace std;
 
-ostream& operator<< (ostream& out, NeuralNetwork const& net) {
+ostream& operator<<(ostream& out, NeuralNetwork const& net) {
 
 	YAML::Emitter netDef;
 
@@ -15,15 +15,15 @@ ostream& operator<< (ostream& out, NeuralNetwork const& net) {
 	netDef << YAML::Value << net.learningRate;
 	for (NeuralNetwork::Layer* layer : net.layers) {
 		switch (layer->layerType) {
-			case NeuralNetwork::Layer::INPUT:
-				netDef << YAML::Key << "INPUT";
-				break;
-			case NeuralNetwork::Layer::OUTPUT:
-				netDef << YAML::Key << "OUTPUT";
-				break;
-			case NeuralNetwork::Layer::HIDDEN:
-				netDef << YAML::Key << "HIDDEN";
-				break;
+		case NeuralNetwork::Layer::INPUT:
+			netDef << YAML::Key << "INPUT";
+			break;
+		case NeuralNetwork::Layer::OUTPUT:
+			netDef << YAML::Key << "OUTPUT";
+			break;
+		case NeuralNetwork::Layer::HIDDEN:
+			netDef << YAML::Key << "HIDDEN";
+			break;
 		}
 		netDef << YAML::Value << YAML::BeginMap;
 		// Activation function
@@ -70,7 +70,8 @@ bool saveNet(string const& path, NeuralNetwork const& net) {
 	return true;
 }
 
-NeuralNetwork::Layer* loadLayer (YAML::Node const& layerNode, NeuralNetwork::Layer::LayerType const layerType) {
+NeuralNetwork::Layer* loadLayer(YAML::Node const& layerNode,
+		NeuralNetwork::Layer::LayerType const layerType) {
 
 	YAML::Node nodeList = layerNode["Nodes"];
 	size_t nodeCount = nodeList.size();
@@ -88,14 +89,17 @@ NeuralNetwork::Layer* loadLayer (YAML::Node const& layerNode, NeuralNetwork::Lay
 	} else if (actFctName == "NONE") {
 		actFct = NeuralNetwork::NONE;
 	} else {
-		cerr << "Unknown activation function type '" << actFctName << "'. Using NONE." << endl;
+		cerr << "Unknown activation function type '" << actFctName
+				<< "'. Using NONE." << endl;
 	}
 
-	NeuralNetwork::Layer* layer = new NeuralNetwork::Layer(nodeCount, weightCount, layerType, actFct, nullptr);
+	NeuralNetwork::Layer* layer = new NeuralNetwork::Layer(nodeCount,
+			weightCount, layerType, actFct, nullptr);
 	for (int i = 0; i < nodeList.size(); ++i) {
 		layer->nodes[i]->bias = nodeList[i]["bias"].as<double>();
 		for (int j = 0; j < weightCount; ++j) {
-			layer->nodes[i]->weights[j] = nodeList[i]["weights"][j].as<double>();
+			layer->nodes[i]->weights[j] =
+					nodeList[i]["weights"][j].as<double>();
 		}
 	}
 
@@ -111,7 +115,8 @@ NeuralNetwork loadNet(std::string const& path) {
 	NeuralNetwork::Layer* outLayer;
 	double learningRate = 0.5;
 
-	for (YAML::const_iterator entry = netDef.begin(); entry != netDef.end(); ++entry) {
+	for (YAML::const_iterator entry = netDef.begin(); entry != netDef.end();
+			++entry) {
 		string const key = entry->first.as<string>();
 		if ("learningRate" == key) {
 			learningRate = entry->second.as<double>();

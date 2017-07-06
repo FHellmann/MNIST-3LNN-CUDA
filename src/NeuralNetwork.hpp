@@ -10,11 +10,15 @@ using namespace std;
 
 class NeuralNetwork {
 public:
-	enum ActFctType {SIGMOID, TANH, NONE};
+	enum ActFctType {
+		SIGMOID, TANH, NONE
+	};
 
 	struct Layer {
 
-		enum LayerType {INPUT, HIDDEN, OUTPUT};
+		enum LayerType {
+			INPUT, HIDDEN, OUTPUT
+		};
 
 		struct Node {
 			double bias;
@@ -26,7 +30,8 @@ public:
 			 *
 			 * @param weightCount Number of weights per node.
 			 */
-			Node(const int weightCount) : Node(weightCount, 0, 0) {
+			Node(const int weightCount) :
+					Node(weightCount, 0, 0) {
 			}
 
 			/**
@@ -36,10 +41,9 @@ public:
 			 * @param bias of this node.
 			 * @param output of this node.
 			 */
-			Node(const int weightCount,
-					const double bias,
-					const double output) : bias(bias), output(output) {
-				for(int i=0; i < weightCount; i++)
+			Node(const int weightCount, const double bias, const double output) :
+					bias(bias), output(output) {
+				for (int i = 0; i < weightCount; i++)
 					weights.push_back(0);
 			}
 		};
@@ -57,13 +61,12 @@ public:
 		 * @param layerType Type of the new layer.
 		 * @param actFctType Type of the activation function.
 		 */
-		Layer(const int nodeCount,
-				const int weightCount,
-				const LayerType layerType,
-				const ActFctType actFctType,
-				Layer* previous
-				) : layerType(layerType), actFctType(actFctType), previousLayer(previous) {
-			for(int i=0; i < nodeCount; i++)
+		Layer(const int nodeCount, const int weightCount,
+				const LayerType layerType, const ActFctType actFctType,
+				Layer* previous) :
+				layerType(layerType), actFctType(actFctType), previousLayer(
+						previous) {
+			for (int i = 0; i < nodeCount; i++)
 				nodes.push_back(new Node(weightCount));
 		}
 
@@ -81,8 +84,8 @@ public:
 		 * Calculates the new output and (de)activates the nodes.
 		 */
 		void calcLayer() {
-			for (int i=0; i < nodes.size(); i++) {
-			    Node *node = getNode(i);
+			for (int i = 0; i < nodes.size(); i++) {
+				Node *node = getNode(i);
 				calcNodeOutput(node);
 				activateNode(node);
 			}
@@ -96,13 +99,13 @@ public:
 		 */
 		void calcNodeOutput(Node* node) {
 
-		    // Start by adding the bias
-		    node->output = node->bias;
+			// Start by adding the bias
+			node->output = node->bias;
 
-		    for (int i=0; i < previousLayer->nodes.size(); i++){
-		        Node *prevLayerNode = previousLayer->getNode(i);
-		        node->output += prevLayerNode->output * node->weights.at(i);
-		    }
+			for (int i = 0; i < previousLayer->nodes.size(); i++) {
+				Node *prevLayerNode = previousLayer->getNode(i);
+				node->output += prevLayerNode->output * node->weights.at(i);
+			}
 		}
 
 		/**
@@ -111,16 +114,16 @@ public:
 		 * @param node The node which will be activated.
 		 */
 		void activateNode(Node* node) {
-		    switch (actFctType) {
-				case SIGMOID: {
-					node->output = 1 / (1 + (exp((double) - node->output)) );
-					break;
-				}
-				case TANH: {
-					node->output = tanh(node->output);
-					break;
-				}
-		    }
+			switch (actFctType) {
+			case SIGMOID: {
+				node->output = 1 / (1 + (exp((double) -node->output)));
+				break;
+			}
+			case TANH: {
+				node->output = tanh(node->output);
+				break;
+			}
+			}
 		}
 
 		/**
@@ -130,18 +133,18 @@ public:
 		 * @return the derivation of the output value.
 		 */
 		double getActFctDerivative(double outVal) {
-		    double dVal = 0;
-		    switch (actFctType) {
-				case SIGMOID: {
-					dVal = outVal * (1-outVal);
-					break;
-				}
-				case TANH: {
-					dVal = 1-pow(tanh(outVal),2);
-					break;
-				}
-		    }
-		    return dVal;
+			double dVal = 0;
+			switch (actFctType) {
+			case SIGMOID: {
+				dVal = outVal * (1 - outVal);
+				break;
+			}
+			case TANH: {
+				dVal = 1 - pow(tanh(outVal), 2);
+				break;
+			}
+			}
+			return dVal;
 		}
 	};
 
@@ -155,9 +158,9 @@ public:
 	 * or NULL if none was found.
 	 */
 	Layer* getLayer(const Layer::LayerType layerType) {
-		for(int i=0; i < layers.size(); i++) {
+		for (int i = 0; i < layers.size(); i++) {
 			Layer *layer = layers.at(i);
-			if(layer->layerType == layerType)
+			if (layer->layerType == layerType)
 				return layer;
 		}
 		return nullptr;
@@ -171,9 +174,9 @@ public:
 	 */
 	Layer* getPrevLayer(Layer* thisLayer) {
 		int position = 0;
-		for(int i=0; i < layers.size(); i++) {
+		for (int i = 0; i < layers.size(); i++) {
 			Layer *layer = layers.at(i);
-			if(layer == thisLayer) {
+			if (layer == thisLayer) {
 				position = i;
 				break;
 			}
@@ -187,18 +190,19 @@ public:
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
 	void backPropagateOutputLayer(const int targetClassification) {
-	    Layer *layer = getLayer(Layer::OUTPUT);
+		Layer *layer = getLayer(Layer::OUTPUT);
 
-	    for (int i=0; i < layer->nodes.size(); i++){
-	        Layer::Node *node = layer->getNode(i);
+		for (int i = 0; i < layer->nodes.size(); i++) {
+			Layer::Node *node = layer->getNode(i);
 
-	        int targetOutput = (i==targetClassification) ? 1 : 0;
+			int targetOutput = (i == targetClassification) ? 1 : 0;
 
-	        double errorDelta = targetOutput - node->output;
-	        double errorSignal = errorDelta * layer->getActFctDerivative(node->output);
+			double errorDelta = targetOutput - node->output;
+			double errorSignal = errorDelta
+					* layer->getActFctDerivative(node->output);
 
-	        updateNodeWeights(Layer::OUTPUT, i, errorSignal);
-	    }
+			updateNodeWeights(Layer::OUTPUT, i, errorSignal);
+		}
 	}
 
 	/**
@@ -207,30 +211,32 @@ public:
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
 	void backPropagateHiddenLayer(const int targetClassification) {
-	    Layer *ol = getLayer(Layer::OUTPUT);
-	    Layer *layer_hidden = getLayer(Layer::HIDDEN);
+		Layer *ol = getLayer(Layer::OUTPUT);
+		Layer *layer_hidden = getLayer(Layer::HIDDEN);
 
-	    for (int h=0; h < layer_hidden->nodes.size(); h++){
-	        Layer::Node *hn = layer_hidden->getNode(h);
+		for (int h = 0; h < layer_hidden->nodes.size(); h++) {
+			Layer::Node *hn = layer_hidden->getNode(h);
 
-	        double outputcellerrorsum = 0;
+			double outputcellerrorsum = 0;
 
-	        for (int o=0; o < ol->nodes.size(); o++){
+			for (int o = 0; o < ol->nodes.size(); o++) {
 
-	            Layer::Node *on = ol->getNode(o);
+				Layer::Node *on = ol->getNode(o);
 
-	            int targetOutput = (o==targetClassification)?1:0;
+				int targetOutput = (o == targetClassification) ? 1 : 0;
 
-	            double errorDelta = targetOutput - on->output;
-	            double errorSignal = errorDelta * ol->getActFctDerivative(on->output);
+				double errorDelta = targetOutput - on->output;
+				double errorSignal = errorDelta
+						* ol->getActFctDerivative(on->output);
 
-	            outputcellerrorsum += errorSignal * on->weights[h];
-	        }
+				outputcellerrorsum += errorSignal * on->weights[h];
+			}
 
-	        double hiddenErrorSignal = outputcellerrorsum * layer_hidden->getActFctDerivative(hn->output);
+			double hiddenErrorSignal = outputcellerrorsum
+					* layer_hidden->getActFctDerivative(hn->output);
 
-	        updateNodeWeights(Layer::HIDDEN, h, hiddenErrorSignal);
-	    }
+			updateNodeWeights(Layer::HIDDEN, h, hiddenErrorSignal);
+		}
 	}
 
 	/**
@@ -240,14 +246,13 @@ public:
 	 * @param id Sequential id of the node that is to be calculated.
 	 * @param error The error (difference between desired output and actual output).
 	 */
-	void updateNodeWeights(const Layer::LayerType layertype,
-			const int id,
+	void updateNodeWeights(const Layer::LayerType layertype, const int id,
 			double error) {
 		Layer *layer = getLayer(layertype);
 		Layer::Node *node = layer->getNode(id);
 		Layer *prevLayer = layer->previousLayer;
 
-		for (int i=0; i < node->weights.size(); i++) {
+		for (int i = 0; i < node->weights.size(); i++) {
 			Layer::Node *prevLayerNode = prevLayer->getNode(i);
 			node->weights.at(1) += learningRate * prevLayerNode->output * error;
 		}
@@ -264,24 +269,27 @@ public:
 	 * @param outCount The output layer node count.
 	 * @param learningRate The learning rate of this neural network.
 	 */
-	NeuralNetwork(const int inpCount,
-			const int hidCount,
-			const int outCount,
-			const double learningRate) : learningRate(learningRate) {
+	NeuralNetwork(const int inpCount, const int hidCount, const int outCount,
+			const double learningRate) :
+			learningRate(learningRate) {
 		layers.push_back(new Layer(inpCount, 0, Layer::INPUT, NONE, nullptr));
-		layers.push_back(new Layer(hidCount, inpCount, Layer::HIDDEN, SIGMOID, layers.back()));
-		layers.push_back(new Layer(outCount, hidCount, Layer::OUTPUT, SIGMOID, layers.back()));
+		layers.push_back(
+				new Layer(hidCount, inpCount, Layer::HIDDEN, SIGMOID,
+						layers.back()));
+		layers.push_back(
+				new Layer(outCount, hidCount, Layer::OUTPUT, SIGMOID,
+						layers.back()));
 
-		for(int l=0; l < layers.size() - 1; l++) { // leave out the output layer
+		for (int l = 0; l < layers.size() - 1; l++) { // leave out the output layer
 			Layer* layer = layers.at(l);
-			for(int i=0; i < layer->nodes.size(); i++) {
+			for (int i = 0; i < layer->nodes.size(); i++) {
 				Layer::Node *node = layer->getNode(i);
 
-				for (int j=0; j < node->weights.size(); j++){
-					node->weights[j] = rand()/(double)(RAND_MAX);
+				for (int j = 0; j < node->weights.size(); j++) {
+					node->weights[j] = rand() / (double) (RAND_MAX);
 				}
 
-				node->bias = rand()/(double)(RAND_MAX);
+				node->bias = rand() / (double) (RAND_MAX);
 			}
 		}
 	}
@@ -294,10 +302,9 @@ public:
 	 * @param outLayer The output layer.
 	 * @param learningRate The learning rate of this neural network.
 	 */
-	NeuralNetwork(Layer* inpLayer,
-			Layer* hidLayer,
-			Layer* outLayer,
-			double learningRate) : learningRate(learningRate) {
+	NeuralNetwork(Layer* inpLayer, Layer* hidLayer, Layer* outLayer,
+			double learningRate) :
+			learningRate(learningRate) {
 		layers.push_back(inpLayer);
 		layers.push_back(hidLayer);
 		layers.push_back(outLayer);
@@ -309,14 +316,14 @@ public:
 	 * @details v has to match the size of the input layer.
 	 */
 	/*
-	void feedInput(Vector* v) {
-	    Layer *inputLayer = getLayer(INPUT);
+	 void feedInput(Vector* v) {
+	 Layer *inputLayer = getLayer(INPUT);
 
-	    for (int i=0; i < inputLayer->nodes.size(); i++) {
-	    	inputLayer->nodes.at(i)->output = v->vals.at(i);
-	    }
-	}
-	*/
+	 for (int i=0; i < inputLayer->nodes.size(); i++) {
+	 inputLayer->nodes.at(i)->output = v->vals.at(i);
+	 }
+	 }
+	 */
 
 	/**
 	 * Feeds input layer values forward to hidden to output layer
@@ -333,8 +340,8 @@ public:
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
 	void backPropagate(const int targetClassification) {
-	    backPropagateOutputLayer(targetClassification);
-	    backPropagateHiddenLayer(targetClassification);
+		backPropagateOutputLayer(targetClassification);
+		backPropagateHiddenLayer(targetClassification);
 	}
 
 	/**
@@ -344,21 +351,21 @@ public:
 	 * @return the classification of the network.
 	 */
 	int getNetworkClassification() {
-	    Layer *layer = getLayer(Layer::OUTPUT);
+		Layer *layer = getLayer(Layer::OUTPUT);
 
-	    double maxOut = 0;
-	    int maxInd = 0;
+		double maxOut = 0;
+		int maxInd = 0;
 
-	    for (int i=0; i < layer->nodes.size(); i++){
-	        Layer::Node *on = layer->getNode(i);
+		for (int i = 0; i < layer->nodes.size(); i++) {
+			Layer::Node *on = layer->getNode(i);
 
-	        if (on->output > maxOut){
-	            maxOut = on->output;
-	            maxInd = i;
-	        }
-	    }
+			if (on->output > maxOut) {
+				maxOut = on->output;
+				maxInd = i;
+			}
+		}
 
-	    return maxInd;
+		return maxInd;
 	}
 };
 

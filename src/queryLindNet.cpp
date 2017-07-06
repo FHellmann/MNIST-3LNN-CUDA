@@ -12,18 +12,12 @@
 using namespace std;
 using namespace TCLAP;
 
-int main (int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 
 	CmdLine parser("Use an already trained net to classify given images.");
 
-	ValueArg<string> netDefinitionPath (
-			"n",
-			"lindNet",
-			"File containing a LindNet definition.",
-			true,
-			"",
-			"path",
-			parser);
+	ValueArg<string> netDefinitionPath("n", "lindNet",
+			"File containing a LindNet definition.", true, "", "path", parser);
 
 	try {
 		parser.parse(argc, argv);
@@ -36,5 +30,5 @@ int main (int argc, char* argv[]) {
 
 	cout << net << endl;
 
-	exit (EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }

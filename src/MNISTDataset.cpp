@@ -9,7 +9,7 @@
 #include <iostream>
 
 /** Specialize for labels. */
-template <>
+template<>
 bool MNISTDataset<uint8_t>::load() {
 
 	FILE *f = fopen(m_FileName.c_str(), "rb");
@@ -18,12 +18,15 @@ bool MNISTDataset<uint8_t>::load() {
 	fread(&header, sizeof(header), 1, f);
 	header.magicnumber = bigToLittleEndian(header.magicnumber);
 	std::cout << "Header size: " << sizeof(IdxHeader) << std::endl;
-	std::cout << "Magic Number: " << std::hex << header.magicnumber << std::endl;
+	std::cout << "Magic Number: " << std::hex << header.magicnumber
+			<< std::endl;
 	std::cout << "Datatype: " << std::hex << (int) header.datatype << std::endl;
-	std::cout << "Dimensions: " << std::hex << (int) header.dimensions << std::endl;
+	std::cout << "Dimensions: " << std::hex << (int) header.dimensions
+			<< std::endl;
 
 	if (header.datatype != UBYTE) {
-		std::cerr << "Unhandled datatype: " << (int) header.datatype << std::endl;
+		std::cerr << "Unhandled datatype: " << (int) header.datatype
+				<< std::endl;
 		fclose(f);
 		return false;
 	}
@@ -54,5 +57,5 @@ bool MNISTDataset<uint8_t>::load() {
 	return true;
 }
 
-template class MNISTDataset<cv::Mat>;
-template class MNISTDataset<uint8_t>;
+template class MNISTDataset<cv::Mat> ;
+template class MNISTDataset<uint8_t> ;

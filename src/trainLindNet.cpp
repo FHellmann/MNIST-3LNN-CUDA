@@ -21,27 +21,16 @@ using namespace TCLAP;
 
 unsigned char KEY_ESC = 27;
 
-int main (int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 
 	CmdLine parser("Train the LindNet with the MNIST database.");
 
-	ValueArg<string> mnistPath (
-			"",
-			"mnist",
-			"Folder containing the MNIST files.",
-			true,
-			"",
-			"path",
-			parser);
+	ValueArg<string> mnistPath("", "mnist",
+			"Folder containing the MNIST files.", true, "", "path", parser);
 
-	ValueArg<string> netDefinitionPath (
-			"",
-			"lindNet",
-			"yaml file for saving the resulting net.",
-			false,
-			"lindNet.yaml",
-			"path",
-			parser);
+	ValueArg<string> netDefinitionPath("", "lindNet",
+			"yaml file for saving the resulting net.", false, "lindNet.yaml",
+			"path", parser);
 
 	try {
 		parser.parse(argc, argv);
@@ -67,12 +56,12 @@ int main (int argc, char* argv[]) {
 //	cout << "Foobar end" << endl;
 //	cv::waitKey(0);
 
-	// TODO: Do some training.
+// TODO: Do some training.
 	cout << "Press ESC or q to quit." << endl;
 	MNISTLableDataset::iterator it = trainingLabels.begin();
 	for (cv::Mat img : trainingImages) {
 		cv::imshow("Hand writing", img);
-		cout << "Lable: " << (int)*(it++) << endl;
+		cout << "Lable: " << (int) *(it++) << endl;
 		unsigned char key = cv::waitKey(0);
 		if (key == KEY_ESC || key == 'q') {
 			break;
@@ -84,5 +73,5 @@ int main (int argc, char* argv[]) {
 	cout << lindNet << endl;
 	saveNet(netDefinitionPath.getValue(), lindNet);
 
-	exit (EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }

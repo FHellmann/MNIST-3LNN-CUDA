@@ -11,14 +11,13 @@
 #include "MNISTDataset.h"
 #include <iostream>
 
-template <typename T>
+template<typename T>
 MNISTDataset<T>::MNISTDataset(std::string const& fileName) :
-		m_FileName(fileName),
-		m_Count(0),
-		m_Datatype(static_cast<IdxDatatype>(0)) {
+		m_FileName(fileName), m_Count(0), m_Datatype(
+				static_cast<IdxDatatype>(0)) {
 }
 
-template <typename T>
+template<typename T>
 MNISTDataset<T>::~MNISTDataset() {
 }
 
@@ -37,10 +36,11 @@ struct IdxHeader {
 };
 
 /** Function needed for loading the images. */
-template <typename T>
+template<typename T>
 T bigToLittleEndian(T& bigEndian) {
 
-	uint8_t const* const data = reinterpret_cast<uint8_t const* const>(&bigEndian);
+	uint8_t const* const data =
+			reinterpret_cast<uint8_t const* const >(&bigEndian);
 	T littleEndian = 0;
 	int shift = 0;
 	for (int i = sizeof(T) - 1; i >= 0; --i, shift += 8) {
@@ -49,7 +49,7 @@ T bigToLittleEndian(T& bigEndian) {
 	return littleEndian;
 }
 
-template <typename T>
+template<typename T>
 bool MNISTDataset<T>::load() {
 	/*
 	 For a "file format specification" see http://yann.lecun.com/exdb/mnist/
@@ -90,12 +90,15 @@ bool MNISTDataset<T>::load() {
 	fread(&header, sizeof(header), 1, f);
 	header.magicnumber = bigToLittleEndian(header.magicnumber);
 	std::cout << "Header size: " << sizeof(IdxHeader) << std::endl;
-	std::cout << "Magic Number: " << std::hex << header.magicnumber << std::endl;
+	std::cout << "Magic Number: " << std::hex << header.magicnumber
+			<< std::endl;
 	std::cout << "Datatype: " << std::hex << (int) header.datatype << std::endl;
-	std::cout << "Dimensions: " << std::hex << (int) header.dimensions << std::endl;
+	std::cout << "Dimensions: " << std::hex << (int) header.dimensions
+			<< std::endl;
 
 	if (header.datatype != UBYTE) {
-		std::cerr << "Unhandled datatype: " << (int) header.datatype << std::endl;
+		std::cerr << "Unhandled datatype: " << (int) header.datatype
+				<< std::endl;
 		fclose(f);
 		return false;
 	}
@@ -118,8 +121,8 @@ bool MNISTDataset<T>::load() {
 	dimX = bigToLittleEndian(dimX);
 	dimY = bigToLittleEndian(dimY);
 
-	std::cout << std::dec << "Reading " << m_Count << " images of size (" << dimX << ","
-			<< dimY << ")" << std::endl;
+	std::cout << std::dec << "Reading " << m_Count << " images of size ("
+			<< dimX << "," << dimY << ")" << std::endl;
 
 	m_Images.reserve(m_Count);
 	// Actually read the images.
@@ -133,32 +136,32 @@ bool MNISTDataset<T>::load() {
 	return true;
 }
 
-template <typename T>
+template<typename T>
 typename MNISTDataset<T>::IdxDatatype MNISTDataset<T>::getDatatype() const {
 	return m_Datatype;
 }
 
-template <typename T>
+template<typename T>
 std::string MNISTDataset<T>::getPath() const {
 	return m_FileName;
 }
 
-template <typename T>
+template<typename T>
 size_t MNISTDataset<T>::size() const {
 	return m_Images.size();
 }
 
-template <typename T>
-T& MNISTDataset<T>::operator[] (int const& idx) {
+template<typename T>
+T& MNISTDataset<T>::operator[](int const& idx) {
 	return m_Images[idx];
 }
 
-template <typename T>
+template<typename T>
 typename MNISTDataset<T>::iterator MNISTDataset<T>::begin() {
 	return m_Images.begin();
 }
 
-template <typename T>
+template<typename T>
 typename MNISTDataset<T>::iterator MNISTDataset<T>::end() {
 	return m_Images.end();
 }
