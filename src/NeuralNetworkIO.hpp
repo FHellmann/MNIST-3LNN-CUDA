@@ -13,15 +13,15 @@ ostream& operator<< (ostream& out, NeuralNetwork const& net) {
 	netDef << YAML::BeginMap;
 	netDef << YAML::Key << "learningRate";
 	netDef << YAML::Value << net.learningRate;
-	for (Layer* layer : net.layers) {
+	for (NeuralNetwork::Layer* layer : net.layers) {
 		switch (layer->layerType) {
-			case INPUT:
+			case NeuralNetwork::Layer::INPUT:
 				netDef << YAML::Key << "INPUT";
 				break;
-			case OUTPUT:
+			case NeuralNetwork::Layer::OUTPUT:
 				netDef << YAML::Key << "OUTPUT";
 				break;
-			case HIDDEN:
+			case NeuralNetwork::Layer::HIDDEN:
 				netDef << YAML::Key << "HIDDEN";
 				break;
 		}
@@ -29,13 +29,13 @@ ostream& operator<< (ostream& out, NeuralNetwork const& net) {
 		// Activation function
 		netDef << YAML::Key << "activationFunction";
 		switch (layer->actFctType) {
-		case SIGMOID:
+		case NeuralNetwork::SIGMOID:
 			netDef << YAML::Value << "SIGMOID";
 			break;
-		case TANH:
+		case NeuralNetwork::TANH:
 			netDef << YAML::Value << "TANH";
 			break;
-		case NONE:
+		case NeuralNetwork::NONE:
 			netDef << YAML::Value << "NONE";
 			break;
 		default:
@@ -44,7 +44,7 @@ ostream& operator<< (ostream& out, NeuralNetwork const& net) {
 		netDef << YAML::Key << "Nodes";
 		netDef << YAML::Value;
 		netDef << YAML::BeginSeq;
-		for (Node* node : layer->nodes) {
+		for (NeuralNetwork::Layer::Node* node : layer->nodes) {
 			// Sequence of nodes
 			// Node as a map
 			netDef << YAML::BeginMap;
@@ -70,7 +70,7 @@ bool saveNet(string const& path, NeuralNetwork const& net) {
 	return true;
 }
 
-Layer* loadLayer (YAML::Node const& layerNode, LayerType const layerType) {
+NeuralNetwork::Layer* loadLayer (YAML::Node const& layerNode, NeuralNetwork::Layer::LayerType const layerType) {
 
 	YAML::Node nodeList = layerNode["Nodes"];
 	size_t nodeCount = nodeList.size();
@@ -79,19 +79,19 @@ Layer* loadLayer (YAML::Node const& layerNode, LayerType const layerType) {
 		weightCount = nodeList[0]["weights"].size();
 	}
 
-	ActFctType actFct = NONE;
+	NeuralNetwork::ActFctType actFct = NeuralNetwork::NONE;
 	string const actFctName = layerNode["activationFunction"].as<string>();
 	if (actFctName == "SIGMOID") {
-		actFct = SIGMOID;
+		actFct = NeuralNetwork::SIGMOID;
 	} else if (actFctName == "TANH") {
-		actFct = TANH;
+		actFct = NeuralNetwork::TANH;
 	} else if (actFctName == "NONE") {
-		actFct = NONE;
+		actFct = NeuralNetwork::NONE;
 	} else {
 		cerr << "Unknown activation function type '" << actFctName << "'. Using NONE." << endl;
 	}
 
-	Layer* layer = createLayer(nodeCount, weightCount, layerType, actFct);
+	NeuralNetwork::Layer* layer = new NeuralNetwork::Layer(nodeCount, weightCount, layerType, actFct, nullptr);
 	for (int i = 0; i < nodeList.size(); ++i) {
 		layer->nodes[i]->bias = nodeList[i]["bias"].as<double>();
 		for (int j = 0; j < weightCount; ++j) {
@@ -106,9 +106,9 @@ NeuralNetwork loadNet(std::string const& path) {
 
 	YAML::Node netDef = YAML::LoadFile(path);
 
-	Layer* inpLayer;
-	Layer* hidLayer;
-	Layer* outLayer;
+	NeuralNetwork::Layer* inpLayer;
+	NeuralNetwork::Layer* hidLayer;
+	NeuralNetwork::Layer* outLayer;
 	double learningRate = 0.5;
 
 	for (YAML::const_iterator entry = netDef.begin(); entry != netDef.end(); ++entry) {
@@ -116,13 +116,16 @@ NeuralNetwork loadNet(std::string const& path) {
 		if ("learningRate" == key) {
 			learningRate = entry->second.as<double>();
 		} else if ("INPUT" == key) {
-			inpLayer = loadLayer(entry->second, INPUT);
+			inpLayer = loadLayer(entry->second, NeuralNetwork::Layer::INPUT);
 		} else if ("HIDDEN" == key) {
-			hidLayer = loadLayer(entry->second, HIDDEN);
+			hidLayer = loadLayer(entry->second, NeuralNetwork::Layer::HIDDEN);
 		} else if ("OUTPUT" == key) {
-			outLayer = loadLayer(entry->second, OUTPUT);
+			outLayer = loadLayer(entry->second, NeuralNetwork::Layer::OUTPUT);
 		}
 	}
+
+	hidLayer->previousLayer = inpLayer;
+	outLayer->previousLayer = hidLayer;
 
 	return NeuralNetwork(inpLayer, hidLayer, outLayer, learningRate);
 }
