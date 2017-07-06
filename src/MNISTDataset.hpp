@@ -4,7 +4,6 @@
  *  Created on: Jul 4, 2017
  *      Author: Stefan
  */
-
 #ifndef MNISTDATASET_HPP_
 #define MNISTDATASET_HPP_
 
@@ -85,6 +84,11 @@ bool MNISTDataset<T>::load() {
 	 The data is stored like in a C array, i.e. the index in the last dimension changes the fastest.
 	 */
 	FILE *f = fopen(m_FileName.c_str(), "rb");
+
+	if (nullptr == f) {
+		std::cerr << "Unable to open file '" << m_FileName << "'." << std::endl;
+		return false;
+	}
 
 	IdxHeader header;
 	fread(&header, sizeof(header), 1, f);

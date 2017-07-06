@@ -14,6 +14,11 @@ bool MNISTDataset<uint8_t>::load() {
 
 	FILE *f = fopen(m_FileName.c_str(), "rb");
 
+	if (nullptr == f) {
+		std::cerr << "Unable to open file '" << m_FileName << "'." << std::endl;
+		return false;
+	}
+
 	IdxHeader header;
 	fread(&header, sizeof(header), 1, f);
 	header.magicnumber = bigToLittleEndian(header.magicnumber);
