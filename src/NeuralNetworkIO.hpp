@@ -1,3 +1,6 @@
+#ifndef NEURAL_NETWORK_IO_HPP_
+#define NEURAL_NETWORK_IO_HPP_
+
 #include <string>
 #include <ostream>
 #include <fstream>
@@ -15,13 +18,13 @@ ostream& operator<<(ostream& out, NeuralNetwork const& net) {
 	netDef << YAML::Value << net.learningRate;
 	for (NeuralNetwork::Layer* layer : net.layers) {
 		switch (layer->layerType) {
-		case NeuralNetwork::Layer::INPUT:
+		case NeuralNetwork::INPUT:
 			netDef << YAML::Key << "INPUT";
 			break;
-		case NeuralNetwork::Layer::OUTPUT:
+		case NeuralNetwork::OUTPUT:
 			netDef << YAML::Key << "OUTPUT";
 			break;
-		case NeuralNetwork::Layer::HIDDEN:
+		case NeuralNetwork::HIDDEN:
 			netDef << YAML::Key << "HIDDEN";
 			break;
 		}
@@ -71,7 +74,7 @@ bool saveNet(string const& path, NeuralNetwork const& net) {
 }
 
 NeuralNetwork::Layer* loadLayer(YAML::Node const& layerNode,
-		NeuralNetwork::Layer::LayerType const layerType) {
+		NeuralNetwork::LayerType const layerType) {
 
 	YAML::Node nodeList = layerNode["Nodes"];
 	size_t nodeCount = nodeList.size();
@@ -121,11 +124,11 @@ NeuralNetwork loadNet(std::string const& path) {
 		if ("learningRate" == key) {
 			learningRate = entry->second.as<double>();
 		} else if ("INPUT" == key) {
-			inpLayer = loadLayer(entry->second, NeuralNetwork::Layer::INPUT);
+			inpLayer = loadLayer(entry->second, NeuralNetwork::INPUT);
 		} else if ("HIDDEN" == key) {
-			hidLayer = loadLayer(entry->second, NeuralNetwork::Layer::HIDDEN);
+			hidLayer = loadLayer(entry->second, NeuralNetwork::HIDDEN);
 		} else if ("OUTPUT" == key) {
-			outLayer = loadLayer(entry->second, NeuralNetwork::Layer::OUTPUT);
+			outLayer = loadLayer(entry->second, NeuralNetwork::OUTPUT);
 		}
 	}
 
@@ -134,3 +137,5 @@ NeuralNetwork loadNet(std::string const& path) {
 
 	return NeuralNetwork(inpLayer, hidLayer, outLayer, learningRate);
 }
+
+#endif
