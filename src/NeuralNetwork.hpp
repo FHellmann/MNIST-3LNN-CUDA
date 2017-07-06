@@ -1,3 +1,6 @@
+#ifndef NEURAL_NETWORK_HPP_
+#define NEURAL_NETWORK_HPP_
+
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
@@ -5,144 +8,143 @@
 
 using namespace std;
 
-
-enum LayerType {INPUT, HIDDEN, OUTPUT};
-enum ActFctType {SIGMOID, TANH};
-
-struct Node {
-	double bias;
-	double output;
-	vector<double> weights;
-
-	/**
-	 * Creates a zeroed-out node.
-	 *
-	 * @param weightCount Number of weights per node.
-	 */
-	Node(const int weightCount) : bias(0), output(0) {
-		this(weightCount, 0, 0);
-	}
-
-	/**
-	 * Creates a zeroed-out node.
-	 *
-	 * @param weightCount Number of weights per node.
-	 * @param bias of this node.
-	 * @param output of this node.
-	 */
-	Node(const int weightCount,
-			const double bias,
-			const double output) : bias(bias), output(output) {
-		for(int i=0; i < weightCount; i++)
-			weights.push_back(0);
-	}
-};
-
-struct Layer {
-	const LayerType layerType;
-	const ActFctType actFctType;
-	vector<Node*> nodes;
-
-	/**
-	 * Creates a zeroed-out layer.
-	 *
-	 * @param nodeCount Number of nodes, obviously.
-	 * @param weightCount Number of weights per node.
-	 * @param layerType Type of the new layer.
-	 * @param actFctType Type of the activation function.
-	 */
-	Layer(const int nodeCount,
-			const int weightCount,
-			const LayerType layerType,
-			const ActFctType actFctType
-			) : layerType(layerType), actFctType(actFctType) {
-		Node* node(weightCount);
-
-		for(int i=0; i < nodeCount; i++)
-			nodes.push_back(node);
-	}
-
-	/**
-	 * Get a node from the specified index.
-	 *
-	 * @param index The index of the node.
-	 * @return the node.
-	 */
-	Node* getNode(int index) {
-		return nodes.at(index);
-	}
-
-	/**
-	 * Calculates the new output and (de)activates the nodes.
-	 */
-	void calcLayer() {
-		for (int i=0; i < nodes.size(); i++) {
-		    Node *node = getNode(i);
-			calcNodeOutput(node);
-			activateNode(node);
-		}
-	}
-
-	/**
-	 * Calculates the new output of a node by passing the values
-	 * from the previous nodes through and multiply them with the weights.
-	 *
-	 * @param node The node which gets the recalulated output.
-	 */
-	void calcNodeOutput(Node* node) {
-	    Layer *prevLayer = getPrevLayer(layer);
-
-	    // Start by adding the bias
-	    node->output = node->bias;
-
-	    for (int i=0; i < prevLayer->nodes.size(); i++){
-	        Node *prevLayerNode = getNode(prevLayer, i);
-	        node->output += prevLayerNode->output * node->weights.at(i);
-	    }
-	}
-
-	/**
-	 * Activates the node with a specific algorithm (@see ActFctType).
-	 *
-	 * @param node The node which will be activated.
-	 */
-	void activateNode(Node* node) {
-	    switch (actFctType) {
-			case SIGMOID: {
-				node->output = 1 / (1 + (exp((double) - node->output)) );
-				break;
-			}
-			case TANH: {
-				node->output = tanh(node->output);
-				break;
-			}
-	    }
-	}
-
-	/**
-	 * Get the derivation of the output value.
-	 *
-	 * @param outVal The value which was the output of a node.
-	 * @return the derivation of the output value.
-	 */
-	double getActFctDerivative(double outVal) {
-	    double dVal = 0;
-	    switch (actFctType) {
-			case SIGMOID: {
-				dVal = outVal * (1-outVal);
-				break;
-			}
-			case TANH: {
-				dVal = 1-pow(tanh(outVal),2);
-				break;
-			}
-	    }
-	    return dVal;
-	}
-};
-
 class NeuralNetwork {
-private:
+public:
+	enum LayerType {INPUT, HIDDEN, OUTPUT};
+	enum ActFctType {SIGMOID, TANH};
+
+	struct Layer {
+		struct Node {
+			double bias;
+			double output;
+			vector<double> weights;
+
+			/**
+			 * Creates a zeroed-out node.
+			 *
+			 * @param weightCount Number of weights per node.
+			 */
+			Node(const int weightCount) : bias(0), output(0) {
+				this(weightCount, 0, 0);
+			}
+
+			/**
+			 * Creates a zeroed-out node.
+			 *
+			 * @param weightCount Number of weights per node.
+			 * @param bias of this node.
+			 * @param output of this node.
+			 */
+			Node(const int weightCount,
+					const double bias,
+					const double output) : bias(bias), output(output) {
+				for(int i=0; i < weightCount; i++)
+					weights.push_back(0);
+			}
+		};
+
+		const LayerType layerType;
+		const ActFctType actFctType;
+		vector<Node*> nodes;
+
+		/**
+		 * Creates a zeroed-out layer.
+		 *
+		 * @param nodeCount Number of nodes, obviously.
+		 * @param weightCount Number of weights per node.
+		 * @param layerType Type of the new layer.
+		 * @param actFctType Type of the activation function.
+		 */
+		Layer(const int nodeCount,
+				const int weightCount,
+				const LayerType layerType,
+				const ActFctType actFctType
+				) : layerType(layerType), actFctType(actFctType) {
+			Node* node(weightCount);
+
+			for(int i=0; i < nodeCount; i++)
+				nodes.push_back(node);
+		}
+
+		/**
+		 * Get a node from the specified index.
+		 *
+		 * @param index The index of the node.
+		 * @return the node.
+		 */
+		Node* getNode(int index) {
+			return nodes.at(index);
+		}
+
+		/**
+		 * Calculates the new output and (de)activates the nodes.
+		 */
+		void calcLayer() {
+			for (int i=0; i < nodes.size(); i++) {
+			    Node *node = getNode(i);
+				calcNodeOutput(node);
+				activateNode(node);
+			}
+		}
+
+		/**
+		 * Calculates the new output of a node by passing the values
+		 * from the previous nodes through and multiply them with the weights.
+		 *
+		 * @param node The node which gets the recalulated output.
+		 */
+		void calcNodeOutput(Node* node) {
+		    Layer *prevLayer = getPrevLayer(layer);
+
+		    // Start by adding the bias
+		    node->output = node->bias;
+
+		    for (int i=0; i < prevLayer->nodes.size(); i++){
+		        Node *prevLayerNode = getNode(prevLayer, i);
+		        node->output += prevLayerNode->output * node->weights.at(i);
+		    }
+		}
+
+		/**
+		 * Activates the node with a specific algorithm (@see ActFctType).
+		 *
+		 * @param node The node which will be activated.
+		 */
+		void activateNode(Node* node) {
+		    switch (actFctType) {
+				case SIGMOID: {
+					node->output = 1 / (1 + (exp((double) - node->output)) );
+					break;
+				}
+				case TANH: {
+					node->output = tanh(node->output);
+					break;
+				}
+		    }
+		}
+
+		/**
+		 * Get the derivation of the output value.
+		 *
+		 * @param outVal The value which was the output of a node.
+		 * @return the derivation of the output value.
+		 */
+		double getActFctDerivative(double outVal) {
+		    double dVal = 0;
+		    switch (actFctType) {
+				case SIGMOID: {
+					dVal = outVal * (1-outVal);
+					break;
+				}
+				case TANH: {
+					dVal = 1-pow(tanh(outVal),2);
+					break;
+				}
+		    }
+		    return dVal;
+		}
+	};
+
 	double learningRate;
 	vector<Layer*> layers;
 
@@ -359,3 +361,5 @@ public:
 	    return maxInd;
 	}
 };
+
+#endif
