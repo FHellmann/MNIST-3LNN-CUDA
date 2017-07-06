@@ -1,7 +1,6 @@
 #include <string>
 #include <tclap/CmdLine.h>
 #include "NeuralNetwork.hpp"
-#include "NeuralNetworkIO.hpp"
 
 using namespace std;
 using namespace TCLAP;
@@ -20,7 +19,7 @@ int main(int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	Network net = loadNet(netDefinitionPath.getValue());
+	NeuralNetwork net = NeuralNetwork::LoadYAML(netDefinitionPath.getValue());
 
 	cout << net << endl;
 

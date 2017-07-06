@@ -2,11 +2,11 @@
 #define NEURAL_NETWORK_HPP_
 
 #include <iostream>
+#include <ostream>
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
-
-using namespace std;
+#include <yaml-cpp/yaml.h>
 
 class NeuralNetwork {
 public:
@@ -33,15 +33,14 @@ public:
 			const double learningRate);
 
 	/**
-	 * Creates a simple 3-layer neural network from existing layers.
-	 *
-	 * @param inpLayer The input layer.
-	 * @param hidLayer The hidden layer.
-	 * @param outLayer The output layer.
-	 * @param learningRate The learning rate of this neural network.
+	 * Loads a NeuralNetwork from a given YAML file.
 	 */
-	NeuralNetwork(Layer* inpLayer, Layer* hidLayer, Layer* outLayer,
-			double learningRate);
+	static NeuralNetwork LoadYAML(std::string const& path);
+
+	/**
+	 * Releases all layers and nodes.
+	 */
+	~NeuralNetwork();
 
 	/**
 	 * Sets v as the input value for the input layers.
@@ -80,7 +79,7 @@ public:
 	int getNetworkClassification();
 
 	double learningRate;
-	vector<Layer*> layers;
+	std::vector<Layer*> layers;
 
 	/**
 	 * Get the layer by type.
@@ -122,6 +121,11 @@ public:
 	void updateNodeWeights(const LayerType layertype, const int id,
 			double error);
 
+	/**
+	 * Saves the network to a YAML file given by path.
+	 */
+	bool saveYAML(std::string const& path);
+
 	class Layer {
 	public:
 
@@ -131,7 +135,7 @@ public:
 		const LayerType layerType;
 		const ActFctType actFctType;
 		Layer* previousLayer;
-		vector<Node*> nodes;
+		std::vector<Node*> nodes;
 
 		/**
 		 * Creates a zeroed-out layer.
@@ -144,6 +148,11 @@ public:
 		Layer(const int nodeCount, const int weightCount,
 				const LayerType layerType, const ActFctType actFctType,
 				Layer* previous);
+
+		/**
+		 * Releases all the nodes.
+		 */
+		~Layer();
 
 		/**
 		 * Get a node from the specified index.
@@ -185,14 +194,22 @@ public:
 		public:
 			double bias;
 			double output;
-			vector<double> weights;
+			std::vector<double> weights;
 
 			/**
 			 * Creates a zeroed-out node.
 			 *
 			 * @param weightCount Number of weights per node.
 			 */
-			Node(const int weightCount);
+			explicit Node(const int weightCount);
+
+			/**
+			 * Creates an empty node.
+			 *
+			 * @param bias of this node.
+			 * @param output of this node.
+			 */
+			Node(const double bias, const double output);
 
 			/**
 			 * Creates a zeroed-out node.
@@ -203,7 +220,21 @@ public:
 			 */
 			Node(const int weightCount, const double bias, const double output);
 		};
+
+		/** Used in LoadYAML. */
+		static Layer* LoadLayer(YAML::Node const& layerNode,
+				LayerType const layerType);
+	private:
+		/** Used in LoadLayer. */
+		Layer(const LayerType, const ActFctType);
 	};
+
+private:
+
+	/** Used in LoadYAML. */
+	NeuralNetwork();
 };
+
+std::ostream& operator<<(std::ostream& out, NeuralNetwork const& net);
 
 #endif

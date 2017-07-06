@@ -8,7 +8,6 @@
 #include <yaml-cpp/yaml.h>
 #include "MNISTDataset.h"
 #include "NeuralNetwork.hpp"
-#include "NeuralNetworkIO.hpp"
 
 using namespace std;
 using namespace TCLAP;
@@ -65,7 +64,7 @@ int main(int argc, char* argv[]) {
 	// Save the trained net.
 	NeuralNetwork lindNet(4, 20, 10, 0.5);
 	cout << lindNet << endl;
-	saveNet(netDefinitionPath.getValue(), lindNet);
+	lindNet.saveYAML(netDefinitionPath.getValue());
 
 	exit(EXIT_SUCCESS);
 }
