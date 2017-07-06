@@ -1,10 +1,10 @@
-/*
- * 3lnn_io.cpp
- *
- *  Created on: 05.07.2017
- *      Author: Stefan
- */
-#include "3lnn_io.h"
+#include <string>
+#include <ostream>
+#include <fstream>
+#include <yaml-cpp/yaml.h>
+#include "NeuralNetwork.hpp"
+
+using namespace std;
 
 ostream& operator<< (ostream& out, NeuralNetwork const& net) {
 
@@ -102,7 +102,7 @@ Layer* loadLayer (YAML::Node const& layerNode, LayerType const layerType) {
 	return layer;
 }
 
-NeuralNetwork* loadNet(std::string const& path) {
+NeuralNetwork loadNet(std::string const& path) {
 
 	YAML::Node netDef = YAML::LoadFile(path);
 
@@ -124,6 +124,5 @@ NeuralNetwork* loadNet(std::string const& path) {
 		}
 	}
 
-	NeuralNetwork* net(inpLayer, hidLayer, outLayer, learningRate);
-	return net;
+	return NeuralNetwork(inpLayer, hidLayer, outLayer, learningRate);
 }

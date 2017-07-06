@@ -62,10 +62,19 @@ struct Layer {
 			nodes.push_back(node);
 	}
 
+	/**
+	 * Get a node from the specified index.
+	 *
+	 * @param index The index of the node.
+	 * @return the node.
+	 */
 	Node* getNode(int index) {
 		return nodes.at(index);
 	}
 
+	/**
+	 * Calculates the new output and (de)activates the nodes.
+	 */
 	void calcLayer() {
 		for (int i=0; i < nodes.size(); i++) {
 		    Node *node = getNode(i);
@@ -74,6 +83,12 @@ struct Layer {
 		}
 	}
 
+	/**
+	 * Calculates the new output of a node by passing the values
+	 * from the previous nodes through and multiply them with the weights.
+	 *
+	 * @param node The node which gets the recalulated output.
+	 */
 	void calcNodeOutput(Node* node) {
 	    Layer *prevLayer = getPrevLayer(layer);
 
@@ -86,6 +101,11 @@ struct Layer {
 	    }
 	}
 
+	/**
+	 * Activates the node with a specific algorithm (@see ActFctType).
+	 *
+	 * @param node The node which will be activated.
+	 */
 	void activateNode(Node* node) {
 	    switch (actFctType) {
 			case SIGMOID: {
@@ -99,6 +119,12 @@ struct Layer {
 	    }
 	}
 
+	/**
+	 * Get the derivation of the output value.
+	 *
+	 * @param outVal The value which was the output of a node.
+	 * @return the derivation of the output value.
+	 */
 	double getActFctDerivative(double outVal) {
 	    double dVal = 0;
 	    switch (actFctType) {
@@ -121,27 +147,10 @@ private:
 	vector<Layer*> layers;
 
 	/**
-	 * Inits the layer of layerType with random values.
-	 */
-	void initWeights(const LayerType layerType) {
-		Layer *layer = getLayer(layerType);
-		if(layer != NULL) {
-			for(int i=0; i < layer->nodes.size(); i++) {
-				Node *node = layer->getNode(i);
-
-				for (int j=0; j < node->weights.size(); j++){
-					node->weights[j] = rand()/(double)(RAND_MAX);
-				}
-
-				node->bias = rand()/(double)(RAND_MAX);
-			}
-		} else {
-			cerr << "ERROR: Failed to load Layer of type " << layerType << endl;
-		}
-	}
-
-	/**
-	 * @returns Returns the first layer of the network nn of layer type layerType. If no layer with the given type exists, returns NULL.
+	 * Get the layer by type.
+	 *
+	 * @return the first layer of the network with the specified type of layer
+	 * or NULL if none was found.
 	 */
 	Layer* getLayer(const LayerType layerType) {
 		for(int i=0; i < layers.size(); i++) {
@@ -152,6 +161,12 @@ private:
 		return NULL;
 	}
 
+	/**
+	 * Get the previous layer before the specified one.
+	 *
+	 * @param thisLayer The Layer which is the next of the searched one.
+	 * @return the previous layer.
+	 */
 	Layer* getPrevLayer(Layer* thisLayer) {
 		int position = 0;
 		for(int i=0; i < layers.size(); i++) {
@@ -164,16 +179,11 @@ private:
 		return layers.at(position - 1);
 	}
 
-	void feedForwardNetwork() {
-		getLayer(HIDDEN)->calcLayer();
-		getLayer(OUTPUT)->calcLayer();
-	}
-
-	void backPropagateNetwork(const int targetClassification) {
-	    backPropagateOutputLayer(targetClassification);
-	    backPropagateHiddenLayer(targetClassification);
-	}
-
+	/**
+	 * Back propagates error in output layer.
+	 *
+	 * @param targetClassification Correct classification (=label) of the input stream.
+	 */
 	void backPropagateOutputLayer(const int targetClassification) {
 	    Layer *layer = getLayer(OUTPUT);
 
@@ -189,6 +199,11 @@ private:
 	    }
 	}
 
+	/**
+	 * Back propagates error in hidden layer.
+	 *
+	 * @param targetClassification Correct classification (=label) of the input stream.
+	 */
 	void backPropagateHiddenLayer(const int targetClassification) {
 	    Layer *ol = getLayer(OUTPUT);
 	    Layer *layer_hidden = getLayer(HIDDEN);
@@ -205,17 +220,24 @@ private:
 	            int targetOutput = (o==targetClassification)?1:0;
 
 	            double errorDelta = targetOutput - on->output;
-	            double errorSignal = errorDelta * getActFctDerivative(nn, OUTPUT, on->output);
+	            double errorSignal = errorDelta * ol->getActFctDerivative(on->output);
 
 	            outputcellerrorsum += errorSignal * on->weights[h];
 	        }
 
-	        double hiddenErrorSignal = outputcellerrorsum * getActFctDerivative(nn, HIDDEN, hn->output);
+	        double hiddenErrorSignal = outputcellerrorsum * layer_hidden->getActFctDerivative(hn->output);
 
 	        updateNodeWeights(HIDDEN, h, hiddenErrorSignal);
 	    }
 	}
 
+	/**
+	 * Updates a node's weights based on given error.
+	 *
+	 * @param ltype The nodes of this layer.
+	 * @param id Sequential id of the node that is to be calculated.
+	 * @param error The error (difference between desired output and actual output).
+	 */
 	void updateNodeWeights(const LayerType ltype,
 			const int id,
 			double error) {
@@ -248,8 +270,18 @@ public:
 		layers.push_back(createLayer(hidCount, inpCount, HIDDEN, SIGMOID));
 		layers.push_back(createLayer(outCount, hidCount, OUTPUT, SIGMOID));
 
-		initWeights(HIDDEN);
-		initWeights(OUTPUT);
+		for(int l=0; l < layers.size() - 1; l++) { // leave out the output layer
+			Layer* layer = layers.at(l);
+			for(int i=0; i < layer->nodes.size(); i++) {
+				Node *node = layer->getNode(i);
+
+				for (int j=0; j < node->weights.size(); j++){
+					node->weights[j] = rand()/(double)(RAND_MAX);
+				}
+
+				node->bias = rand()/(double)(RAND_MAX);
+			}
+		}
 	}
 
 	/**
@@ -284,6 +316,31 @@ public:
 	}
 	*/
 
+	/**
+	 * Feeds input layer values forward to hidden to output layer
+	 * (calculation and activation fct).
+	 */
+	void feedForward() {
+		getLayer(HIDDEN)->calcLayer();
+		getLayer(OUTPUT)->calcLayer();
+	}
+
+	/**
+	 * Back propagates error from output layer to hidden layer.
+	 *
+	 * @param targetClassification Correct classification (=label) of the input stream.
+	 */
+	void backPropagate(const int targetClassification) {
+	    backPropagateOutputLayer(targetClassification);
+	    backPropagateHiddenLayer(targetClassification);
+	}
+
+	/**
+	 * Get the network's classification using the ID of the node with
+	 * the highest output.
+	 *
+	 * @return the classification of the network.
+	 */
 	int getNetworkClassification() {
 	    Layer *layer = getLayer(OUTPUT);
 

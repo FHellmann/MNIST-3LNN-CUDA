@@ -7,7 +7,7 @@
 #include <string>
 #include <tclap/CmdLine.h>
 #include "NeuralNetwork.hpp"
-#include "3lnn_io.h"
+#include "NeuralNetworkIO.hpp"
 
 using namespace std;
 using namespace TCLAP;
@@ -32,19 +32,9 @@ int main (int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	Network* net = loadNet(netDefinitionPath.getValue());
+	Network net = loadNet(netDefinitionPath.getValue());
 
-	if (net) {
-		cout << *net << endl;
-	} else {
-		cerr << "Net '" << netDefinitionPath.getValue() << "' could not be loaded." << endl;
-		exit (EXIT_FAILURE);
-	}
-
-	if (net) {
-		delete net;
-		net = nullptr;
-	}
+	cout << net << endl;
 
 	exit (EXIT_SUCCESS);
 }
