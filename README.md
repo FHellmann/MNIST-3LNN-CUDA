@@ -7,3 +7,12 @@ Based on the blog [Simple 3-Layer Neural Network for MNIST Handwriting Recogniti
 Depends on
 - OpenCV 2
 - TCLAP
+
+## Building this :shit:
+1. Init the submodules:
+```
+git submodule init
+git submodule update
+```
+2. Build `yaml-cpp` as described in `yaml-cpp/install.txt`
+   Note that it's sufficient to only build the project. Installing it is not necessary.
