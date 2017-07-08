@@ -1,5 +1,6 @@
 #include <string>
 #include <fstream>
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <vector>
@@ -7,7 +8,8 @@
 #include <algorithm>
 #include <yaml-cpp/yaml.h>
 #include "MNISTDataset.h"
-#include "NeuralNetwork.hpp"
+#include "NeuralNetwork.h"
+#include "NeuralNetworkParallel.h"
 
 using namespace std;
 using namespace TCLAP;
@@ -27,6 +29,9 @@ int main(int argc, char* argv[]) {
 	ValueArg<string> netDefinitionPath("", "lindNet",
 			"yaml file for saving the resulting net.", false, "lindNet.yaml",
 			"path", parser);
+
+	ValueArg<string> networkType("", "networkType",
+			"The neural network type (sequentiell, parallel, cuda).", false, "sequentiell", "type", parser);
 
 	try {
 		parser.parse(argc, argv);
@@ -51,7 +56,25 @@ int main(int argc, char* argv[]) {
 //	cv::imshow("Hand writing", foobar);
 //	cout << "Foobar end" << endl;
 //	cv::waitKey(0);
-	NeuralNetwork lindNet(28*28, 20, 10, 0.5);
+
+	int inputLayerNodes = 28*28;
+	int hiddenLayerNodes = 20;
+	int outputLayerNodes = 10;
+	double learningRate = 0.2;
+
+	// Default is sequentiell
+	NeuralNetwork lindNet(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+
+	string networkTypeSelection = networkType.getValue();
+	if(networkTypeSelection.compare("parallel") == 0) {
+		lindNet = NeuralNetworkParallel(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+		cout << "Neural Network - Parallel" << endl;
+	//} else if(networkType.getValue() == "cuda") {
+		// TODO: Add NeuralNetworkCuda
+		//cout << "Neural Network - Cuda" << endl;
+	} else {
+		cout << "Neural Network - Sequentiell" << endl;
+	}
 
 	// Do some training.
 	trainNetwork(lindNet, trainingImages, trainingLabels);

@@ -39,6 +39,7 @@ void NeuralNetworkParallel::feedInput(cv::Mat const& image) {
 	}
 }
 
+/*
 void NeuralNetworkParallel::feedForward() {
 	//#pragma omp parallel
 	{
@@ -54,6 +55,7 @@ void NeuralNetworkParallel::backPropagate(const int targetClassification) {
 		backPropagateHiddenLayer(targetClassification);
 	}
 }
+*/
 
 void NeuralNetworkParallel::backPropagateOutputLayer(const int targetClassification) {
 	Layer *layer = getLayer(OUTPUT);
@@ -119,12 +121,7 @@ void NeuralNetworkParallel::updateNodeWeights(const NeuralNetwork::LayerType lay
 
 NeuralNetworkParallel::LayerParallel::LayerParallel(const int nodeCount, const int weightCount,
 		const LayerType _layerType, const ActFctType _actFctType, Layer* _previous) :
-			Layer(_layerType, _actFctType) {
-
-	previousLayer = _previous;
-
-	for (int i = 0; i < nodeCount; i++)
-		nodes.push_back(new Node(weightCount));
+			Layer(nodeCount, weightCount, _layerType, _actFctType, _previous) {
 }
 
 void NeuralNetworkParallel::LayerParallel::calcLayer() {

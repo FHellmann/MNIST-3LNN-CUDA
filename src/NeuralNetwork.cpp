@@ -1,4 +1,4 @@
-#include "NeuralNetwork.hpp"
+#include "NeuralNetwork.h"
 #include <fstream>
 
 using namespace std;

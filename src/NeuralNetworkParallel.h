@@ -1,4 +1,4 @@
-#include "NeuralNetwork.hpp"
+#include "NeuralNetwork.h"
 #include <omp.h>
 
 using namespace std;
@@ -10,9 +10,9 @@ public:
 
 	void feedInput(cv::Mat const& image);
 
-	void feedForward();
+	//void feedForward();
 
-	void backPropagate(const int targetClassification);
+	//void backPropagate(const int targetClassification);
 
 	void backPropagateOutputLayer(const int targetClassification);
 

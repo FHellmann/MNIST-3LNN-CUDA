@@ -1,6 +1,6 @@
 #include <string>
 #include <tclap/CmdLine.h>
-#include "NeuralNetwork.hpp"
+#include "NeuralNetwork.h"
 
 using namespace std;
 using namespace TCLAP;
