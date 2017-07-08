@@ -63,25 +63,27 @@ int main(int argc, char* argv[]) {
 	double learningRate = 0.2;
 
 	// Default is sequentiell
-	NeuralNetwork lindNet(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+	NeuralNetwork* lindNet = nullptr;
 
 	string networkTypeSelection = networkType.getValue();
 	if(networkTypeSelection.compare("parallel") == 0) {
-		lindNet = NeuralNetworkParallel(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+		lindNet = new NeuralNetworkParallel(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
 		cout << "Neural Network - Parallel" << endl;
 	//} else if(networkType.getValue() == "cuda") {
 		// TODO: Add NeuralNetworkCuda
 		//cout << "Neural Network - Cuda" << endl;
 	} else {
+		lindNet = new NeuralNetwork(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
 		cout << "Neural Network - Sequentiell" << endl;
 	}
 
 	// Do some training.
-	trainNetwork(lindNet, trainingImages, trainingLabels);
+	trainNetwork(*lindNet, trainingImages, trainingLabels);
 
 	// Save the trained net.
-	lindNet.saveYAML(netDefinitionPath.getValue());
+	lindNet->saveYAML(netDefinitionPath.getValue());
 
+	delete lindNet;
 	exit(EXIT_SUCCESS);
 }
 
