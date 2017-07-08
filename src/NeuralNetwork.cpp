@@ -23,10 +23,14 @@ NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 			Layer::Node *node = layer->getNode(i);
 
 			for (int j = 0; j < node->weights.size(); j++) {
-				node->weights[j] = rand() / (double) (RAND_MAX);
+				node->weights[j] = 0.7 * (rand() / (double) (RAND_MAX));
+				if(j % 2)
+					node->weights[j] = -node->weights[j]; // make half of the weights negative
 			}
 
 			node->bias = rand() / (double) (RAND_MAX);
+			if(i % 2)
+				node->bias = -node->bias; // make half of the bias weights negative
 		}
 	}
 }
