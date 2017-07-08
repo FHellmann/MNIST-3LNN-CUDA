@@ -39,7 +39,7 @@ void NeuralNetworkParallel::feedInput(cv::Mat const& image) {
 }
 
 void NeuralNetworkParallel::feedForward() {
-	#pragma omp parallel
+	//#pragma omp parallel
 	{
 		getLayer(HIDDEN)->calcLayer();
 		getLayer(OUTPUT)->calcLayer();
@@ -47,7 +47,7 @@ void NeuralNetworkParallel::feedForward() {
 }
 
 void NeuralNetworkParallel::backPropagate(const int targetClassification) {
-	#pragma omp parallel
+	//#pragma omp parallel
 	{
 		backPropagateOutputLayer(targetClassification);
 		backPropagateHiddenLayer(targetClassification);
