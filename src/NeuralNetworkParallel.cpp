@@ -8,7 +8,6 @@ NeuralNetworkParallel::NeuralNetworkParallel(const int inpCount, const int hidCo
 	layers.push_back(new LayerParallel(hidCount, inpCount, HIDDEN, SIGMOID, layers.back()));
 	layers.push_back(new LayerParallel(outCount, hidCount, OUTPUT, SIGMOID, layers.back()));
 
-	#pragma omp parallel for
 	for (int l = 0; l < layers.size() - 1; l++) { // leave out the output layer
 		Layer* layer = layers.at(l);
 		for (int i = 0; i < layer->nodes.size(); i++) {
@@ -39,24 +38,6 @@ void NeuralNetworkParallel::feedInput(cv::Mat const& image) {
 	}
 }
 
-/*
-void NeuralNetworkParallel::feedForward() {
-	//#pragma omp parallel
-	{
-		getLayer(HIDDEN)->calcLayer();
-		getLayer(OUTPUT)->calcLayer();
-	}
-}
-
-void NeuralNetworkParallel::backPropagate(const int targetClassification) {
-	//#pragma omp parallel
-	{
-		backPropagateOutputLayer(targetClassification);
-		backPropagateHiddenLayer(targetClassification);
-	}
-}
-*/
-
 void NeuralNetworkParallel::backPropagateOutputLayer(const int targetClassification) {
 	Layer *layer = getLayer(OUTPUT);
 	
@@ -84,6 +65,7 @@ void NeuralNetworkParallel::backPropagateHiddenLayer(const int targetClassificat
 
 		double outputcellerrorsum = 0;
 
+		#pragma omp parallel for reduction(+:outputcellerrorsum)
 		for (int o = 0; o < ol->nodes.size(); o++) {
 
 			Layer::Node *on = ol->getNode(o);
@@ -110,10 +92,9 @@ void NeuralNetworkParallel::updateNodeWeights(const NeuralNetwork::LayerType lay
 	Layer::Node *node = layer->getNode(id);
 	Layer *prevLayer = layer->previousLayer;
 
-	#pragma omp parallel for
 	for (int i = 0; i < node->weights.size(); i++) {
 		Layer::Node *prevLayerNode = prevLayer->getNode(i);
-		node->weights.at(1) += learningRate * prevLayerNode->output * error;
+		node->weights.at(i) += learningRate * prevLayerNode->output * error;
 	}
 
 	node->bias += learningRate * error;
@@ -125,7 +106,7 @@ NeuralNetworkParallel::LayerParallel::LayerParallel(const int nodeCount, const i
 }
 
 void NeuralNetworkParallel::LayerParallel::calcLayer() {
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for (int i = 0; i < nodes.size(); i++) {
 		Node *node = getNode(i);
 		calcNodeOutput(node);
@@ -137,7 +118,6 @@ void NeuralNetworkParallel::LayerParallel::calcNodeOutput(Node* node) {
 	// Start by adding the bias
 	node->output = node->bias;
 
-	#pragma omp parallel for
 	for (int i = 0; i < previousLayer->nodes.size(); i++) {
 		Node *prevLayerNode = previousLayer->getNode(i);
 		node->output += prevLayerNode->output * node->weights.at(i);

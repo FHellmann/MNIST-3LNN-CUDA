@@ -10,10 +10,6 @@ public:
 
 	void feedInput(cv::Mat const& image);
 
-	//void feedForward();
-
-	//void backPropagate(const int targetClassification);
-
 	void backPropagateOutputLayer(const int targetClassification);
 
 	void backPropagateHiddenLayer(const int targetClassification);
