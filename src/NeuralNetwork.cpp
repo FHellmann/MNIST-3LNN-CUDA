@@ -50,7 +50,7 @@ void NeuralNetwork::feedInput(cv::Mat const& image) {
 	size_t const loopCount = min(numPixels, inputLayer->nodes.size());
 	cv::MatConstIterator_<uint8_t> it = image.begin<uint8_t>();
 	for (int i = 0; i < loopCount; ++i, ++it) {
-		inputLayer->nodes[i]->output = static_cast<double>(*it);
+		inputLayer->nodes[i]->output = ((*it > 128.0) ? 1.0 : 0.0);
 	}
 }
 
