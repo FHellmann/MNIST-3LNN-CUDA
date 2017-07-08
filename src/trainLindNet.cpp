@@ -90,7 +90,7 @@ void trainNetwork(NeuralNetwork& net, MNISTImageDataset const& images,
 
 	int errCount = 0;
 
-	size_t showProgressEach = 1000;
+	size_t const showProgressEach = 1000;
 
 	// Loop through all images in the file
 	for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
