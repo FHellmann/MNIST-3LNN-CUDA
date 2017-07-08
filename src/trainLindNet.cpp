@@ -1,6 +1,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <chrono>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <vector>
@@ -78,7 +79,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Do some training.
+	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 	trainNetwork(*lindNet, trainingImages, trainingLabels);
+	std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+
+	std::chrono::duration<double> sec = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+	cout << "Taining done in " << sec.count() << "s" << endl;
 
 	// Save the trained net.
 	lindNet->saveYAML(netDefinitionPath.getValue());
