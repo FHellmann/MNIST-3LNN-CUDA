@@ -33,6 +33,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
 								</option>
+								<option id="nvcc.compiler.def.symbols.473290650" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1527245790" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.631074203" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.389341790" superClass="nvcc.compiler.input.c"/>
@@ -43,7 +46,7 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="yaml-cpp"/>
 								</option>
-								<option id="nvcc.linker.option.paths.1628634146" superClass="nvcc.linker.option.paths" valueType="libPaths">
+								<option id="nvcc.linker.option.paths.1628634146" name="Library search path (-L)" superClass="nvcc.linker.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/build}&quot;"/>
 								</option>
 								<inputType id="nvcc.linker.input.1603863427" superClass="nvcc.linker.input">
@@ -92,7 +95,7 @@
 						<toolChain id="com.nvidia.cuda.ide.toolchain.on_path.exe.release.1068910873" name="CUDA Toolkit on the path" superClass="com.nvidia.cuda.ide.toolchain.on_path.exe.release">
 							<targetPlatform archList="all" binaryParser="com.nvidia.cuda.ide.elf;com.nvidia.cuda.ide.macho;com.nvidia.cuda.ide.cubin" id="com.nvidia.cuda.ide.targetPlatform.399865068" isAbstract="false" name="Debug Platform" osList="linux,macosx" superClass="com.nvidia.cuda.ide.targetPlatform"/>
 							<builder buildPath="${workspace_loc:/MNIST-3LNN-CUDA}/Release" id="com.nvidia.cuda.ide.builder.570596752" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CUDA Toolkit 8.0 Builder" superClass="com.nvidia.cuda.ide.builder"/>
-							<tool id="nvcc.compiler.base.428191841" name="NVCC Compiler" superClass="nvcc.compiler.base">
+							<tool command="nvcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX} ${OUTPUT} ${INPUTS}" id="nvcc.compiler.base.428191841" name="NVCC Compiler" superClass="nvcc.compiler.base">
 								<option id="nvcc.compiler.deviceDebug.456062479" name="Generate device debug information (-G)" superClass="nvcc.compiler.deviceDebug"/>
 								<option id="nvcc.compiler.option.level.3605077" name="Generate host debug information (-g)" superClass="nvcc.compiler.option.level"/>
 								<option defaultValue="nvcc.compiler.optimization.level.most" id="nvcc.compiler.optimization.level.2087712849" name="Optimization Level" superClass="nvcc.compiler.optimization.level" valueType="enumerated"/>
@@ -102,6 +105,9 @@
 								<option id="nvcc.compiler.include.paths.1268936331" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
+								</option>
+								<option id="nvcc.compiler.def.symbols.271816981" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
 								</option>
 								<inputType id="nvcc.compiler.input.cu.2074622702" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.820903444" superClass="nvcc.compiler.input.cpp"/>
@@ -113,7 +119,7 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="yaml-cpp"/>
 								</option>
-								<option id="nvcc.linker.option.paths.2051864678" superClass="nvcc.linker.option.paths" valueType="libPaths">
+								<option id="nvcc.linker.option.paths.2051864678" name="Library search path (-L)" superClass="nvcc.linker.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/build}&quot;"/>
 								</option>
 								<inputType id="nvcc.linker.input.484549813" superClass="nvcc.linker.input">
@@ -173,6 +179,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
 								</option>
+								<option id="nvcc.compiler.def.symbols.697755076" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1347120078" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.579226282" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.1774115075" superClass="nvcc.compiler.input.c"/>
@@ -183,7 +192,7 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="yaml-cpp"/>
 								</option>
-								<option id="nvcc.linker.option.paths.277199136" superClass="nvcc.linker.option.paths" valueType="libPaths">
+								<option id="nvcc.linker.option.paths.277199136" name="Library search path (-L)" superClass="nvcc.linker.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/build}&quot;"/>
 								</option>
 								<inputType id="nvcc.linker.input.998289167" superClass="nvcc.linker.input">
@@ -243,6 +252,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
 								</option>
+								<option id="nvcc.compiler.def.symbols.75115265" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.2039839043" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.1780124361" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.601940690" superClass="nvcc.compiler.input.c"/>
@@ -253,7 +265,7 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="yaml-cpp"/>
 								</option>
-								<option id="nvcc.linker.option.paths.657447327" superClass="nvcc.linker.option.paths" valueType="libPaths">
+								<option id="nvcc.linker.option.paths.657447327" name="Library search path (-L)" superClass="nvcc.linker.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/build}&quot;"/>
 								</option>
 								<inputType id="nvcc.linker.input.1293683296" superClass="nvcc.linker.input">
