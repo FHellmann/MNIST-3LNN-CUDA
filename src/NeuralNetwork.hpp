@@ -41,27 +41,27 @@ public:
 	/**
 	 * Releases all layers and nodes.
 	 */
-	~NeuralNetwork();
+	virtual ~NeuralNetwork();
 
 	/**
 	 * Sets v as the input value for the input layers.
 	 *
 	 * @details v has to match the size of the input layer.
 	 */
-	void feedInput(cv::Mat const& image);
+	virtual void feedInput(cv::Mat const& image);
 
 	/**
 	 * Feeds input layer values forward to hidden to output layer
 	 * (calculation and activation fct).
 	 */
-	void feedForward();
+	virtual void feedForward();
 
 	/**
 	 * Back propagates error from output layer to hidden layer.
 	 *
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
-	void backPropagate(const int targetClassification);
+	virtual void backPropagate(const int targetClassification);
 
 	/**
 	 * Get the network's classification using the ID of the node with
@@ -95,14 +95,14 @@ public:
 	 *
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
-	void backPropagateOutputLayer(const int targetClassification);
+	virtual void backPropagateOutputLayer(const int targetClassification);
 
 	/**
 	 * Back propagates error in hidden layer.
 	 *
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
-	void backPropagateHiddenLayer(const int targetClassification);
+	virtual void backPropagateHiddenLayer(const int targetClassification);
 
 	/**
 	 * Updates a node's weights based on given error.
@@ -111,7 +111,7 @@ public:
 	 * @param id Sequential id of the node that is to be calculated.
 	 * @param error The error (difference between desired output and actual output).
 	 */
-	void updateNodeWeights(const LayerType layertype, const int id,
+	virtual void updateNodeWeights(const LayerType layertype, const int id,
 			double error);
 
 	/**
@@ -145,7 +145,7 @@ public:
 		/**
 		 * Releases all the nodes.
 		 */
-		~Layer();
+		virtual ~Layer();
 
 		/**
 		 * Get a node from the specified index.
@@ -158,7 +158,7 @@ public:
 		/**
 		 * Calculates the new output and (de)activates the nodes.
 		 */
-		void calcLayer();
+		virtual void calcLayer();
 
 		/**
 		 * Calculates the new output of a node by passing the values
@@ -166,14 +166,14 @@ public:
 		 *
 		 * @param node The node which gets the recalulated output.
 		 */
-		void calcNodeOutput(Node* node);
+		virtual void calcNodeOutput(Node* node);
 
 		/**
 		 * Activates the node with a specific algorithm (@see ActFctType).
 		 *
 		 * @param node The node which will be activated.
 		 */
-		void activateNode(Node* node);
+		virtual void activateNode(Node* node);
 
 		/**
 		 * Get the derivation of the output value.
