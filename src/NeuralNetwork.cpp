@@ -50,7 +50,7 @@ void NeuralNetwork::feedInput(cv::Mat const& image) {
 	size_t const loopCount = min(numPixels, inputLayer->nodes.size());
 	cv::MatConstIterator_<uint8_t> it = image.begin<uint8_t>();
 	for (int i = 0; i < loopCount; ++i, ++it) {
-		inputLayer->nodes[i]->output = static_cast<double>(*it);
+		inputLayer->nodes[i]->output = ((*it > 128.0) ? 1.0 : 0.0);
 	}
 }
 
@@ -97,11 +97,10 @@ void NeuralNetwork::backPropagateOutputLayer(const int targetClassification) {
 	for (int i = 0; i < layer->nodes.size(); i++) {
 		Layer::Node *node = layer->getNode(i);
 
-		int targetOutput = (i == targetClassification) ? 1 : 0;
+		double const targetOutput = (i == targetClassification) ? 1.0 : 0.0;
 
-		double errorDelta = targetOutput - node->output;
-		double errorSignal = errorDelta
-				* layer->getActFctDerivative(node->output);
+		double const errorDelta = targetOutput - node->output;
+		double const errorSignal = errorDelta * layer->getActFctDerivative(node->output);
 
 		updateNodeWeights(OUTPUT, i, errorSignal);
 	}
@@ -142,9 +141,9 @@ void NeuralNetwork::updateNodeWeights(const NeuralNetwork::LayerType layertype,
 	Layer::Node *node = layer->getNode(id);
 	Layer *prevLayer = layer->previousLayer;
 
-	for (int i = 0; i < node->weights.size(); i++) {
+	for (size_t i = 0; i < node->weights.size(); ++i) {
 		Layer::Node *prevLayerNode = prevLayer->getNode(i);
-		node->weights.at(1) += learningRate * prevLayerNode->output * error;
+		node->weights.at(i) += learningRate * prevLayerNode->output * error;
 	}
 
 	node->bias += learningRate * error;
@@ -175,7 +174,7 @@ NeuralNetwork::Layer::Node* NeuralNetwork::Layer::getNode(int index) {
 }
 
 void NeuralNetwork::Layer::calcLayer() {
-	for (int i = 0; i < nodes.size(); i++) {
+	for (size_t i = 0; i < nodes.size(); ++i) {
 		Node *node = getNode(i);
 		calcNodeOutput(node);
 		activateNode(node);
@@ -187,7 +186,7 @@ void NeuralNetwork::Layer::calcNodeOutput(Node* node) {
 	// Start by adding the bias
 	node->output = node->bias;
 
-	for (int i = 0; i < previousLayer->nodes.size(); i++) {
+	for (size_t i = 0; i < previousLayer->nodes.size(); ++i) {
 		Node *prevLayerNode = previousLayer->getNode(i);
 		node->output += prevLayerNode->output * node->weights.at(i);
 	}
@@ -196,7 +195,7 @@ void NeuralNetwork::Layer::calcNodeOutput(Node* node) {
 void NeuralNetwork::Layer::activateNode(Node* node) {
 	switch (actFctType) {
 	case SIGMOID: {
-		node->output = 1 / (1 + (exp((double) -node->output)));
+		node->output = 1.0 / (1.0 + (exp(-node->output)));
 		break;
 	}
 	case TANH: {
