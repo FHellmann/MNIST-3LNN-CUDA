@@ -1,8 +1,9 @@
 #include "NeuralNetworkParallel.h"
 
 NeuralNetworkParallel::NeuralNetworkParallel(const int inpCount, const int hidCount,
-		const int outCount, const double learningRate) :
-		learningRate(learningRate) {
+		const int outCount, const double _learningRate) {
+
+	learningRate = _learningRate;
 	layers.push_back(new LayerParallel(inpCount, 0, INPUT, NONE, nullptr));
 	layers.push_back(new LayerParallel(hidCount, inpCount, HIDDEN, SIGMOID, layers.back()));
 	layers.push_back(new LayerParallel(outCount, hidCount, OUTPUT, SIGMOID, layers.back()));
@@ -117,8 +118,11 @@ void NeuralNetworkParallel::updateNodeWeights(const NeuralNetwork::LayerType lay
 }
 
 NeuralNetworkParallel::LayerParallel::LayerParallel(const int nodeCount, const int weightCount,
-		const LayerType layerType, const ActFctType actFctType, Layer* previous) :
-		layerType(layerType), actFctType(actFctType), previousLayer(previous) {
+		const LayerType _layerType, const ActFctType _actFctType, Layer* _previous) :
+			Layer(_layerType, _actFctType) {
+
+	previousLayer = _previous;
+
 	for (int i = 0; i < nodeCount; i++)
 		nodes.push_back(new Node(weightCount));
 }

@@ -217,12 +217,12 @@ public:
 		/** Used in LoadYAML. */
 		static Layer* LoadLayer(YAML::Node const& layerNode,
 				LayerType const layerType);
-	private:
+	protected:
 		/** Used in LoadLayer. */
 		Layer(const LayerType, const ActFctType);
 	};
 
-private:
+protected:
 
 	/** Used in LoadYAML. */
 	NeuralNetwork();
