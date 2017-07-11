@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
 
 	size_t const showProgressEach = 1000;
 
+	int every_ten_percent = testingImages.size() / 10;
 	size_t correct = 0;
 	for (size_t i = 0; i < testingImages.size(); ++i) {
 
@@ -46,7 +47,7 @@ int main(int argc, char* argv[]) {
 			++correct;
 		}
 
-		if ((i % showProgressEach) == 0)
+		if ((i % every_ten_percent) == 0)
 			cout << "x"; cout.flush();
 	}
 	cout << endl;

@@ -8,6 +8,7 @@ NeuralNetworkParallel::NeuralNetworkParallel(const int inpCount, const int hidCo
 	layers.push_back(new LayerParallel(hidCount, inpCount, HIDDEN, SIGMOID, layers.back()));
 	layers.push_back(new LayerParallel(outCount, hidCount, OUTPUT, SIGMOID, layers.back()));
 
+	#pragma omp parallel for
 	for (int l = 0; l < layers.size() - 1; l++) { // leave out the output layer
 		Layer* layer = layers.at(l);
 		for (int i = 0; i < layer->nodes.size(); i++) {
@@ -41,7 +42,7 @@ void NeuralNetworkParallel::feedInput(cv::Mat const& image) {
 void NeuralNetworkParallel::backPropagateOutputLayer(const int targetClassification) {
 	Layer *layer = getLayer(OUTPUT);
 	
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for (int i = 0; i < layer->nodes.size(); i++) {
 		Layer::Node *node = layer->getNode(i);
 
@@ -59,7 +60,7 @@ void NeuralNetworkParallel::backPropagateHiddenLayer(const int targetClassificat
 	Layer *ol = getLayer(OUTPUT);
 	Layer *layer_hidden = getLayer(HIDDEN);
 
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for (int h = 0; h < layer_hidden->nodes.size(); h++) {
 		Layer::Node *hn = layer_hidden->getNode(h);
 

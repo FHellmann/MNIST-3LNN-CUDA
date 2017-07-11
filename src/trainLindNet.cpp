@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 
 	// Do some training.
 	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-	trainNetwork(*lindNet, trainingImages, trainingLabels);
+	lindNet->train(trainingImages, trainingLabels, 0.02, 0.05);
 	std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> sec = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
@@ -91,58 +91,4 @@ int main(int argc, char* argv[]) {
 
 	delete lindNet;
 	exit(EXIT_SUCCESS);
-}
-
-void trainNetwork(NeuralNetwork& net, MNISTImageDataset const& images,
-		MNISTLableDataset const& labels) {
-
-
-	size_t const showProgressEach = 1000;
-	double const TRAINING_ERROR_THRESHOLD = 0.02; // 2%
-
-	bool needsFurtherTraining = true;
-	double error = std::numeric_limits<double>::max();
-	while (needsFurtherTraining) {
-
-		size_t errCount = 0;
-		// Loop through all images in the file
-		for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
-
-			// Convert the MNIST image to a standardized vector format and feed into the network
-			net.feedInput(images[imgCount]);
-
-			// Feed forward all layers (from input to hidden to output) calculating all nodes' output
-			net.feedForward();
-
-			// Back propagate the error and adjust weights in all layers accordingly
-			net.backPropagate(labels[imgCount]);
-
-			// Classify image by choosing output cell with highest output
-			int classification = net.getNetworkClassification();
-			if (classification != labels[imgCount])
-				errCount++;
-
-			// Display progress during training
-			//displayTrainingProgress(imgCount, errCount, 80);
-			//displayImage(&img, lbl, classification, 7,6);
-			if ((imgCount % showProgressEach) == 0)
-				cout << "x"; cout.flush();
-		}
-
-		double newError = static_cast<double>(errCount) / static_cast<double>(images.size());
-		if (newError < error) {
-			error = newError;
-		} else {
-			// The error increases again. This is not good.
-			needsFurtherTraining = false;
-		}
-
-		if (error < TRAINING_ERROR_THRESHOLD) {
-			needsFurtherTraining = false;
-		}
-
-		cout << " Error: " << error * 100.0 << "%" << endl;
-	}
-
-	cout << endl;
 }

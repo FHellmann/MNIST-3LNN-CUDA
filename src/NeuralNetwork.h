@@ -8,6 +8,7 @@
 #include <math.h>
 #include <yaml-cpp/yaml.h>
 #include <opencv2/core/core.hpp>
+#include "MNISTDataset.h"
 
 class NeuralNetwork {
 public:
@@ -49,6 +50,21 @@ public:
 	 * @details v has to match the size of the input layer.
 	 */
 	virtual void feedInput(cv::Mat const& image);
+
+	/**
+	 * Trains the network with the specified set of images and labels. If the
+	 * training error threshold is reached or the error increases over a max
+	 * derivation, then the train process will stop.
+	 *
+	 * @param images The image set to train the network with.
+	 * @param labels The label set to train the network with.
+	 * @param training_error_threshold The maximum error which should be reached.
+	 * @param max_derivation The maximum error after the increases again.
+	 */
+	virtual void train(MNISTImageDataset const& images,
+			MNISTLableDataset const& labels,
+			double const training_error_threshold,
+			double const max_derivation);
 
 	/**
 	 * Feeds input layer values forward to hidden to output layer

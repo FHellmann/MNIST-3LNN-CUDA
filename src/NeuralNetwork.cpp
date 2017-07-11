@@ -54,6 +54,59 @@ void NeuralNetwork::feedInput(cv::Mat const& image) {
 	}
 }
 
+void NeuralNetwork::train(MNISTImageDataset const& images,
+		MNISTLableDataset const& labels,
+		double const training_error_threshold,
+		double const max_derivation) {
+	bool needsFurtherTraining = true;
+	double error = std::numeric_limits<double>::max();
+	while (needsFurtherTraining) {
+
+		int every_ten_percent = images.size() / 10;
+		size_t errCount = 0;
+		// Loop through all images in the file
+		for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
+
+			// Convert the MNIST image to a standardized vector format and feed into the network
+			feedInput(images[imgCount]);
+
+			// Feed forward all layers (from input to hidden to output) calculating all nodes' output
+			feedForward();
+
+			// Back propagate the error and adjust weights in all layers accordingly
+			backPropagate(labels[imgCount]);
+
+			// Classify image by choosing output cell with highest output
+			int classification = getNetworkClassification();
+			if (classification != labels[imgCount])
+				errCount++;
+
+			// Display progress during training
+			//displayTrainingProgress(imgCount, errCount, 80);
+			//displayImage(&img, lbl, classification, 7,6);
+			if ((imgCount % every_ten_percent) == 0)
+				cout << "x"; cout.flush();
+		}
+
+		double newError = static_cast<double>(errCount) / static_cast<double>(images.size());
+		if (newError < error) {
+			error = newError;
+		} else if (newError > error + max_derivation) {
+			// The error increases again. This is not good.
+			needsFurtherTraining = false;
+		}
+
+		if (error < training_error_threshold) {
+			needsFurtherTraining = false;
+		}
+
+		cout << " Error: " << error * 100.0 << "%" << endl;
+	}
+
+	cout << endl;
+}
+
+
 void NeuralNetwork::feedForward() {
 	getLayer(HIDDEN)->calcLayer();
 	getLayer(OUTPUT)->calcLayer();
