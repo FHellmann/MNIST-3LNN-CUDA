@@ -6,7 +6,7 @@ public:
 	NeuralNetworkParallel(const int inpCount, const int hidCount, const int outCount,
 			const double learningRate);
 
-	void feedInput(cv::Mat const& image);
+	NeuralNetworkParallel(NeuralNetworkParallel const&);
 
 	void train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
@@ -25,6 +25,8 @@ public:
 		LayerParallel(const int nodeCount, const int weightCount,
 				const LayerType layerType, const ActFctType actFctType,
 				Layer* previous);
+
+		LayerParallel(LayerParallel const&);
 
 		void calcLayer();
 

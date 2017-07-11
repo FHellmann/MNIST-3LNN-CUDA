@@ -43,15 +43,24 @@ NeuralNetworkParallel::NeuralNetworkParallel(const int inpCount, const int hidCo
 	}
 }
 
-void NeuralNetworkParallel::feedInput(cv::Mat const& image) {
-	Layer* inputLayer = getLayer(INPUT);
-	size_t const numPixels = image.cols * image.rows;
+NeuralNetworkParallel::NeuralNetworkParallel(NeuralNetworkParallel const& net) :
+		NeuralNetwork(net.learningRate) {
 
-	size_t const loopCount = min(numPixels, inputLayer->nodes.size());
-	cv::MatConstIterator_<uint8_t> it = image.begin<uint8_t>();
-	//#pragma omp parallel for
-	for (int i = 0; i < loopCount; ++i, ++it) {
-		inputLayer->nodes[i]->output = ((*it > 128.0) ? 1.0 : 0.0);
+	layers.reserve(net.layers.size());
+	for (size_t i = 0; i < net.layers.size(); ++i) {
+		// Make a deep copy of the layers
+		layers.push_back(new LayerParallel(*dynamic_cast<LayerParallel*>(net.layers[i])));
+	}
+
+	// And set the previous layer in the new network.
+	for (size_t i = 0; i < layers.size(); ++i) {
+		size_t prevLayerIdx = 0;
+		for (; prevLayerIdx < net.layers.size(); ++prevLayerIdx) {
+			if (net.layers[prevLayerIdx] == net.layers[i]->previousLayer) {
+				break;
+			}
+		}
+		layers[i]->previousLayer = net.layers[prevLayerIdx];
 	}
 }
 
@@ -112,7 +121,7 @@ void NeuralNetworkParallel::train(MNISTImageDataset const& images,
 
 void NeuralNetworkParallel::backPropagateOutputLayer(const int targetClassification) {
 	Layer *layer = getLayer(OUTPUT);
-	
+
 	//#pragma omp parallel for
 	for (int i = 0; i < layer->nodes.size(); i++) {
 		Layer::Node *node = layer->getNode(i);
@@ -176,6 +185,15 @@ void NeuralNetworkParallel::updateNodeWeights(const NeuralNetwork::LayerType lay
 NeuralNetworkParallel::LayerParallel::LayerParallel(const int nodeCount, const int weightCount,
 		const LayerType _layerType, const ActFctType _actFctType, Layer* _previous) :
 			Layer(nodeCount, weightCount, _layerType, _actFctType, _previous) {
+}
+
+NeuralNetworkParallel::LayerParallel::LayerParallel(LayerParallel const& layer) :
+		Layer(layer.layerType, layer.actFctType) {
+
+	nodes.reserve(layer.nodes.size());
+	for (LayerParallel::Node* node : layer.nodes) {
+		nodes.push_back(node);
+	}
 }
 
 void NeuralNetworkParallel::LayerParallel::calcLayer() {

@@ -8,6 +8,27 @@ NeuralNetwork::NeuralNetwork() :
 
 }
 
+NeuralNetwork::NeuralNetwork(NeuralNetwork const& net) :
+		learningRate(net.learningRate) {
+
+	layers.reserve(net.layers.size());
+	for (Layer* layer : net.layers) {
+		// Make a deep copy of the layers
+		layers.push_back(new Layer(*layer));
+	}
+
+	// And set the previous layer in the new network.
+	for (size_t i = 0; i < layers.size(); ++i) {
+		size_t prevLayerIdx = 0;
+		for (; prevLayerIdx < net.layers.size(); ++prevLayerIdx) {
+			if (net.layers[prevLayerIdx] == net.layers[i]->previousLayer) {
+				break;
+			}
+		}
+		layers[i]->previousLayer = net.layers[prevLayerIdx];
+	}
+}
+
 NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 		const int outCount, const double learningRate) :
 		learningRate(learningRate) {
@@ -33,6 +54,10 @@ NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 				node->bias = -node->bias; // make half of the bias weights negative
 		}
 	}
+}
+
+NeuralNetwork::NeuralNetwork(double const rate) :
+		learningRate(rate) {
 }
 
 NeuralNetwork::~NeuralNetwork() {
@@ -105,7 +130,6 @@ void NeuralNetwork::train(MNISTImageDataset const& images,
 
 	cout << endl;
 }
-
 
 void NeuralNetwork::feedForward() {
 	getLayer(HIDDEN)->calcLayer();
@@ -210,9 +234,19 @@ NeuralNetwork::Layer::Layer(const int nodeCount, const int weightCount,
 }
 
 NeuralNetwork::Layer::Layer(const LayerType layerType,
-		const ActFctType actFctType) :
-		Layer(0, 0, layerType, actFctType, nullptr) {
+		const ActFctType actFctType, Layer* previous) :
+		Layer(0, 0, layerType, actFctType, previous) {
+}
 
+NeuralNetwork::Layer::Layer(Layer const& layer) :
+	layerType(layer.layerType),
+	actFctType(layer.actFctType),
+	previousLayer(layer.previousLayer) {
+
+	nodes.reserve(layer.nodes.size());
+	for (Layer::Node* node : layer.nodes) {
+		nodes.push_back(node);
+	}
 }
 
 NeuralNetwork::Layer::~Layer() {

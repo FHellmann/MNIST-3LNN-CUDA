@@ -37,6 +37,13 @@ public:
 			const double learningRate);
 
 	/**
+	 * Copy constructor.
+	 *
+	 * Makes a deep copy of the neural net.
+	 */
+	NeuralNetwork(NeuralNetwork const&);
+
+	/**
 	 * Loads a NeuralNetwork from a given YAML file.
 	 */
 	static NeuralNetwork LoadYAML(std::string const& path);
@@ -161,6 +168,11 @@ public:
 				Layer* previous);
 
 		/**
+		 * Makes a deep copy of the layer.
+		 */
+		Layer(Layer const&);
+
+		/**
 		 * Releases all the nodes.
 		 */
 		virtual ~Layer();
@@ -237,13 +249,16 @@ public:
 				LayerType const layerType);
 	protected:
 		/** Used in LoadLayer. */
-		Layer(const LayerType, const ActFctType);
+		Layer(const LayerType, const ActFctType, Layer* previous = nullptr);
 	};
 
 protected:
 
 	/** Used in LoadYAML. */
 	NeuralNetwork();
+
+	/** Used in sub class copy constructors. */
+	NeuralNetwork(double const learningRate);
 };
 
 ostream& operator<<(ostream& out, NeuralNetwork const& net);
