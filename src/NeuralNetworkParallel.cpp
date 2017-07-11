@@ -8,7 +8,7 @@ NeuralNetworkParallel::NeuralNetworkParallel(const int inpCount, const int hidCo
 	layers.push_back(new LayerParallel(hidCount, inpCount, HIDDEN, SIGMOID, layers.back()));
 	layers.push_back(new LayerParallel(outCount, hidCount, OUTPUT, SIGMOID, layers.back()));
 
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for (int l = 0; l < layers.size() - 1; l++) { // leave out the output layer
 		Layer* layer = layers.at(l);
 		for (int i = 0; i < layer->nodes.size(); i++) {
@@ -33,10 +33,68 @@ void NeuralNetworkParallel::feedInput(cv::Mat const& image) {
 
 	size_t const loopCount = min(numPixels, inputLayer->nodes.size());
 	cv::MatConstIterator_<uint8_t> it = image.begin<uint8_t>();
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for (int i = 0; i < loopCount; ++i, ++it) {
-		inputLayer->nodes[i]->output = static_cast<double>(*it);
+		inputLayer->nodes[i]->output = ((*it > 128.0) ? 1.0 : 0.0);
 	}
+}
+
+void NeuralNetworkParallel::train(MNISTImageDataset const& images,
+		MNISTLableDataset const& labels,
+		double const training_error_threshold,
+		double const max_derivation) {
+	bool needsFurtherTraining = true;
+	double error = std::numeric_limits<double>::max();
+	while (needsFurtherTraining) {
+
+		int every_ten_percent = images.size() / 10;
+		size_t errCount = 0;
+		// Get the number of possible threads for split work
+		auto max_threads = omp_get_max_threads();
+
+		NeuralNetworkParallel nnp_copy(this);
+		// Loop through all images in the file
+		#pragma omp parallel for copyin(nnp_copy)
+		for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
+			// Convert the MNIST image to a standardized vector format and feed into the network
+			nnp_copy.feedInput(images[imgCount]);
+
+			// Feed forward all layers (from input to hidden to output) calculating all nodes' output
+			nnp_copy.feedForward();
+
+			// Back propagate the error and adjust weights in all layers accordingly
+			nnp_copy.backPropagate(labels[imgCount]);
+
+			// Classify image by choosing output cell with highest output
+			int classification = nnp_copy.getNetworkClassification();
+			if (classification != labels[imgCount])
+				errCount++;
+
+			// Display progress during training
+			//displayTrainingProgress(imgCount, errCount, 80);
+			//displayImage(&img, lbl, classification, 7,6);
+			if ((imgCount % every_ten_percent) == 0)
+				cout << "x"; cout.flush();
+
+			// TODO mergeWeights(nnp_copy);
+		}
+
+		double newError = static_cast<double>(errCount) / static_cast<double>(images.size());
+		if (newError < error) {
+			error = newError;
+		} else if (newError > error + max_derivation) {
+			// The error increases again. This is not good.
+			needsFurtherTraining = false;
+		}
+
+		if (error < training_error_threshold) {
+			needsFurtherTraining = false;
+		}
+
+		cout << " Error: " << error * 100.0 << "%" << endl;
+	}
+
+	cout << endl;
 }
 
 void NeuralNetworkParallel::backPropagateOutputLayer(const int targetClassification) {
@@ -66,7 +124,7 @@ void NeuralNetworkParallel::backPropagateHiddenLayer(const int targetClassificat
 
 		double outputcellerrorsum = 0;
 
-		#pragma omp parallel for reduction(+:outputcellerrorsum)
+		//#pragma omp parallel for reduction(+:outputcellerrorsum)
 		for (int o = 0; o < ol->nodes.size(); o++) {
 
 			Layer::Node *on = ol->getNode(o);
@@ -93,6 +151,7 @@ void NeuralNetworkParallel::updateNodeWeights(const NeuralNetwork::LayerType lay
 	Layer::Node *node = layer->getNode(id);
 	Layer *prevLayer = layer->previousLayer;
 
+	//#pragma omp parallel for
 	for (int i = 0; i < node->weights.size(); i++) {
 		Layer::Node *prevLayerNode = prevLayer->getNode(i);
 		node->weights.at(i) += learningRate * prevLayerNode->output * error;
@@ -119,6 +178,7 @@ void NeuralNetworkParallel::LayerParallel::calcNodeOutput(Node* node) {
 	// Start by adding the bias
 	node->output = node->bias;
 
+	//#pragma omp parallel for
 	for (int i = 0; i < previousLayer->nodes.size(); i++) {
 		Node *prevLayerNode = previousLayer->getNode(i);
 		node->output += prevLayerNode->output * node->weights.at(i);

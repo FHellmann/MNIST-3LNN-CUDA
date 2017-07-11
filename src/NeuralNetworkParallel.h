@@ -1,14 +1,17 @@
 #include "NeuralNetwork.h"
 #include <omp.h>
 
-using namespace std;
-
 class NeuralNetworkParallel : public NeuralNetwork {
 public:
 	NeuralNetworkParallel(const int inpCount, const int hidCount, const int outCount,
 			const double learningRate);
 
 	void feedInput(cv::Mat const& image);
+
+	void train(MNISTImageDataset const& images,
+			MNISTLableDataset const& labels,
+			double const training_error_threshold,
+			double const max_derivation);
 
 	void backPropagateOutputLayer(const int targetClassification);
 

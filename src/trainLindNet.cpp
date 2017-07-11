@@ -17,9 +17,6 @@ using namespace TCLAP;
 
 unsigned char KEY_ESC = 27;
 
-void trainNetwork(NeuralNetwork&, MNISTImageDataset const&,
-		MNISTLableDataset const&);
-
 int main(int argc, char* argv[]) {
 
 	CmdLine parser("Train the LindNet with the MNIST database.");

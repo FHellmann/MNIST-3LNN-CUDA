@@ -10,6 +10,8 @@
 #include <opencv2/core/core.hpp>
 #include "MNISTDataset.h"
 
+using namespace std;
+
 class NeuralNetwork {
 public:
 	enum ActFctType {
@@ -88,7 +90,7 @@ public:
 	int getNetworkClassification();
 
 	double learningRate;
-	std::vector<Layer*> layers;
+	vector<Layer*> layers;
 
 	/**
 	 * Get the layer by type.
@@ -144,7 +146,7 @@ public:
 		const LayerType layerType;
 		const ActFctType actFctType;
 		Layer* previousLayer;
-		std::vector<Node*> nodes;
+		vector<Node*> nodes;
 
 		/**
 		 * Creates a zeroed-out layer.
@@ -203,7 +205,7 @@ public:
 		public:
 			double bias;
 			double output;
-			std::vector<double> weights;
+			vector<double> weights;
 
 			/**
 			 * Creates a zeroed-out node.
@@ -244,6 +246,6 @@ protected:
 	NeuralNetwork();
 };
 
-std::ostream& operator<<(std::ostream& out, NeuralNetwork const& net);
+ostream& operator<<(ostream& out, NeuralNetwork const& net);
 
 #endif
