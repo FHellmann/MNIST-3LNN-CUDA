@@ -36,6 +36,9 @@
 								<option id="nvcc.compiler.def.symbols.473290650" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
 								</option>
+								<option id="nvcc.compiler.compileroptions.811500626" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-fopenmp"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1527245790" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.631074203" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.389341790" superClass="nvcc.compiler.input.c"/>
@@ -110,7 +113,11 @@
 								<option id="nvcc.compiler.def.symbols.271816981" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
 								</option>
+<<<<<<< HEAD
 								<option id="nvcc.compiler.compileroptions.1863078188" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
+=======
+								<option id="nvcc.compiler.compileroptions.1263680908" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
+>>>>>>> b735da04463d570bbfe8f3bd1fdfbdae401ccbcb
 									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
 								<inputType id="nvcc.compiler.input.cu.2074622702" superClass="nvcc.compiler.input.cu"/>
@@ -187,6 +194,9 @@
 								<option id="nvcc.compiler.def.symbols.697755076" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
 								</option>
+								<option id="nvcc.compiler.compileroptions.1807426989" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-fopenmp"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1347120078" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.579226282" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.1774115075" superClass="nvcc.compiler.input.c"/>
@@ -260,6 +270,9 @@
 								</option>
 								<option id="nvcc.compiler.def.symbols.75115265" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+								</option>
+								<option id="nvcc.compiler.compileroptions.2120991079" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
 								<inputType id="nvcc.compiler.input.cu.2039839043" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.1780124361" superClass="nvcc.compiler.input.cpp"/>
