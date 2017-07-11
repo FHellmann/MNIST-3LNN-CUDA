@@ -96,32 +96,52 @@ int main(int argc, char* argv[]) {
 void trainNetwork(NeuralNetwork& net, MNISTImageDataset const& images,
 		MNISTLableDataset const& labels) {
 
-	int errCount = 0;
 
 	size_t const showProgressEach = 1000;
+	double const TRAINING_ERROR_THRESHOLD = 0.02; // 2%
 
-	// Loop through all images in the file
-	for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
+	bool needsFurtherTraining = true;
+	double error = std::numeric_limits<double>::max();
+	while (needsFurtherTraining) {
 
-		// Convert the MNIST image to a standardized vector format and feed into the network
-		net.feedInput(images[imgCount]);
+		size_t errCount = 0;
+		// Loop through all images in the file
+		for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
 
-		// Feed forward all layers (from input to hidden to output) calculating all nodes' output
-		net.feedForward();
+			// Convert the MNIST image to a standardized vector format and feed into the network
+			net.feedInput(images[imgCount]);
 
-		// Back propagate the error and adjust weights in all layers accordingly
-		net.backPropagate(labels[imgCount]);
+			// Feed forward all layers (from input to hidden to output) calculating all nodes' output
+			net.feedForward();
 
-		// Classify image by choosing output cell with highest output
-		int classification = net.getNetworkClassification();
-		if (classification != labels[imgCount])
-			errCount++;
+			// Back propagate the error and adjust weights in all layers accordingly
+			net.backPropagate(labels[imgCount]);
 
-		// Display progress during training
-		//displayTrainingProgress(imgCount, errCount, 80);
-		//displayImage(&img, lbl, classification, 7,6);
-		if ((imgCount % showProgressEach) == 0)
-			cout << "x"; cout.flush();
+			// Classify image by choosing output cell with highest output
+			int classification = net.getNetworkClassification();
+			if (classification != labels[imgCount])
+				errCount++;
+
+			// Display progress during training
+			//displayTrainingProgress(imgCount, errCount, 80);
+			//displayImage(&img, lbl, classification, 7,6);
+			if ((imgCount % showProgressEach) == 0)
+				cout << "x"; cout.flush();
+		}
+
+		double newError = static_cast<double>(errCount) / static_cast<double>(images.size());
+		if (newError < error) {
+			error = newError;
+		} else {
+			// The error increases again. This is not good.
+			needsFurtherTraining = false;
+		}
+
+		if (error < TRAINING_ERROR_THRESHOLD) {
+			needsFurtherTraining = false;
+		}
+
+		cout << " Error: " << error * 100.0 << "%" << endl;
 	}
 
 	cout << endl;
