@@ -27,18 +27,6 @@ NeuralNetworkParallel::NeuralNetworkParallel(const int inpCount, const int hidCo
 	}
 }
 
-void NeuralNetworkParallel::feedInput(cv::Mat const& image) {
-	Layer* inputLayer = getLayer(INPUT);
-	size_t const numPixels = image.cols * image.rows;
-
-	size_t const loopCount = min(numPixels, inputLayer->nodes.size());
-	cv::MatConstIterator_<uint8_t> it = image.begin<uint8_t>();
-	#pragma omp parallel for
-	for (int i = 0; i < loopCount; ++i, ++it) {
-		inputLayer->nodes[i]->output = static_cast<double>(*it);
-	}
-}
-
 void NeuralNetworkParallel::backPropagateOutputLayer(const int targetClassification) {
 	Layer *layer = getLayer(OUTPUT);
 	

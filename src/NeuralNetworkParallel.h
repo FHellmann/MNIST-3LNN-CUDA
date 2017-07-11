@@ -8,8 +8,6 @@ public:
 	NeuralNetworkParallel(const int inpCount, const int hidCount, const int outCount,
 			const double learningRate);
 
-	void feedInput(cv::Mat const& image);
-
 	void backPropagateOutputLayer(const int targetClassification);
 
 	void backPropagateHiddenLayer(const int targetClassification);
