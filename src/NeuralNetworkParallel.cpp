@@ -1,5 +1,21 @@
 #include "NeuralNetworkParallel.h"
 
+#pragma omp declare reducation(mergeWeights:NeuralNetworkPrallel: \
+		for(int l=0; l < omp_in.layers.size(); l++) { \
+			Layer* layerIn = omp_in.layers.at(l); \
+			Layer* layerOut = omp_out.layers.at(l); \
+			for(int n=0; n < layerIn->nodes.size(); n++) { \
+				Node* nodeIn = layerIn->nodes.at(n); \
+				Node* nodeOut = layerOut->nodes.at(n); \
+				for(int w=0; w < nodeIn->weights.size(); w++) { \
+					double weightIn = nodeIn->weights.at(w); \
+					double weightOutOld = nodeOut->weights.at(w); \
+					nodeOut->weights.at(w) += weightIn - weightOutOld; \
+				} \
+			} \
+		} \
+)
+
 NeuralNetworkParallel::NeuralNetworkParallel(const int inpCount, const int hidCount,
 		const int outCount, const double _learningRate) {
 
@@ -49,12 +65,11 @@ void NeuralNetworkParallel::train(MNISTImageDataset const& images,
 
 		int every_ten_percent = images.size() / 10;
 		size_t errCount = 0;
-		// Get the number of possible threads for split work
-		auto max_threads = omp_get_max_threads();
 
 		NeuralNetworkParallel nnp_copy(this);
 		// Loop through all images in the file
-		#pragma omp parallel for copyin(nnp_copy)
+		//#pragma omp threadprivate(nnp_copy)
+		#pragma omp parallel for //copyin(nnp_copy) reducation(mergeWeights:nnp_copy)
 		for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
 			// Convert the MNIST image to a standardized vector format and feed into the network
 			nnp_copy.feedInput(images[imgCount]);
@@ -75,8 +90,6 @@ void NeuralNetworkParallel::train(MNISTImageDataset const& images,
 			//displayImage(&img, lbl, classification, 7,6);
 			if ((imgCount % every_ten_percent) == 0)
 				cout << "x"; cout.flush();
-
-			// TODO mergeWeights(nnp_copy);
 		}
 
 		double newError = static_cast<double>(errCount) / static_cast<double>(images.size());
