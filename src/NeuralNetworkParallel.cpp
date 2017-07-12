@@ -42,11 +42,10 @@ NeuralNetworkParallel::NeuralNetworkParallel(NeuralNetworkParallel const& net) :
 		layers.push_back(new LayerParallel(*dynamic_cast<LayerParallel*>(net.layers[i])));
 	}
 
-	getLayer(HIDDEN)->previousLayer = getLayer(INPUT);
-	getLayer(OUTPUT)->previousLayer = getLayer(HIDDEN);
+	//getLayer(HIDDEN)->previousLayer = getLayer(INPUT);
+	//getLayer(OUTPUT)->previousLayer = getLayer(HIDDEN);
 
 	// And set the previous layer in the new network.
-	/*
 	for (size_t i = 0; i < layers.size(); ++i) {
 		size_t prevLayerIdx = 0;
 		for (; prevLayerIdx < net.layers.size(); ++prevLayerIdx) {
@@ -54,9 +53,8 @@ NeuralNetworkParallel::NeuralNetworkParallel(NeuralNetworkParallel const& net) :
 				break;
 			}
 		}
-		layers[i]->previousLayer = net.layers[prevLayerIdx];
+		layers[i]->previousLayer = layers[prevLayerIdx];
 	}
-	*/
 }
 
 void mergeNeuralNetworks(NeuralNetworkParallel& omp_in, NeuralNetworkParallel& omp_out) {
