@@ -20,9 +20,6 @@ public:
 		INPUT, HIDDEN, OUTPUT
 	};
 
-	// Forward declaration of layer class
-	class Layer;
-
 	/**
 	 * Creates a new simple 3-layer neural network.
 	 *
@@ -74,6 +71,24 @@ public:
 			double const max_derivation);
 
 	/**
+	 * Get the network's classification using the ID of the node with
+	 * the highest output.
+	 *
+	 * @return the classification of the network.
+	 */
+	int getNetworkClassification();
+
+	/**
+	 * Saves the network to a YAML file given by path.
+	 */
+	bool saveYAML(std::string const& path);
+
+protected:
+
+	// Forward declaration of layer class
+	class Layer;
+
+	/**
 	 * Feeds input layer values forward to hidden to output layer
 	 * (calculation and activation fct).
 	 */
@@ -85,14 +100,6 @@ public:
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
 	virtual void backPropagate(const int targetClassification);
-
-	/**
-	 * Get the network's classification using the ID of the node with
-	 * the highest output.
-	 *
-	 * @return the classification of the network.
-	 */
-	int getNetworkClassification();
 
 	double learningRate;
 	std::vector<Layer*> layers;
@@ -136,11 +143,6 @@ public:
 	 */
 	virtual void updateNodeWeights(const LayerType layertype, const int id,
 			double error);
-
-	/**
-	 * Saves the network to a YAML file given by path.
-	 */
-	bool saveYAML(std::string const& path);
 
 	class Layer {
 	public:
@@ -257,6 +259,8 @@ protected:
 
 	/** Used in sub class copy constructors. */
 	NeuralNetwork(double const learningRate);
+
+	friend std::ostream& operator<<(std::ostream&, NeuralNetwork const&);
 };
 
 std::ostream& operator<<(std::ostream& out, NeuralNetwork const& net);
