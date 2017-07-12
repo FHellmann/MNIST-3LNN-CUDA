@@ -39,6 +39,7 @@
 								<option id="nvcc.compiler.compileroptions.811500626" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
+								<option id="nvcc.compiler.option.lineinfo.620341618" superClass="nvcc.compiler.option.lineinfo" value="true" valueType="boolean"/>
 								<inputType id="nvcc.compiler.input.cu.1527245790" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.631074203" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.389341790" superClass="nvcc.compiler.input.c"/>

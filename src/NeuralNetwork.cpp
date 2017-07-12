@@ -1,5 +1,4 @@
 #include "NeuralNetwork.h"
-#include <fstream>
 
 using namespace std;
 
@@ -107,8 +106,6 @@ void NeuralNetwork::train(MNISTImageDataset const& images,
 				errCount++;
 
 			// Display progress during training
-			//displayTrainingProgress(imgCount, errCount, 80);
-			//displayImage(&img, lbl, classification, 7,6);
 			if ((imgCount % every_ten_percent) == 0)
 				cout << "x"; cout.flush();
 		}

@@ -2,6 +2,7 @@
 #define NEURAL_NETWORK_HPP_
 
 #include <iostream>
+#include <fstream>
 #include <ostream>
 #include <vector>
 #include <stdlib.h>
@@ -19,6 +20,12 @@ public:
 	enum LayerType {
 		INPUT, HIDDEN, OUTPUT
 	};
+
+	// Forward declaration of layer class
+	class Layer;
+
+	double learningRate;
+	std::vector<Layer*> layers;
 
 	/**
 	 * Creates a new simple 3-layer neural network.
@@ -83,11 +90,6 @@ public:
 	 */
 	bool saveYAML(std::string const& path);
 
-protected:
-
-	// Forward declaration of layer class
-	class Layer;
-
 	/**
 	 * Feeds input layer values forward to hidden to output layer
 	 * (calculation and activation fct).
@@ -100,9 +102,6 @@ protected:
 	 * @param targetClassification Correct classification (=label) of the input stream.
 	 */
 	virtual void backPropagate(const int targetClassification);
-
-	double learningRate;
-	std::vector<Layer*> layers;
 
 	/**
 	 * Get the layer by type.

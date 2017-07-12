@@ -1,5 +1,6 @@
 #include "NeuralNetwork.h"
 #include <omp.h>
+#include <iostream>
 
 class NeuralNetworkParallel : public NeuralNetwork {
 public:
@@ -7,6 +8,8 @@ public:
 			const double learningRate);
 
 	NeuralNetworkParallel(NeuralNetworkParallel const&);
+
+	bool weightsInitState;
 
 	void train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
