@@ -199,4 +199,14 @@ T const& MNISTDataset<T>::back() const {
 	return m_Images.back();
 }
 
+template<typename T>
+T* MNISTDataset<T>::data (){
+	return m_Images.data();
+}
+
+template<typename T>
+T const* MNISTDataset<T>::data() const {
+	return m_Images.data();
+}
+
 #endif /* MNISTDATASET_HPP_ */

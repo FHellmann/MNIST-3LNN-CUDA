@@ -45,6 +45,9 @@ public:
 	T& back();
 	T const& back() const;
 
+	T* data();
+	T const* data() const;
+
 private:
 	std::string const m_FileName;
 	/** Number of images in the dataset. */
