@@ -14,6 +14,10 @@ class NeuralNetworkCUDA: public NeuralNetwork {
 public:
 	NeuralNetworkCUDA();
 	virtual ~NeuralNetworkCUDA();
+
+	virtual void train(MNISTImageDataset const& images,
+			MNISTLableDataset const& labels,
+			double const training_error_threshold, double const max_derivation);
 };
 
 #endif /* NEURALNETWORKCUDA_H_ */
