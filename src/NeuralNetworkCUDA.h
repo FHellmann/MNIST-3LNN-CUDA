@@ -8,11 +8,12 @@
 #ifndef NEURALNETWORKCUDA_H_
 #define NEURALNETWORKCUDA_H_
 
-#include <src/NeuralNetwork.h>
+#include "NeuralNetwork.h"
 
 class NeuralNetworkCUDA: public NeuralNetwork {
 public:
-	NeuralNetworkCUDA();
+	NeuralNetworkCUDA(const int inpCount, const int hidCount,
+			const int outCount, const double learningRate);
 	virtual ~NeuralNetworkCUDA();
 
 	virtual void train(MNISTImageDataset const& images,

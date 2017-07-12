@@ -11,6 +11,7 @@
 #include "MNISTDataset.h"
 #include "NeuralNetwork.h"
 #include "NeuralNetworkParallel.h"
+#include "NeuralNetworkCUDA.h"
 
 using namespace std;
 using namespace TCLAP;
@@ -67,9 +68,9 @@ int main(int argc, char* argv[]) {
 	if(networkTypeSelection.compare("parallel") == 0) {
 		lindNet = new NeuralNetworkParallel(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
 		cout << "Neural Network - Parallel" << endl;
-	//} else if(networkType.getValue() == "cuda") {
-		// TODO: Add NeuralNetworkCuda
-		//cout << "Neural Network - Cuda" << endl;
+	} else if (networkTypeSelection.compare("cuda") == 0) {
+		lindNet = new NeuralNetworkCUDA(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+		cout << "Neural Network - CUDA" << endl;
 	} else {
 		lindNet = new NeuralNetwork(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
 		cout << "Neural Network - Sequentiell" << endl;
