@@ -32,9 +32,18 @@ public:
 	T const& operator[](int const& idx) const;
 
 	typedef typename std::vector<T>::iterator iterator;
+	typedef typename std::vector<T>::const_iterator const_iterator;
 
 	iterator begin();
+	const_iterator begin() const;
 	iterator end();
+	const_iterator end() const;
+
+	T& front();
+	T const& front() const;
+
+	T& back();
+	T const& back() const;
 
 private:
 	std::string const m_FileName;

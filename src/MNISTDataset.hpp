@@ -165,8 +165,38 @@ typename MNISTDataset<T>::iterator MNISTDataset<T>::begin() {
 }
 
 template<typename T>
+typename MNISTDataset<T>::const_iterator MNISTDataset<T>::begin() const {
+	return m_Images.begin();
+}
+
+template<typename T>
 typename MNISTDataset<T>::iterator MNISTDataset<T>::end() {
 	return m_Images.end();
+}
+
+template<typename T>
+typename MNISTDataset<T>::const_iterator MNISTDataset<T>::end() const {
+	return m_Images.end();
+}
+
+template<typename T>
+T& MNISTDataset<T>::front() {
+	return m_Images.front();
+}
+
+template<typename T>
+T const& MNISTDataset<T>::front() const {
+	return m_Images.front();
+}
+
+template<typename T>
+T& MNISTDataset<T>::back() {
+	return m_Images.back();
+}
+
+template<typename T>
+T const& MNISTDataset<T>::back() const {
+	return m_Images.back();
 }
 
 #endif /* MNISTDATASET_HPP_ */
