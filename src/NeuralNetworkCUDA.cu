@@ -22,7 +22,9 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		return;
 
 	// Collect memory in RAM
-	uint8_t* imgData = new uint8_t[images.front().total() * images.size()];
+	size_t const singleImgPixCount = images.front().total();
+	size_t const allImgBufElements = singleImgPixCount * images.size();
+	uint8_t* imgData = new uint8_t[allImgBufElements];
 	uint8_t* it = imgData;
 	for (cv::Mat const& img : images) {
 		if (img.isContinuous()) {
@@ -32,17 +34,24 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		}
 		it += img.total() * img.elemSize();
 	}
-//
-//	cudaError_t err;
+
+	cudaError_t err;
 
 	// Allocate cuda memory
-//	err = cudaMalloc((void**) &d_A, A.size() * sizeof(float));
-//	assert(err == cudaSuccess);
+	uint8_t* d_ImgData = nullptr;
+	err = cudaMalloc((void**) &d_ImgData, allImgBufElements * sizeof(uint8_t));
+	assert(err == cudaSuccess);
+	uint8_t* d_Labels = nullptr;
+	err = cudaMalloc((void**) &d_Labels, labels.size() * sizeof(uint8_t));
+	assert(err == cudaSuccess);
 
 	// Copy data to graphics card
-//	err = cudaMemcpy(d_A, A.data(), A.size() * sizeof(float),
-//			cudaMemcpyHostToDevice);
-//	assert(err == cudaSuccess);
+	err = cudaMemcpy(d_ImgData, imgData, allImgBufElements * sizeof(uint8_t),
+			cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(d_Labels, labels.data(), labels.size() * sizeof(uint8_t),
+			cudaMemcpyHostToDevice);
+
 	delete[] imgData;
 	imgData = nullptr;
 
@@ -66,6 +75,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	// Copy it back to neural network datastructure
 
 	// Free the cuda buffers
-//	cudaFree(d_A);
-//	d_A = nullptr;
+	cudaFree(d_ImgData);
+	d_ImgData = nullptr;
+	cudaFree(d_Labels);
+	d_Labels = nullptr;
 }
