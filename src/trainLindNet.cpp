@@ -25,11 +25,11 @@ int main(int argc, char* argv[]) {
 	ValueArg<string> mnistPath("", "mnist",
 			"Folder containing the MNIST files.", true, "", "path", parser);
 
-	ValueArg<string> netDefinitionPath("", "lindNet",
+	ValueArg<string> netDefinitionPath("n", "lindNet",
 			"yaml file for saving the resulting net.", false, "lindNet.yaml",
 			"path", parser);
 
-	ValueArg<string> networkType("", "networkType",
+	ValueArg<string> networkType("t", "networkType",
 			"The neural network type (sequentiell, parallel, cuda).", false, "sequentiell", "type", parser);
 
 	try {

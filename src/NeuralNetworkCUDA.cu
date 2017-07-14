@@ -4,13 +4,36 @@
 
 using namespace std;
 
-__host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount, const int hidCount,
-		const int outCount, const double learningRate) :
-			NeuralNetwork(learningRate) {
+__host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
+		const int hidCount, const int outCount, const double learningRate) :
+		NeuralNetwork(inpCount, hidCount, outCount, learningRate) {
 }
 
 __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 }
+
+struct GPUTrainingParameters {
+	/* Training data. */
+	uint8_t* images;
+	uint8_t* labels;
+
+	/* Training data parameters. */
+	size_t numExamples;
+	size_t numHiddenNodes;
+	size_t width;
+	size_t height;
+
+	/* Weight matrices. */
+	float* W1;
+	size_t W1_len;
+	float* W2;
+	size_t W2_len;
+
+	/* Training parameters. */
+	float errorThreshold;
+};
+
+__global__ void trainCUDA(GPUTrainingParameters const);
 
 __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
@@ -37,35 +60,57 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 
 	cudaError_t err;
 
+	GPUTrainingParameters trainingParams;
+	trainingParams.numExamples = images.size();
+	trainingParams.width = images.front().cols;
+	trainingParams.height = images.front().rows;
+	trainingParams.numHiddenNodes = getLayer(HIDDEN)->nodes.size();
+	trainingParams.errorThreshold = training_error_threshold;
+
+	//
 	// Allocate cuda memory
-	uint8_t* d_ImgData = nullptr;
-	err = cudaMalloc((void**) &d_ImgData, allImgBufElements * sizeof(uint8_t));
-	assert(err == cudaSuccess);
-	uint8_t* d_Labels = nullptr;
-	err = cudaMalloc((void**) &d_Labels, labels.size() * sizeof(uint8_t));
+	//
+
+	// Images
+	err = cudaMalloc((void**) &trainingParams.images,
+			allImgBufElements * sizeof(uint8_t));
 	assert(err == cudaSuccess);
 
-	// Copy data to graphics card
-	err = cudaMemcpy(d_ImgData, imgData, allImgBufElements * sizeof(uint8_t),
-			cudaMemcpyHostToDevice);
+	// Labels
+	err = cudaMalloc((void**) &trainingParams.labels,
+			labels.size() * sizeof(uint8_t));
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(d_Labels, labels.data(), labels.size() * sizeof(uint8_t),
-			cudaMemcpyHostToDevice);
+
+	// Storage for the first weight matrix
+	err = cudaMalloc((void**) &trainingParams.W1, 0);
+	assert(err == cudaSuccess);
+
+	// Storage for the first weight matrix
+	err = cudaMalloc((void**) &trainingParams.W2, 0);
+	assert(err == cudaSuccess);
+
+	//
+	// Copy data to graphics card
+	//
+	err = cudaMemcpy(trainingParams.images, imgData,
+			allImgBufElements * sizeof(uint8_t), cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(trainingParams.labels, labels.data(),
+			labels.size() * sizeof(uint8_t), cudaMemcpyHostToDevice);
 
 	delete[] imgData;
 	imgData = nullptr;
 
 	// Configure Grid, i.e. setup Blocks and Threads
-//	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
-//	dim3 numBlocks(C.cols() / MATRIX_SIZE_DIVISOR,
-//			C.rows() / MATRIX_SIZE_DIVISOR);
-//	cout << "Threads per block: (" << threadsPerBlock.x << ", "
-//			<< threadsPerBlock.y << ")" << endl;
-//	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
-//			<< endl;
+	dim3 numBlocks(32, 32);
+	dim3 threadsPerBlock(16, 16);
+	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
+			<< endl;
+	cout << "Threads per block: (" << threadsPerBlock.x << ", "
+			<< threadsPerBlock.y << ")" << endl;
 
 	// Call graphics card functions
-//	d_mul<<<numBlocks, threadsPerBlock>>>(d_A, d_B, d_C, A.rows());
+	trainCUDA<<<numBlocks, threadsPerBlock>>>(trainingParams);
 
 	// Retreive the data
 //	err = cudaMemcpy(C.data(), d_C, C.size() * sizeof(float),
@@ -75,8 +120,16 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	// Copy it back to neural network datastructure
 
 	// Free the cuda buffers
-	cudaFree(d_ImgData);
-	d_ImgData = nullptr;
-	cudaFree(d_Labels);
-	d_Labels = nullptr;
+	cudaFree (trainingParams.images);
+	trainingParams.images = nullptr;
+	cudaFree (trainingParams.labels);
+	trainingParams.labels = nullptr;
+	cudaFree (trainingParams.W1);
+	trainingParams.W1 = nullptr;
+	cudaFree (trainingParams.W2);
+	trainingParams.W2 = nullptr;
+}
+
+__global__ void trainCUDA(GPUTrainingParameters const params) {
+
 }
