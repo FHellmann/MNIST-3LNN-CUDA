@@ -6,7 +6,7 @@ using namespace std;
 
 __host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
 		const int hidCount, const int outCount, const double learningRate) :
-		NeuralNetwork(learningRate) {
+		NeuralNetwork(inpCount, hidCount, outCount, learningRate) {
 }
 
 __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
