@@ -60,11 +60,15 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 
 	cudaError_t err;
 
+	Layer* inputLayer  = getLayer(INPUT);
+	Layer* hiddenLayer = getLayer(HIDDEN);
+	Layer* outputLayer = getLayer(OUTPUT);
+
 	GPUTrainingParameters trainingParams;
 	trainingParams.numExamples = images.size();
 	trainingParams.width = images.front().cols;
 	trainingParams.height = images.front().rows;
-	trainingParams.numHiddenNodes = getLayer(HIDDEN)->nodes.size();
+	trainingParams.numHiddenNodes = hiddenLayer->nodes.size();
 	trainingParams.errorThreshold = training_error_threshold;
 
 	//
@@ -82,11 +86,13 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	assert(err == cudaSuccess);
 
 	// Storage for the first weight matrix
-	err = cudaMalloc((void**) &trainingParams.W1, 0);
+	trainingParams.W1_len = inputLayer->nodes.size() * hiddenLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.W1, trainingParams.W1_len * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the first weight matrix
-	err = cudaMalloc((void**) &trainingParams.W2, 0);
+	trainingParams.W2_len = hiddenLayer->nodes.size() * outputLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.W2, trainingParams.W2_len * sizeof(float));
 	assert(err == cudaSuccess);
 
 	//
@@ -112,12 +118,18 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	// Call graphics card functions
 	trainCUDA<<<numBlocks, threadsPerBlock>>>(trainingParams);
 
+	//
 	// Retreive the data
-//	err = cudaMemcpy(C.data(), d_C, C.size() * sizeof(float),
-//			cudaMemcpyDeviceToHost);
-//	assert(err == cudaSuccess);
+	//
 
-	// Copy it back to neural network datastructure
+	float* W1 = new float[trainingParams.W1_len];
+	float* W2 = new float[trainingParams.W2_len];
+
+	// Copy it back to neural network data structure
+	err = cudaMemcpy(W1, trainingParams.W1, trainingParams.W1_len * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(W2, trainingParams.W2, trainingParams.W2_len * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
 
 	// Free the cuda buffers
 	cudaFree (trainingParams.images);
@@ -128,6 +140,16 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.W1 = nullptr;
 	cudaFree (trainingParams.W2);
 	trainingParams.W2 = nullptr;
+
+	//
+	// Copy the weight data into the c++ data structure.
+	//
+
+	// Delete the host buffers
+	delete[] W1;
+	W1 = nullptr;
+	delete[] W2;
+	W2 = nullptr;
 }
 
 __global__ void trainCUDA(GPUTrainingParameters const params) {
