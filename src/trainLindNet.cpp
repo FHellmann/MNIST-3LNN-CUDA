@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
 	// Do some training.
 	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-	lindNet->train(trainingImages, trainingLabels, 0.04, 0.005);
+	lindNet->train(trainingImages, trainingLabels, 0.06, 0.005);
 	std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> sec = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);

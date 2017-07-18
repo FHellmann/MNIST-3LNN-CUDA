@@ -33,15 +33,9 @@ NeuralNetworkParallel::NeuralNetworkParallel(NeuralNetworkParallel const& net) :
 	for (size_t i = 0; i < net.layers.size(); ++i) {
 		// Make a deep copy of the layers
 		layers.push_back(new LayerParallel(*dynamic_cast<LayerParallel*>(net.layers[i])));
-		if(i > 0)
-			layers.at(i)->previousLayer = layers.at(i - 1);
 	}
 
-	//getLayer(HIDDEN)->previousLayer = getLayer(INPUT);
-	//getLayer(OUTPUT)->previousLayer = getLayer(HIDDEN);
-
 	// And set the previous layer in the new network.
-	/*
 	for (size_t i = 0; i < layers.size(); ++i) {
 		size_t prevLayerIdx = 0;
 		for (; prevLayerIdx < net.layers.size(); ++prevLayerIdx) {
@@ -51,7 +45,6 @@ NeuralNetworkParallel::NeuralNetworkParallel(NeuralNetworkParallel const& net) :
 		}
 		layers[i]->previousLayer = layers[prevLayerIdx];
 	}
-	*/
 }
 
 void mergeNeuralNetworks(NeuralNetworkParallel& omp_in, NeuralNetworkParallel& omp_out, NeuralNetworkParallel* reset) {
@@ -66,7 +59,7 @@ void mergeNeuralNetworks(NeuralNetworkParallel& omp_in, NeuralNetworkParallel& o
 			for(int w=0; w < nodeIn->weights.size(); w++) {
 				nodeOut->weights.at(w) += nodeIn->weights.at(w) - nodeReset->weights.at(w);
 			}
-			nodeOut->bias += nodeIn->bias - nodeReset->bias;
+			//nodeOut->bias += nodeIn->bias - nodeReset->bias;
 		}
 	}
 }
@@ -78,16 +71,16 @@ void NeuralNetworkParallel::train(MNISTImageDataset const& images,
 
 	bool needsFurtherTraining = true;
 	double error = std::numeric_limits<double>::max();
-	while (needsFurtherTraining) {
+	double newError = 0;
 
-		double newError = 0;
+	NeuralNetworkParallel nnp_merge(*this);
+
+	#pragma omp parallel shared(needsFurtherTraining,error,newError)
+	{
+		NeuralNetworkParallel nnp_local(*this);
 		int every_ten_percent = images.size() / 10;
 
-		NeuralNetworkParallel nnp_merge(*this);
-
-		#pragma omp parallel default(shared)
-		{
-			NeuralNetworkParallel nnp_local(*this);
+		while(needsFurtherTraining) {
 			size_t localErrCount = 0;
 
 			#pragma omp for
@@ -113,28 +106,36 @@ void NeuralNetworkParallel::train(MNISTImageDataset const& images,
 				}
 			}
 
-			//#pragma omp critical
+			#pragma omp atomic
 			newError += static_cast<double>(localErrCount) / static_cast<double>(images.size());
 
 			// merge network weights together
 			#pragma omp critical
-			mergeNeuralNetworks(nnp_local, nnp_merge, this);
+			mergeNeuralNetworks(nnp_local, nnp_merge, &nnp_merge);
 
-			//#pragma omp critical
-			//cout << "Thread-" << omp_get_thread_num() << ": Error=" << localErrCount << ", Images=" << localImageProcessed << endl;
+			#pragma omp barrier
+			if (newError < error) {
+				error = newError;
+			}
+
+			if(newError < training_error_threshold || newError > error + max_derivation) {
+				needsFurtherTraining = false;
+			}
+			else
+				mergeNeuralNetworks(nnp_merge, nnp_local, &nnp_merge);
+
+			#pragma omp barrier
+
+			#pragma omp master
+			{
+				cout << " Error: " << newError * 100.0 << "%" << endl;
+
+				newError = 0;
+			}
 		}
-
-		mergeNeuralNetworks(nnp_merge, *this, this);
-
-		if (newError < error) {
-			error = newError;
-		}
-
-		needsFurtherTraining = !(error < training_error_threshold
-				|| newError > error + max_derivation);
-
-		cout << " Error: " << error * 100.0 << "%, NewError: " << newError * 100.0 << "%" << endl;
 	}
+
+	mergeNeuralNetworks(nnp_merge, *this, this);
 
 	cout << endl;
 }

@@ -171,7 +171,7 @@ void NeuralNetwork::backPropagateOutputLayer(const int targetClassification) {
 	for (int i = 0; i < layer->nodes.size(); i++) {
 		Layer::Node *node = layer->getNode(i);
 
-		double const targetOutput = (i == targetClassification) ? 1.0 : 0.0;
+		int const targetOutput = (i == targetClassification) ? 1 : 0;
 
 		double const errorDelta = targetOutput - node->output;
 		double const errorSignal = errorDelta * layer->getActFctDerivative(node->output);
@@ -193,17 +193,15 @@ void NeuralNetwork::backPropagateHiddenLayer(const int targetClassification) {
 
 			Layer::Node *on = ol->getNode(o);
 
-			int targetOutput = (o == targetClassification) ? 1 : 0;
+			int const targetOutput = (o == targetClassification) ? 1 : 0;
 
-			double errorDelta = targetOutput - on->output;
-			double errorSignal = errorDelta
-					* ol->getActFctDerivative(on->output);
+			double const errorDelta = targetOutput - on->output;
+			double const errorSignal = errorDelta * ol->getActFctDerivative(on->output);
 
 			outputcellerrorsum += errorSignal * on->weights[h];
 		}
 
-		double hiddenErrorSignal = outputcellerrorsum
-				* layer_hidden->getActFctDerivative(hn->output);
+		double const hiddenErrorSignal = outputcellerrorsum * layer_hidden->getActFctDerivative(hn->output);
 
 		updateNodeWeights(HIDDEN, h, hiddenErrorSignal);
 	}
