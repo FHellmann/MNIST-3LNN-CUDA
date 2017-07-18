@@ -304,40 +304,31 @@ __global__ void trainCUDA(GPUTrainingParameters const params, GPUSharedMemoryLay
 	}
 }
 
+__device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
+
 __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMem[]*/, GPUSharedMemoryLayout const sharedLayout) {
 
-	__shared__ uint8_t blockCacheImage[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-	__shared__ float blockCacheW1[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-	__shared__ float blockCacheHidden[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-	__shared__ float blockCacheOutput[10][MATRIX_SIZE_DIVISOR];
+	__shared__ float* hiddenOutputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
-	float threadValue = 0.0f;
-	size_t const batch = 0;
-	size_t const batchSize = MATRIX_SIZE_DIVISOR;
+	Matrix W1;
+	W1.rows = MATRIX_SIZE_DIVISOR;
+	W1.cols = params.width * params.height;
+	W1.data = params.W1;
 
-	// The input images are actually vectors in this context.
-	size_t const imageSize = params.width * params.height;
-	unsigned int const numSubBlocks = imageSize / MATRIX_SIZE_DIVISOR;
-	for (int k = 0; k < numSubBlocks; ++k)
-	{
-		// Fill the caches!
-		blockCacheW1[threadIdx.y][threadIdx.x] = params.W1[threadIdx.x];
-		// Start of the first image of the batch
-		uint8_t* img = &(params.images[params.width * params.height * batch * batchSize]);
-		blockCacheImage[threadIdx.x][threadIdx.y] = img[threadIdx.x * params.width * params.height + threadIdx.y];
+	Matrix imgs;
+	imgs.rows = params.width * params.height;
+	imgs.cols = MATRIX_SIZE_DIVISOR;
+	imgs.data = new float[params.width * params.height];
+	imgs.data[threadIdx.x * threadIdx.y] = params.images[threadIdx.x * threadIdx.y];
 
-		__syncthreads();
+	Matrix foobar;
+	foobar.rows = MATRIX_SIZE_DIVISOR;
+	foobar.cols = MATRIX_SIZE_DIVISOR;
+	foobar.data = (float*)hiddenOutputs;
 
-		#pragma unroll
-		for (int i = 0; i < MATRIX_SIZE_DIVISOR; ++i)
-		{
-			threadValue += blockCacheW1[i][threadIdx.y] * blockCacheImage[i][threadIdx.x];
-		}
+	d_mul_shared(W1, imgs, foobar);
 
-		__syncthreads();
-	}
-
-	blockCacheHidden[threadIdx.y][threadIdx.x] = threadValue;
+	delete[] imgs.data;
 }
 
 __device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sharedLayout) {
