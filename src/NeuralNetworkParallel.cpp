@@ -59,7 +59,6 @@ void mergeNeuralNetworks(NeuralNetworkParallel& omp_in, NeuralNetworkParallel& o
 			for(int w=0; w < nodeIn->weights.size(); w++) {
 				nodeOut->weights.at(w) += nodeIn->weights.at(w) - nodeReset->weights.at(w);
 			}
-			//nodeOut->bias += nodeIn->bias - nodeReset->bias;
 		}
 	}
 }

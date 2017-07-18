@@ -1,3 +1,4 @@
+#include "NeuralNetwork.h"
 #include "NeuralNetworkParallel.h"
 #include <mpi.h>
 
