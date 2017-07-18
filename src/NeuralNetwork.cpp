@@ -24,7 +24,7 @@ NeuralNetwork::NeuralNetwork(NeuralNetwork const& net) :
 				break;
 			}
 		}
-		layers[i]->previousLayer = net.layers[prevLayerIdx];
+		layers[i]->previousLayer = layers[prevLayerIdx];
 	}
 }
 
