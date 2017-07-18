@@ -1,6 +1,5 @@
 #include "NeuralNetworkParallel.h"
-#include <omp.h>
-#include <iostream>
+#include <mpi.h>
 
 class NeuralNetworkDistributed : public NeuralNetwork {
 public:

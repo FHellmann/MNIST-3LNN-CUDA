@@ -32,6 +32,7 @@
 								<option id="nvcc.compiler.include.paths.1248565900" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/mpi"/>
 								</option>
 								<option id="nvcc.compiler.def.symbols.473290650" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
@@ -46,6 +47,7 @@
 							</tool>
 							<tool id="nvcc.linker.base.890508319" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.292909493" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -110,6 +112,7 @@
 								<option id="nvcc.compiler.include.paths.1268936331" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/mpi"/>
 								</option>
 								<option id="nvcc.compiler.def.symbols.271816981" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
@@ -138,6 +141,7 @@
 							</tool>
 							<tool id="nvcc.archiver.base.198202976" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
 							<tool id="com.nvidia.host.assembler.1816791262" name="Host Assembler" superClass="com.nvidia.host.assembler">
+								<option id="gnu.both.asm.option.include.paths.1301819937" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.308616064" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
@@ -187,6 +191,7 @@
 								<option id="nvcc.compiler.include.paths.901764169" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/mpi"/>
 								</option>
 								<option id="nvcc.compiler.def.symbols.697755076" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
@@ -200,6 +205,7 @@
 							</tool>
 							<tool id="nvcc.linker.base.1607503486" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.506600022" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -264,6 +270,7 @@
 								<option id="nvcc.compiler.include.paths.855005963" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/mpi"/>
 								</option>
 								<option id="nvcc.compiler.def.symbols.75115265" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
@@ -277,6 +284,7 @@
 							</tool>
 							<tool id="nvcc.linker.base.1993764303" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.606083753" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -341,6 +349,7 @@
 								<option id="nvcc.compiler.include.paths.474243953" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/mpi"/>
 								</option>
 								<option id="nvcc.compiler.def.symbols.1664234085" name="Defined symbols (-D)" superClass="nvcc.compiler.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
@@ -355,6 +364,7 @@
 							</tool>
 							<tool id="nvcc.linker.base.1579309827" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.2519040" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -419,6 +429,9 @@
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.release.1554113613.1219068610;com.nvidia.cuda.ide.on_path.configuration.release.1554113613.1219068610.;nvcc.compiler.base.309069518;nvcc.compiler.input.cpp.1780124361">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1456217060;com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1456217060.;nvcc.compiler.base.1972192866;nvcc.compiler.input.cpp.777026897">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1464267090;com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1464267090.;nvcc.compiler.base.1411793676;nvcc.compiler.input.cpp.579226282">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
@@ -437,7 +450,13 @@
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.release.1554113613;com.nvidia.cuda.ide.on_path.configuration.release.1554113613.;nvcc.compiler.base.428191841;nvcc.compiler.input.cpp.820903444">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1456217060;com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1456217060.;nvcc.compiler.base.1972192866;nvcc.compiler.input.cu.1878915745">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.release.1554113613.1219068610;com.nvidia.cuda.ide.on_path.configuration.release.1554113613.1219068610.;nvcc.compiler.base.309069518;nvcc.compiler.input.cu.2039839043">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1456217060;com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1456217060.;nvcc.compiler.base.1972192866;nvcc.compiler.input.c.1963935465">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649;com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.;nvcc.compiler.base.795485735;nvcc.compiler.input.cu.1527245790">

@@ -44,78 +44,50 @@ void mergeNeuralNetworks(NeuralNetworkParallel& omp_in, NeuralNetworkParallel& o
 	}
 }
 
-void NeuralNetworkParallel::train(MNISTImageDataset const& images,
+void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels,
 		double const training_error_threshold,
 		double const max_derivation) {
 
-	bool needsFurtherTraining = true;
-	double error = std::numeric_limits<double>::max();
-	double newError = 0;
+    MPI_Init(NULL, NULL);
 
-	NeuralNetworkParallel nnp_merge(*this);
+    int world_size;
+    MPI_Comm_Size(MPI_COMM_WORLD, &world_size);
 
-	#pragma omp parallel shared(needsFurtherTraining,error,newError)
-	{
-		NeuralNetworkParallel nnp_local(*this);
-		int every_ten_percent = images.size() / 10;
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-		while(needsFurtherTraining) {
-			size_t localErrCount = 0;
+    if(world_rank == 0) {
+    	// --- MASTER ---
 
-			#pragma omp for
-			for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
-				// Convert the MNIST image to a standardized vector format and feed into the network
-				nnp_local.feedInput(images[imgCount]);
+    	// 1. Send (MPI_Scatter) training set to slaves
 
-				// Feed forward all layers (from input to hidden to output) calculating all nodes' output
-				nnp_local.feedForward();
+    	// 2. Send (MPI_Bcast) neural network structure to slaves
 
-				// Back propagate the error and adjust weights in all layers accordingly
-				nnp_local.backPropagate(labels[imgCount]);
+    	// 3. Receive (MPI_Gather) initialization information from slaves
 
-				// Classify image by choosing output cell with highest output
-				int classification = nnp_local.getNetworkClassification();
-				if (classification != labels[imgCount])
-					localErrCount++;
+    	// 4. Send (MPI_Bcast) weights to slaves
 
-				// Display progress during training
-				if ((imgCount % every_ten_percent) == 0) {
-					cout << "x";
-					cout.flush();
-				}
-			}
+    	// 5. Receive (MPI_Gather) all delta weights from slaves
 
-			#pragma omp atomic
-			newError += static_cast<double>(localErrCount) / static_cast<double>(images.size());
+    	// 6. Check whether stop (go on to 7.) or repeat (back to 4.)
 
-			// merge network weights together
-			#pragma omp critical
-			mergeNeuralNetworks(nnp_local, nnp_merge, &nnp_merge);
+    	// 7. Merge into this neural network
+    } else {
+    	// --- SLAVE ---
 
-			#pragma omp barrier
-			if (newError < error) {
-				error = newError;
-			}
+    	// 1. Receive (MPI_Scatter) training set
 
-			if(newError < training_error_threshold || newError > error + max_derivation) {
-				needsFurtherTraining = false;
-			}
-			else
-				mergeNeuralNetworks(nnp_merge, nnp_local, &nnp_merge);
+    	// 2. Receive (MPI_Bcast) neural network structure
 
-			#pragma omp barrier
+    	// 3. Send (MPI_Gather) initialization finished
 
-			#pragma omp master
-			{
-				cout << " Error: " << newError * 100.0 << "%" << endl;
+    	// 4. Receive (MPI_Bcast) weights
 
-				newError = 0;
-			}
-		}
-	}
+    	// 5. Perform training on training set
 
-	mergeNeuralNetworks(nnp_merge, *this, this);
+    	// 6. Send (MPI_Gather) delta weight
+    }
 
-	cout << endl;
+	MPI_Finalize();
 }
