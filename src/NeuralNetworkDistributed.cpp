@@ -61,10 +61,26 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	// --- MASTER ---
 
     	// 1. Send (MPI_Scatter) training set to slaves
+    	uchar imageArray[][] = new uchar[images.size()][images[0].size];
+    	uint8_t labelArray[] = new uint8_t[labels.size()];
+    	for(int i=0; i < images.size(); i++) {
+    		std::copy(images[i].datastart, images[i].dataend, &(imageArray[i][0]));
+//    		imageArray[i] = *images[i].data;
+    		labelArray[i] = labels[i];
+    	}
+    	MPI_Scatter(&imageArray, 1, MPI_UNSIGNED_CHAR, NULL, 0, MPI_INT, world_rank, MPI_COMM_WORLD);
+    	MPI_Scatter(&labelArray, 1, MPI_UNSIGNED_CHAR, NULL, 0, MPI_INT, world_rank, MPI_COMM_WORLD);
 
     	// 2. Send (MPI_Bcast) neural network structure to slaves
+    	int nodes[] = new int[3];
+    	for(int i=0; i < layers.size(); i++) {
+    		nodes[i] = layers.at(i)->nodes.size();
+    	}
+    	MPI_Bcast(&nodes, 1, MPI_INT, world_rank, MPI_COMM_WORLD);
 
     	// 3. Receive (MPI_Gather) initialization information from slaves
+    	int ready[] = new int[world_size];
+    	//MPI_Gather(NULL, 0, MPI_INT, &ready, 1, )
 
     	// 4. Send (MPI_Bcast) weights to slaves
 
