@@ -48,7 +48,7 @@ public:
 	/**
 	 * Loads a NeuralNetwork from a given YAML file.
 	 */
-	static NeuralNetwork LoadYAML(std::string const& path);
+	virtual void loadYAML(std::string const& path);
 
 	/**
 	 * Releases all layers and nodes.

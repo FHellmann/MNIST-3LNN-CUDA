@@ -317,7 +317,7 @@ NeuralNetwork::Layer::Node::Node(const int weightCount, const double bias,
 		weights.push_back(0);
 }
 
-NeuralNetwork NeuralNetwork::LoadYAML(string const& path) {
+void NeuralNetwork::loadYAML(string const& path) {
 
 	YAML::Node netDef = YAML::LoadFile(path);
 
@@ -343,13 +343,14 @@ NeuralNetwork NeuralNetwork::LoadYAML(string const& path) {
 	hidLayer->previousLayer = inpLayer;
 	outLayer->previousLayer = hidLayer;
 
-	NeuralNetwork net;
-	net.learningRate = learningRate;
-	net.layers.push_back(inpLayer);
-	net.layers.push_back(hidLayer);
-	net.layers.push_back(outLayer);
-
-	return net;
+	this->learningRate = learningRate;
+	for (Layer* layer : layers) {
+		delete layer;
+	}
+	layers.clear();
+	layers.push_back(inpLayer);
+	layers.push_back(hidLayer);
+	layers.push_back(outLayer);
 }
 
 NeuralNetwork::Layer* NeuralNetwork::Layer::LoadLayer(
