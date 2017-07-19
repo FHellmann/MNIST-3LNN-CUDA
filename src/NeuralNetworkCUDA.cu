@@ -484,6 +484,12 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 	__shared__ float blockCacheA[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 	__shared__ float blockCacheB[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
+	// If this thread has nothing to do, because it would access invalid memory, exit
+	if (blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x > C.cols ||
+		blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y > C.rows) {
+		return;
+	}
+
 	float threadValue = 0.0f;
 	unsigned int const numSubBlocks = A.cols / MATRIX_SIZE_DIVISOR;
 	for (int k = 0; k < numSubBlocks; ++k)
