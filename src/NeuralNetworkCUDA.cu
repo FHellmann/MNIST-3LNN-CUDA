@@ -28,37 +28,19 @@ struct GPUTrainingParameters {
 	size_t height;
 
 	/* Weight matrices. */
-	float* W1;
-	size_t W1_len;
-	float* W2;
-	size_t W2_len;
+	float* W12;
+	size_t W12_len;
+	float* bias2;
+	size_t bias2_len;
+	float* W23;
+	size_t W23_len;
+	float* bias3;
+	size_t bias3_len;
 
 	/* Training parameters. */
 	float errorThreshold;
 	float maxDerivation;
 };
-
-void print(GPUTrainingParameters const params) {
-	printf("TrainingParams:\n"
-			"  W1: %p\n"
-		    "  W1_len: %lu\n"
-			"  W2: %p\n"
-			"  W2_len: %lu\n"
-			"  errorThreshold: %f\n"
-			"  width: %lu\n"
-			"  height: %lu\n"
-			"  numExamples: %lu\n"
-			"  numHiddenNodes: %lu\n",
-			params.W1,
-			params.W1_len,
-			params.W2,
-			params.W2_len,
-			params.errorThreshold,
-			params.width,
-			params.height,
-			params.numExamples,
-			params.numHiddenNodes);
-}
 
 struct GPUSharedMemoryLayout {
 	size_t W1_pos = 0;
@@ -95,7 +77,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-__global__ void trainCUDA(GPUTrainingParameters const, GPUSharedMemoryLayout const);
+__global__ void trainCUDA(GPUTrainingParameters const);
 
 __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
@@ -147,16 +129,24 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	assert(err == cudaSuccess);
 
 	// Storage for the first weight matrix
-	trainingParams.W1_len = inputLayer->nodes.size() * hiddenLayer->nodes.size();
-	err = cudaMalloc((void**) &trainingParams.W1, trainingParams.W1_len * sizeof(float));
+	trainingParams.W12_len = inputLayer->nodes.size() * hiddenLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.W12, trainingParams.W12_len * sizeof(float));
 	assert(err == cudaSuccess);
 
-	// Storage for the first weight matrix
-	trainingParams.W2_len = hiddenLayer->nodes.size() * outputLayer->nodes.size();
-	err = cudaMalloc((void**) &trainingParams.W2, trainingParams.W2_len * sizeof(float));
+	// Storage for the hidden layer bias vector
+	trainingParams.bias2_len = hiddenLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.bias2, trainingParams.bias2_len * sizeof(float));
 	assert(err == cudaSuccess);
 
-	print(trainingParams);
+	// Storage for the second weight matrix
+	trainingParams.W23_len = hiddenLayer->nodes.size() * outputLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.W23, trainingParams.W23_len * sizeof(float));
+	assert(err == cudaSuccess);
+
+	// Storage for the output layer bias vector
+	trainingParams.bias3_len = outputLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.bias3, trainingParams.bias3_len * sizeof(float));
+	assert(err == cudaSuccess);
 
 	//
 	// Copy data to graphics card
@@ -214,22 +204,32 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 //	gpuSharedMemoryLayout.image_size       = inputLayer->nodes.size() * sizeof(uint8_t);
 //	sharedMemorySize += gpuSharedMemoryLayout.image_size;
 
+	cudaMemset(trainingParams.W12, 0.0, trainingParams.W12_len * sizeof(float));
+	cudaMemset(trainingParams.W23, 0.0, trainingParams.W23_len * sizeof(float));
+	cudaMemset(trainingParams.bias2, 0.0, trainingParams.bias2_len * sizeof(float));
+	cudaMemset(trainingParams.bias3, 0.0, trainingParams.bias3_len * sizeof(float));
+
 	// Call graphics card functions
-	trainCUDA<<<numBlocks, threadsPerBlock>>>(trainingParams, gpuSharedMemoryLayout);
+	trainCUDA<<<numBlocks, threadsPerBlock>>>(trainingParams);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
 	//
 	// Retreive the data
 	//
-
-	float* W1 = new float[trainingParams.W1_len];
-	float* W2 = new float[trainingParams.W2_len];
+	float* W12 = new float[trainingParams.W12_len];
+	float* W23 = new float[trainingParams.W23_len];
+	float* bias2 = new float[trainingParams.bias2_len];
+	float* bias3 = new float[trainingParams.bias3_len];
 
 	// Copy it back to neural network data structure
-	err = cudaMemcpy(W1, trainingParams.W1, trainingParams.W1_len * sizeof(float), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(W12, trainingParams.W12, trainingParams.W12_len * sizeof(float), cudaMemcpyDeviceToHost);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(W2, trainingParams.W2, trainingParams.W2_len * sizeof(float), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(W23, trainingParams.W23, trainingParams.W23_len * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(bias2, trainingParams.bias2, trainingParams.bias2_len * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(bias3, trainingParams.bias3, trainingParams.bias3_len * sizeof(float), cudaMemcpyDeviceToHost);
 	assert(err == cudaSuccess);
 
 	// Free the cuda buffers
@@ -237,25 +237,50 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.images = nullptr;
 	cudaFree (trainingParams.labels);
 	trainingParams.labels = nullptr;
-	cudaFree (trainingParams.W1);
-	trainingParams.W1 = nullptr;
-	cudaFree (trainingParams.W2);
-	trainingParams.W2 = nullptr;
+	cudaFree (trainingParams.W12);
+	trainingParams.W12 = nullptr;
+	cudaFree (trainingParams.W23);
+	trainingParams.W23 = nullptr;
+	cudaFree (trainingParams.bias2);
+	trainingParams.bias2 = nullptr;
+	cudaFree (trainingParams.bias3);
+	trainingParams.bias3 = nullptr;
 
 	//
 	// Copy the weight data into the c++ data structure.
 	//
+	Layer* hidden = getLayer(HIDDEN);
+	for (size_t j = 0; j < hidden->nodes.size(); ++j) {
+		Layer::Node* node = hidden->nodes[j];
+		node->bias = bias2[j];
+		for (size_t i = 0; i < node->weights.size(); ++i) {
+			node->weights[i] = W12[j * hidden->nodes.size() + i];
+		}
+	}
+
+	Layer* output = getLayer(OUTPUT);
+	for (size_t j = 0; j < output->nodes.size(); ++j) {
+		Layer::Node* node = output->nodes[j];
+		node->bias = bias3[j];
+		for (size_t i = 0; i < node->weights.size(); ++i) {
+			node->weights[i] = W23[j * output->nodes.size() + i];
+		}
+	}
 
 	// Delete the host buffers
-	delete[] W1;
-	W1 = nullptr;
-	delete[] W2;
-	W2 = nullptr;
+	delete[] W12;
+	W12 = nullptr;
+	delete[] W23;
+	W23 = nullptr;
+	delete[] bias2;
+	bias2 = nullptr;
+	delete[] bias3;
+	bias3 = nullptr;
 }
 
 __device__ void printCuda(GPUTrainingParameters const params) {
 	printf("TrainingParams:\n"
-			"  W1: %p\n"
+			"  W12: %p\n"
 		    "  W1_len: %lu\n"
 			"  W2: %p\n"
 			"  W2_len: %lu\n"
@@ -264,10 +289,10 @@ __device__ void printCuda(GPUTrainingParameters const params) {
 			"  height: %lu\n"
 			"  numExamples: %lu\n"
 			"  numHiddenNodes: %lu\n",
-			params.W1,
-			params.W1_len,
-			params.W2,
-			params.W2_len,
+			params.W12,
+			params.W12_len,
+			params.W23,
+			params.W23_len,
 			params.errorThreshold,
 			params.width,
 			params.height,
@@ -275,10 +300,10 @@ __device__ void printCuda(GPUTrainingParameters const params) {
 			params.numHiddenNodes);
 }
 
-__device__ void feedForward(GPUTrainingParameters const/*, float sharedMem[]*/, GPUSharedMemoryLayout const sharedLayout);
-__device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sharedLayout);
+__device__ void feedForward(GPUTrainingParameters const);
+__device__ void backPropagate(float sharedMem[]);
 
-__global__ void trainCUDA(GPUTrainingParameters const params, GPUSharedMemoryLayout const sharedLayout) {
+__global__ void trainCUDA(GPUTrainingParameters const params) {
 
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printCuda(params);
@@ -313,10 +338,10 @@ __global__ void trainCUDA(GPUTrainingParameters const params, GPUSharedMemoryLay
 //				nnp_local.feedInput(images[imgCount]);
 //
 //				// Feed forward all layers (from input to hidden to output) calculating all nodes' output
-				feedForward(params /*, sharedMem*/, sharedLayout);
+				//feedForward(params);
 
 				// Back propagate the error and adjust weights in all layers accordingly
-				backPropagate(nullptr, sharedLayout);
+				//backPropagate(nullptr);
 //
 //				// Classify image by choosing output cell with highest output
 //				int classification = nnp_local.getNetworkClassification();
@@ -352,11 +377,11 @@ __global__ void trainCUDA(GPUTrainingParameters const params, GPUSharedMemoryLay
 
 __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
 
-__device__ void feedForward(GPUTrainingParameters const params/*, float sharedMem[]*/, GPUSharedMemoryLayout const sharedLayout) {
+__device__ void feedForward(GPUTrainingParameters const params) {
 
 	__shared__ float* hiddenOutputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 	__shared__ float* outputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-	__shared__ float* imageData[MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR];
+	__shared__ float* imageData[MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR];
 	__shared__ float* alignedW2[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
 	size_t const numImages = params.numHiddenNodes;
@@ -364,7 +389,7 @@ __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMe
 	Matrix W1;
 	W1.rows = params.numHiddenNodes;
 	W1.cols = params.width * params.height;
-	W1.data = params.W1;
+	W1.data = params.W12;
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
@@ -384,7 +409,7 @@ __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMe
 	W2.cols = params.numHiddenNodes;
 	W2.data = (float*)alignedW2;
 	//memcpy(W2.data, params.W2, params.W2_len * sizeof(float));
-	//W2.data = params.W2;
+	//W23.data = params.W23;
 
 	Matrix O;
 	O.rows = W2.rows;
@@ -394,10 +419,10 @@ __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMe
 	//d_mul_shared(W2, foobar, O);
 
 	//delete[] imgs.data;
-	//delete[] W2.data;
+	//delete[] W23.data;
 }
 
-__device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sharedLayout) {
+__device__ void backPropagate(float sharedMem[]) {
 
 }
 
@@ -436,6 +461,7 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
 		blockCacheA[threadIdx.x][threadIdx.y] = A.data[k * MATRIX_SIZE_DIVISOR + threadIdx.y * A.cols + threadIdx.x];
+		printf("idx: %lu\n", k * B.cols * MATRIX_SIZE_DIVISOR + threadIdx.y * B.cols + threadIdx.x);
 		blockCacheB[threadIdx.y][threadIdx.x] = B.data[k * B.cols * MATRIX_SIZE_DIVISOR + threadIdx.y * B.cols + threadIdx.x];
 
 		__syncthreads();
