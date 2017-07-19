@@ -14,6 +14,7 @@ __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 }
 
 #define MATRIX_SIZE_DIVISOR 28
+#define NUM_DIGITS 10
 
 struct GPUTrainingParameters {
 	/* Training data. */
@@ -354,26 +355,44 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
 __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMem[]*/, GPUSharedMemoryLayout const sharedLayout) {
 
 	__shared__ float* hiddenOutputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+	__shared__ float* outputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+
+	size_t const numImages = params.numHiddenNodes;
 
 	Matrix W1;
-	W1.rows = MATRIX_SIZE_DIVISOR;
+	W1.rows = params.numHiddenNodes;
 	W1.cols = params.width * params.height;
 	W1.data = params.W1;
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
-	imgs.cols = MATRIX_SIZE_DIVISOR;
+	imgs.cols = numImages;
 	imgs.data = new float[params.width * params.height];
 	imgs.data[threadIdx.x * threadIdx.y] = params.images[threadIdx.x * threadIdx.y];
 
 	Matrix foobar;
-	foobar.rows = MATRIX_SIZE_DIVISOR;
-	foobar.cols = MATRIX_SIZE_DIVISOR;
+	foobar.rows = params.numHiddenNodes;
+	foobar.cols = numImages;
 	foobar.data = (float*)hiddenOutputs;
 
 	d_mul_shared(W1, imgs, foobar);
 
+	Matrix W2;
+	W2.rows = foobar.rows;
+	W2.cols = params.numHiddenNodes;
+	W2.data = new float[W2.rows * W2.cols];
+	memcpy(W2.data, params.W2, params.W2_len * sizeof(float));
+	//W2.data = params.W2;
+
+	Matrix O;
+	O.rows = W2.rows;
+	O.cols = numImages;
+	O.data = (float*)outputs;
+
+	d_mul_shared(W2, foobar, O);
+
 	delete[] imgs.data;
+	delete[] W2.data;
 }
 
 __device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sharedLayout) {

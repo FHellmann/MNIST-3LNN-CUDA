@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 //	cv::waitKey(0);
 
 	int inputLayerNodes = 28*28;
-	int hiddenLayerNodes = 20;
+	int hiddenLayerNodes = 28;
 	int outputLayerNodes = 10;
 	double learningRate = 0.2;
 
