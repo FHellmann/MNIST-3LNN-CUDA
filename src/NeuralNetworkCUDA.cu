@@ -37,6 +37,28 @@ struct GPUTrainingParameters {
 	float maxDerivation;
 };
 
+void print(GPUTrainingParameters const params) {
+	printf("TrainingParams:\n"
+			"  W1: %p\n"
+		    "  W1_len: %lu\n"
+			"  W2: %p\n"
+			"  W2_len: %lu\n"
+			"  errorThreshold: %f\n"
+			"  width: %lu\n"
+			"  height: %lu\n"
+			"  numExamples: %lu\n"
+			"  numHiddenNodes: %lu\n",
+			params.W1,
+			params.W1_len,
+			params.W2,
+			params.W2_len,
+			params.errorThreshold,
+			params.width,
+			params.height,
+			params.numExamples,
+			params.numHiddenNodes);
+}
+
 struct GPUSharedMemoryLayout {
 	size_t W1_pos = 0;
 	size_t W1_size = 0;
@@ -116,13 +138,11 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	//
 
 	// Images
-	err = cudaMalloc((void**) &trainingParams.images,
-			allImgBufElements * sizeof(uint8_t));
+	err = cudaMalloc((void**) &trainingParams.images, allImgBufElements * sizeof(uint8_t));
 	assert(err == cudaSuccess);
 
 	// Labels
-	err = cudaMalloc((void**) &trainingParams.labels,
-			labels.size() * sizeof(uint8_t));
+	err = cudaMalloc((void**) &trainingParams.labels, labels.size() * sizeof(uint8_t));
 	assert(err == cudaSuccess);
 
 	// Storage for the first weight matrix
@@ -135,14 +155,15 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	err = cudaMalloc((void**) &trainingParams.W2, trainingParams.W2_len * sizeof(float));
 	assert(err == cudaSuccess);
 
+	print(trainingParams);
+
 	//
 	// Copy data to graphics card
 	//
-	err = cudaMemcpy(trainingParams.images, imgData,
-			allImgBufElements * sizeof(uint8_t), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.images, imgData, allImgBufElements * sizeof(uint8_t), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(trainingParams.labels, labels.data(),
-			labels.size() * sizeof(uint8_t), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.labels, labels.data(),labels.size() * sizeof(uint8_t), cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
 
 	delete[] imgData;
 	imgData = nullptr;
@@ -155,45 +176,45 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	cout << "Threads per block: (" << threadsPerBlock.x << ", "
 			<< threadsPerBlock.y << ")" << endl;
 
-	size_t sharedMemorySize = 0;
+//	size_t sharedMemorySize = 0;
 
 	// Size of the first weight matrix
-	gpuSharedMemoryLayout.W1_pos = 0;
-	gpuSharedMemoryLayout.W1_size = trainingParams.W1_len * sizeof(float);
-	sharedMemorySize += gpuSharedMemoryLayout.W1_size;
-
-	// Size of the second weight matrix
-	gpuSharedMemoryLayout.W2_pos = gpuSharedMemoryLayout.W1_pos + gpuSharedMemoryLayout.W1_size;
-	gpuSharedMemoryLayout.W2_size = trainingParams.W2_len * sizeof(float);
-	sharedMemorySize += gpuSharedMemoryLayout.W2_size;
-
-	// Size of the hidden layer output nodes
-	gpuSharedMemoryLayout.hiddenOutput_pos = gpuSharedMemoryLayout.W2_pos + gpuSharedMemoryLayout.W2_size;
-	gpuSharedMemoryLayout.hiddenOutput_size = hiddenLayer->nodes.size() * sizeof(float);
-	sharedMemorySize += gpuSharedMemoryLayout.hiddenOutput_size;
-
-	// Size of the output layer output values
-	gpuSharedMemoryLayout.outputOutput_pos = gpuSharedMemoryLayout.hiddenOutput_pos + gpuSharedMemoryLayout.hiddenOutput_size;
-	gpuSharedMemoryLayout.outputOutput_size = outputLayer->nodes.size() * sizeof(float);
-	sharedMemorySize += gpuSharedMemoryLayout.outputOutput_size;
-
-	// Size of the hidden bias vector
-	gpuSharedMemoryLayout.hiddenBias_pos   = gpuSharedMemoryLayout.outputOutput_pos + gpuSharedMemoryLayout.outputOutput_size;
-	gpuSharedMemoryLayout.hiddenBias_size  = hiddenLayer->nodes.size() * sizeof(float);
-	sharedMemorySize += gpuSharedMemoryLayout.hiddenBias_size;
-
-	// Size of the input bias vector
-	gpuSharedMemoryLayout.inputBias_pos    = gpuSharedMemoryLayout.hiddenOutput_pos + gpuSharedMemoryLayout.hiddenOutput_size;
-	gpuSharedMemoryLayout.inputBias_size   = inputLayer->nodes.size() * sizeof(float);
-	sharedMemorySize += gpuSharedMemoryLayout.inputBias_size;
-
-	// Size of the input vector
-	gpuSharedMemoryLayout.image_pos        = gpuSharedMemoryLayout.inputBias_pos + gpuSharedMemoryLayout.inputBias_size;
-	gpuSharedMemoryLayout.image_size       = inputLayer->nodes.size() * sizeof(uint8_t);
-	sharedMemorySize += gpuSharedMemoryLayout.image_size;
+//	gpuSharedMemoryLayout.W1_pos = 0;
+//	gpuSharedMemoryLayout.W1_size = trainingParams.W1_len * sizeof(float);
+//	sharedMemorySize += gpuSharedMemoryLayout.W1_size;
+//
+//	// Size of the second weight matrix
+//	gpuSharedMemoryLayout.W2_pos = gpuSharedMemoryLayout.W1_pos + gpuSharedMemoryLayout.W1_size;
+//	gpuSharedMemoryLayout.W2_size = trainingParams.W2_len * sizeof(float);
+//	sharedMemorySize += gpuSharedMemoryLayout.W2_size;
+//
+//	// Size of the hidden layer output nodes
+//	gpuSharedMemoryLayout.hiddenOutput_pos = gpuSharedMemoryLayout.W2_pos + gpuSharedMemoryLayout.W2_size;
+//	gpuSharedMemoryLayout.hiddenOutput_size = hiddenLayer->nodes.size() * sizeof(float);
+//	sharedMemorySize += gpuSharedMemoryLayout.hiddenOutput_size;
+//
+//	// Size of the output layer output values
+//	gpuSharedMemoryLayout.outputOutput_pos = gpuSharedMemoryLayout.hiddenOutput_pos + gpuSharedMemoryLayout.hiddenOutput_size;
+//	gpuSharedMemoryLayout.outputOutput_size = outputLayer->nodes.size() * sizeof(float);
+//	sharedMemorySize += gpuSharedMemoryLayout.outputOutput_size;
+//
+//	// Size of the hidden bias vector
+//	gpuSharedMemoryLayout.hiddenBias_pos   = gpuSharedMemoryLayout.outputOutput_pos + gpuSharedMemoryLayout.outputOutput_size;
+//	gpuSharedMemoryLayout.hiddenBias_size  = hiddenLayer->nodes.size() * sizeof(float);
+//	sharedMemorySize += gpuSharedMemoryLayout.hiddenBias_size;
+//
+//	// Size of the input bias vector
+//	gpuSharedMemoryLayout.inputBias_pos    = gpuSharedMemoryLayout.hiddenOutput_pos + gpuSharedMemoryLayout.hiddenOutput_size;
+//	gpuSharedMemoryLayout.inputBias_size   = inputLayer->nodes.size() * sizeof(float);
+//	sharedMemorySize += gpuSharedMemoryLayout.inputBias_size;
+//
+//	// Size of the input vector
+//	gpuSharedMemoryLayout.image_pos        = gpuSharedMemoryLayout.inputBias_pos + gpuSharedMemoryLayout.inputBias_size;
+//	gpuSharedMemoryLayout.image_size       = inputLayer->nodes.size() * sizeof(uint8_t);
+//	sharedMemorySize += gpuSharedMemoryLayout.image_size;
 
 	// Call graphics card functions
-	trainCUDA<<<numBlocks, threadsPerBlock, sharedMemorySize>>>(trainingParams, gpuSharedMemoryLayout);
+	trainCUDA<<<numBlocks, threadsPerBlock>>>(trainingParams, gpuSharedMemoryLayout);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
@@ -231,12 +252,36 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	W2 = nullptr;
 }
 
+__device__ void printCuda(GPUTrainingParameters const params) {
+	printf("TrainingParams:\n"
+			"  W1: %p\n"
+		    "  W1_len: %lu\n"
+			"  W2: %p\n"
+			"  W2_len: %lu\n"
+			"  errorThreshold: %f\n"
+			"  width: %lu\n"
+			"  height: %lu\n"
+			"  numExamples: %lu\n"
+			"  numHiddenNodes: %lu\n",
+			params.W1,
+			params.W1_len,
+			params.W2,
+			params.W2_len,
+			params.errorThreshold,
+			params.width,
+			params.height,
+			params.numExamples,
+			params.numHiddenNodes);
+}
+
 __device__ void feedForward(GPUTrainingParameters const/*, float sharedMem[]*/, GPUSharedMemoryLayout const sharedLayout);
 __device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sharedLayout);
 
 __global__ void trainCUDA(GPUTrainingParameters const params, GPUSharedMemoryLayout const sharedLayout) {
 
-
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printCuda(params);
+	}
 	//
 	// Initialize the internal weight matrices for each network.
 	//
@@ -270,7 +315,7 @@ __global__ void trainCUDA(GPUTrainingParameters const params, GPUSharedMemoryLay
 				feedForward(params /*, sharedMem*/, sharedLayout);
 
 				// Back propagate the error and adjust weights in all layers accordingly
-//				nnp_local.backPropagate(labels[imgCount]);
+				backPropagate(nullptr, sharedLayout);
 //
 //				// Classify image by choosing output cell with highest output
 //				int classification = nnp_local.getNetworkClassification();
@@ -336,14 +381,30 @@ __device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sha
 }
 
 /**
- * Computes C = AB.
+ * Computes C = AB where the dimensions of A and be have to be a multiple of MATRIX_SIZE_DIVISOR.
  *
  * @param[in] A first factor of the matrix multiplication.
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
  */
-__device__ void d_mul_shared(Matrix A, Matrix B, Matrix C)
-{
+__device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
+
+	if (A.cols != B.rows) {
+
+		//myCudaError = INVALID_MATIRX_SIZES;
+		printf("Invalid matrix sizes: (%lu, %lu)x(%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
+		return;
+	}
+
+	if (A.cols % MATRIX_SIZE_DIVISOR != 0 ||
+	    A.rows % MATRIX_SIZE_DIVISOR != 0 ||
+	    B.cols % MATRIX_SIZE_DIVISOR != 0 ||
+	    B.rows % MATRIX_SIZE_DIVISOR != 0) {
+
+		printf("Matrix dimensions not a multiple of %hu: (%lu, %lu)x(%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
+		return;
+	}
+
 	__shared__ float blockCacheA[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 	__shared__ float blockCacheB[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
