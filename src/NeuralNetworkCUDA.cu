@@ -463,6 +463,7 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 		return;
 	}
 
+	// The block caches are row major.
 	__shared__ float blockCacheA[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 	__shared__ float blockCacheB[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
@@ -470,19 +471,32 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 	unsigned int const numSubBlocks = A.cols / MATRIX_SIZE_DIVISOR;
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
-		blockCacheA[threadIdx.x][threadIdx.y] = A[(blockIdx.y + k * n) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * n];
-		blockCacheB[threadIdx.y][threadIdx.x] = B[(k + n * blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * n];
+		if (A.layout == Matrix::COLUMN_MAJOR) {
+			blockCacheA[threadIdx.y][threadIdx.x] = A.data[(blockIdx.y + k * A.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * A.cols];
+		} else if (A.layout == Matrix::ROW_MAJOR) {
+			blockCacheA[threadIdx.y][threadIdx.x] = A.data[(blockIdx.y * A.cols + k) * MATRIX_SIZE_DIVISOR + threadIdx.y * A.cols + threadIdx.x];
+		}
+
+		if (B.layout == Matrix::COLUMN_MAJOR) {
+			blockCacheB[threadIdx.y][threadIdx.x] = B.data[(blockIdx.x * B.cols + k) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * B.cols];
+		} else if (B.layout == Matrix::ROW_MAJOR) {
+			blockCacheB[threadIdx.y][threadIdx.x] = B.data[(blockIdx.x + k * B.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y * B.cols + threadIdx.x];
+		}
 
 		__syncthreads();
 
-	#pragma unroll
+		#pragma unroll
 		for (int i = 0; i < MATRIX_SIZE_DIVISOR; ++i)
 		{
-			threadValue += blockCacheA[i][threadIdx.y] * blockCacheB[i][threadIdx.x];
+			threadValue += blockCacheA[threadIdx.y][i] * blockCacheB[i][threadIdx.x];
 		}
 
 		__syncthreads();
 	}
 
-	C[(blockIdx.y + n * blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * n] = threadValue;
+	if (C.layout == Matrix::COLUMN_MAJOR) {
+		C.data[(blockIdx.y + blockIdx.x * C.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * C.cols] = threadValue;
+	} else if (C.layout == Matrix::ROW_MAJOR) {
+		C.data[(blockIdx.y * C.cols + blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y * C.cols + threadIdx.x] = threadValue;
+	}
 }
