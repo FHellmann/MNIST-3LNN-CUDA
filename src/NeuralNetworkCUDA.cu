@@ -93,7 +93,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-__global__ void trainCUDA(GPUTrainingParameters const);
+__global__ void cudaFeedForward(GPUTrainingParameters const);
+__global__ void cudaBackPropagate(GPUTrainingParameters const);
 
 __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
@@ -242,7 +243,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 			<< threadsPerBlock.y << ")" << endl;
 
 	// Call graphics card functions
-	trainCUDA<<<numBlocks, threadsPerBlock>>>(trainingParams);
+	cudaFeedForward<<<numBlocks, threadsPerBlock>>>(trainingParams);
+	cudaBackPropagate<<<numBlocks, threadsPerBlock>>>(trainingParams);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
@@ -336,84 +338,9 @@ __device__ void printCuda(GPUTrainingParameters const params) {
 			params.numHiddenNodes);
 }
 
-__device__ void feedForward(GPUTrainingParameters const);
-__device__ void backPropagate(float sharedMem[]);
-
-__global__ void trainCUDA(GPUTrainingParameters const params) {
-
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printCuda(params);
-	}
-	//
-	// Initialize the internal weight matrices for each network.
-	//
-
-
-	//
-	// Start training
-	//
-	bool needsFurtherTraining = true;
-	float error = 100000000.0f;
-	while (needsFurtherTraining) {
-
-		float newError = 0;
-
-		//NeuralNetworkParallel nnp_merge(*this);
-
-//		{
-//			//NeuralNetworkParallel nnp_local(*this);
-//			size_t localErrCount = 0;
-//
-//			for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
-//				// Convert the MNIST image to a standardized vector format and feed into the network
-//				nnp_local.feedInput(images[imgCount]);
-//
-//				// Feed forward all layers (from input to hidden to output) calculating all nodes' output
-				feedForward(params);
-
-				// Back propagate the error and adjust weights in all layers accordingly
-				//backPropagate(nullptr);
-//
-//				// Classify image by choosing output cell with highest output
-//				int classification = nnp_local.getNetworkClassification();
-//				if (classification != labels[imgCount])
-//					localErrCount++;
-//
-//				// Display progress during training
-//				if ((imgCount % every_ten_percent) == 0) {
-//					cout << "x";
-//					cout.flush();
-//				}
-//			}
-//
-//			newError += static_cast<double>(localErrCount) / static_cast<double>(images.size());
-//
-//			// merge network weights together
-//			mergeNeuralNetworks(nnp_local, nnp_merge, this);
-//
-//			//cout << "Thread-" << omp_get_thread_num() << ": Error=" << localErrCount << ", Images=" << localImageProcessed << endl;
-//		}
-//
-//		mergeNeuralNetworks(nnp_merge, *this, this);
-
-		if (newError < error) {
-			error = newError;
-		}
-
-		needsFurtherTraining = !(error < params.errorThreshold || newError > error + params.maxDerivation);
-
-//		cout << " Error: " << error * 100.0 << "%, NewError: " << newError * 100.0 << "%" << endl;
-	}
-}
-
 __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
 
-__device__ void feedForward(GPUTrainingParameters const params) {
-
-//	__shared__ float* hiddenOutputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-//	__shared__ float* outputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-//	__shared__ float* imageData[MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR];
-//	__shared__ float* alignedW2[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+__global__ void cudaFeedForward(GPUTrainingParameters const params) {
 
 	size_t const numImages = params.numHiddenNodes;
 
@@ -452,7 +379,7 @@ __device__ void feedForward(GPUTrainingParameters const params) {
 	d_mul_shared(W23, hiddenOutput, output);
 }
 
-__device__ void backPropagate(float sharedMem[]) {
+__global__ void cudaBackPropagate(GPUTrainingParameters const params) {
 
 }
 
