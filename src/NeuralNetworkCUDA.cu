@@ -356,6 +356,8 @@ __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMe
 
 	__shared__ float* hiddenOutputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 	__shared__ float* outputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+	__shared__ float* imageData[MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR];
+	__shared__ float* alignedW2[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
 	size_t const numImages = params.numHiddenNodes;
 
@@ -367,7 +369,7 @@ __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMe
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
 	imgs.cols = numImages;
-	imgs.data = new float[params.width * params.height];
+	imgs.data = (float*)imageData;
 	imgs.data[threadIdx.x * threadIdx.y] = params.images[threadIdx.x * threadIdx.y];
 
 	Matrix foobar;
@@ -380,8 +382,8 @@ __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMe
 	Matrix W2;
 	W2.rows = foobar.rows;
 	W2.cols = params.numHiddenNodes;
-	W2.data = new float[W2.rows * W2.cols];
-	memcpy(W2.data, params.W2, params.W2_len * sizeof(float));
+	W2.data = (float*)alignedW2;
+	//memcpy(W2.data, params.W2, params.W2_len * sizeof(float));
 	//W2.data = params.W2;
 
 	Matrix O;
@@ -389,10 +391,10 @@ __device__ void feedForward(GPUTrainingParameters const params/*, float sharedMe
 	O.cols = numImages;
 	O.data = (float*)outputs;
 
-	d_mul_shared(W2, foobar, O);
+	//d_mul_shared(W2, foobar, O);
 
-	delete[] imgs.data;
-	delete[] W2.data;
+	//delete[] imgs.data;
+	//delete[] W2.data;
 }
 
 __device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sharedLayout) {
