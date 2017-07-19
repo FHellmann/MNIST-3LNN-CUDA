@@ -403,36 +403,36 @@ __device__ void feedForward(GPUTrainingParameters const params) {
 	Matrix W12;
 	W12.rows = params.numHiddenNodes;
 	W12.cols = params.width * params.height;
+	W12.layout = Matrix::ROW_MAJOR;
 	W12.data = params.W12; // Global data pointer
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
 	imgs.cols = numImages;
+	imgs.layout = Matrix::COLUMN_MAJOR;
 	imgs.data = params.images; // Global data pointer, column major.
 
-	Matrix foobar;
-	foobar.rows = params.numHiddenNodes;
-	foobar.cols = numImages;
-	foobar.data = (float*)hiddenOutputs;
+	Matrix hiddenOutput;
+	hiddenOutput.rows = params.numHiddenNodes;
+	hiddenOutput.cols = numImages;
+	hiddenOutput.layout = Matrix::ROW_MAJOR;
+	hiddenOutput.data = params.output2;
 
-	d_mul_shared(W12, imgs, foobar);
+	d_mul_shared(W12, imgs, hiddenOutput);
 
 	Matrix W23;
-	W23.rows = foobar.rows;
+	W23.rows = hiddenOutput.rows;
 	W23.cols = params.numHiddenNodes;
-	W23.data = (float*)alignedW2;
-	//memcpy(W2.data, params.W2, params.W2_len * sizeof(float));
-	//W23.data = params.W23;
+	W23.layout = Matrix::ROW_MAJOR;
+	W23.data = params.W23;
 
-	Matrix O;
-	O.rows = W23.rows;
-	O.cols = numImages;
-	O.data = (float*)outputs;
+	Matrix output;
+	output.rows = W23.rows;
+	output.cols = numImages;
+	output.layout = Matrix::ROW_MAJOR;
+	output.data = params.output3;
 
-	//d_mul_shared(W2, foobar, O);
-
-	//delete[] imgs.data;
-	//delete[] W23.data;
+	d_mul_shared(W23, hiddenOutput, output);
 }
 
 __device__ void backPropagate(float sharedMem[]) {
@@ -442,8 +442,6 @@ __device__ void backPropagate(float sharedMem[]) {
 /**
  * Computes C = AB where the dimensions of A and be have to be a multiple of MATRIX_SIZE_DIVISOR.
  *
- * Matrices are expected to be row-major.
- *
  * @param[in] A first factor of the matrix multiplication.
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
@@ -452,7 +450,7 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 
 	if (A.cols != B.rows) {
 
-		printf("Invalid matrix sizes: (%lu, %lu)x(%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
+		printf("Incompatible matrices: (%lu, %lu) x (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
 		return;
 	}
 
@@ -461,21 +459,19 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 	    B.cols % MATRIX_SIZE_DIVISOR != 0 ||
 	    B.rows % MATRIX_SIZE_DIVISOR != 0) {
 
-		printf("Matrix dimensions not a multiple of %hu: (%lu, %lu)x(%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
+		printf("Matrix dimensions not a multiple of %hu: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
 		return;
 	}
 
 	__shared__ float blockCacheA[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 	__shared__ float blockCacheB[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
-	// Column major!
 	float threadValue = 0.0f;
 	unsigned int const numSubBlocks = A.cols / MATRIX_SIZE_DIVISOR;
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
-		blockCacheA[threadIdx.x][threadIdx.y] = A.data[k * MATRIX_SIZE_DIVISOR + threadIdx.y * A.cols + threadIdx.x];
-		printf("idx: %lu\n", k * B.cols * MATRIX_SIZE_DIVISOR + threadIdx.y * B.cols + threadIdx.x);
-		blockCacheB[threadIdx.y][threadIdx.x] = B.data[k * B.cols * MATRIX_SIZE_DIVISOR + threadIdx.y * B.cols + threadIdx.x];
+		blockCacheA[threadIdx.x][threadIdx.y] = A[(blockIdx.y + k * n) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * n];
+		blockCacheB[threadIdx.y][threadIdx.x] = B[(k + n * blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * n];
 
 		__syncthreads();
 
@@ -488,5 +484,5 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 		__syncthreads();
 	}
 
-	C.data[threadIdx.y * C.cols + threadIdx.x] = threadValue;
+	C[(blockIdx.y + n * blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * n] = threadValue;
 }
