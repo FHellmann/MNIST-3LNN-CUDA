@@ -63,6 +63,7 @@ double getGlobalError(int const dataCount, int* errorData, int errorSize) {
 	for(int i=0; i < errorSize; i++) {
 		globalError += errorData[i];
 	}
+	delete[] errorData;
 	return static_cast<double>(globalError) / static_cast<double>(dataCount);
 }
 
