@@ -42,22 +42,22 @@ int main(int argc, char* argv[]) {
 	ValueArg<string> networkType("t", "networkType",
 			"The neural network type (sequentiell, parallel, distributed, cuda).", false, "sequentiell", "type", parser);
 
-	ValueArg<int> inputLayerNodes("in", "inputNodes",
+	ValueArg<int> inputLayerNodes("", "inputNodes",
 			"The amount of input nodes.", false, 28*28, "inputLayerNodes", parser);
 
-	ValueArg<int> hiddenLayerNodes("hn", "hiddenNodes",
+	ValueArg<int> hiddenLayerNodes("", "hiddenNodes",
 			"The amount of hidden nodes.", false, 20, "hiddenLayerNodes", parser);
 
-	ValueArg<int> outputLayerNodes("on", "outputNodes",
+	ValueArg<int> outputLayerNodes("", "outputNodes",
 			"The amount of output nodes.", false, 10, "outputLayerNodes", parser);
 
-	ValueArg<double> learningRate("lr", "learningRate",
+	ValueArg<double> learningRate("l", "learningRate",
 			"The learning rate of the neural network.", false, 0.2, "learningRate", parser);
 
-	ValueArg<double> trainingErrorThreshold("te", "trainingErrorThreshold",
+	ValueArg<double> trainingErrorThreshold("", "trainingError",
 			"The training error when the neural network should quit work if the value is reached.", false, 0.06, "trainingError", parser);
 
-	ValueArg<double> maxDerivation("d", "derivation",
+	ValueArg<double> maxDerivation("", "derivation",
 			"The max derivation between to erros after two train samples where proceed.", false, 0.005, "maxDerivation", parser);
 
 	try {

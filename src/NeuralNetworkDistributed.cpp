@@ -58,13 +58,16 @@ double* getWeightsByLayer(NeuralNetwork &nn, NeuralNetwork::LayerType type) {
 	return weights;
 }
 
-double getGlobalError(int const dataCount, int* errorData, int errorSize) {
+double getGlobalError(int const globalSize, int* errorData, int const errorSize) {
+	cout << "Sum global error: ";
 	int globalError = 0;
 	for(int i=0; i < errorSize; i++) {
+		cout << errorData[i] << " + ";
 		globalError += errorData[i];
 	}
 	delete[] errorData;
-	return static_cast<double>(globalError) / static_cast<double>(dataCount);
+	cout << " = " << globalError << endl;
+	return static_cast<double>(globalError) / static_cast<double>(globalSize);
 }
 
 void updateWeights(NeuralNetwork &nn, NeuralNetwork::LayerType type, double* deltaWeights) {
@@ -88,9 +91,10 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 
     	bool needsFurtherTraining = true;
     	double error = std::numeric_limits<double>::max();
-    	double newError = 0;
 
     	// 1. Send (MPI_Scatter) training set and init data to slaves
+    	cout << "Master: Send training set and init data to slaves...";
+
     	int imageCount = images.size();
     	int imageSize = images[0].rows * images[0].cols;
     	uchar **imageArray = new uchar*[imageCount];
@@ -115,13 +119,20 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		int weightsOutputSize = getLayer(OUTPUT)->nodes[0]->weights.size();
 		MPI_Bcast(&weightsOutputSize, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
+		cout << "FINISHED!" << endl;
+
     	// 2. Receive (MPI_Gather) initialization information from slaves
+    	cout << "Master: Receive initialization information from slaves...";
+
     	int *ready = new int[world_size];
     	MPI_Gather(NULL, 0, MPI_INT, &ready[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 		delete[] ready;
 
+		cout << "FINISHED!" << endl;
+
     	while(needsFurtherTraining) {
 			// 3. Send (MPI_Bcast) weights to slaves
+        	cout << "Master: Send weights to slaves...";
 			double *weightsHidden = getWeightsByLayer(*this, HIDDEN);
 			MPI_Bcast(&weightsHidden[0], 1, MPI_DOUBLE, curr_rank, MPI_COMM_WORLD);
 			delete[] weightsHidden;
@@ -129,18 +140,23 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			double *weightsOutput = getWeightsByLayer(*this, OUTPUT);
 			MPI_Bcast(&weightsOutput[0], 1, MPI_DOUBLE, curr_rank, MPI_COMM_WORLD);
 			delete[] weightsOutput;
+			cout << "FINISHED!" << endl;
 
 			// 4. Receive (MPI_Gather) all delta weights from slaves
-			double *deltaWeightsHidden = new double[getLayer(HIDDEN)->nodes[0]->weights.size()];
+        	cout << "Master: Receive all delta weights from slaves...";
+			double *deltaWeightsHidden = new double[(world_size-1)*getLayer(HIDDEN)->nodes[0]->weights.size()];
 			MPI_Gather(NULL, 0, MPI_INT, &deltaWeightsHidden[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
-			double *deltaWeightsOutput = new double[getLayer(OUTPUT)->nodes[0]->weights.size()];
+			double *deltaWeightsOutput = new double[(world_size-1)*getLayer(OUTPUT)->nodes[0]->weights.size()];
 			MPI_Gather(NULL, 0, MPI_INT, &deltaWeightsOutput[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
 			int *errors = new int[world_size];
-			MPI_Gather(NULL, 0, MPI_INT, &errors[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+			int my_error = 0;
+			MPI_Gather(&my_error, 1, MPI_INT, &errors[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+			cout << "FINISHED!" << endl;
 
 			// 5. Check whether stop or repeat (back to 3.)
+        	cout << "Master: Check whether stop or repeat...";
 			updateWeights(*this, HIDDEN, deltaWeightsHidden);
 			updateWeights(*this, OUTPUT, deltaWeightsOutput);
 
@@ -153,11 +169,14 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			if(newError < training_error_threshold || newError > error + max_derivation) {
 				needsFurtherTraining = false;
 			}
+			cout << "FINISHED!" << endl;
 
 			// 6. Notify slaves to go on or exit
+        	cout << "Master: Notify slaves to go on or exit...";
 			MPI_Bcast(&needsFurtherTraining, 1, MPI_CXX_BOOL, curr_rank, MPI_COMM_WORLD);
+			cout << "FINISHED!" << endl;
 
-			cout << " Error: " << newError * 100.0 << "%" << endl;
+			cout << "Master: Error: " << newError * 100.0 << "%" << endl;
     	}
     } else {
     	// --- SLAVE ---
@@ -165,6 +184,7 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	bool needsFurtherTraining = true;
 
     	// 1. Receive (MPI_Scatter) training set and init data
+    	cout << "Slave-" << curr_rank << ": Receive training set and init data...";
     	int imageCount;
     	int imageSize;
 		MPI_Bcast(&imageCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -186,28 +206,37 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	int outputWeightsCount = 0;
 		MPI_Bcast(&outputWeightsCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+		cout << "FINISHED!" << endl;
+
     	// 2. Send (MPI_Gather) initialization finished
+    	cout << "Slave-" << curr_rank << ": Send initialization finished...";
     	bool finished = true;
     	MPI_Gather(&finished, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+    	cout << "FINISHED!" << endl;
 
     	while(needsFurtherTraining) {
         	double newError = 0;
 
 			// 3. Receive (MPI_Bcast) weights
+        	cout << "Slave-" << curr_rank << ": Receive weights...";
 			double *weightsHidden = new double[hiddenWeightsCount];
 			MPI_Bcast(&weightsHidden[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 			double *weightsOutput = new double[outputWeightsCount];
 			MPI_Bcast(&weightsOutput[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	    	cout << "FINISHED!" << endl;
 
 			// 4. Update Weights
+	    	cout << "Slave-" << curr_rank << ": Update Weights...";
 			updateWeights(*this, HIDDEN, weightsHidden);
 			updateWeights(*this, OUTPUT, weightsOutput);
 
 			delete[] weightsHidden;
 			delete[] weightsOutput;
+	    	cout << "FINISHED!" << endl;
 
 			// 5. Perform training on training set
+	    	cout << "Slave-" << curr_rank << ": Perform training on training set...";
 			NeuralNetworkDistributed nnp_merge(*this);
 
 			#pragma omp parallel shared(newError)
@@ -233,7 +262,7 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 				}
 
 				#pragma omp atomic
-				newError += static_cast<double>(localErrCount) / static_cast<double>(images.size());
+				newError += static_cast<double>(localErrCount);
 
 				// merge network weights together
 				#pragma omp critical
@@ -241,8 +270,10 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			}
 
 			mergeNeuralNetworks(nnp_merge, *this, this);
+	    	cout << "FINISHED!" << endl;
 
 			// 6. Send (MPI_Gather) delta weight
+	    	cout << "Slave-" << curr_rank << ": Send delta weight...";
 			double *deltaWeightsHidden = getWeightsByLayer(*this, HIDDEN);
 			MPI_Gather(&deltaWeightsHidden[0], 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
 			delete[] deltaWeightsHidden;
@@ -252,9 +283,12 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			delete[] deltaWeightsOutput;
 
 			MPI_Gather(&newError, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+	    	cout << "FINISHED!" << endl;
 
 			// 7. Wait for command from master to go on or exit
+	    	cout << "Slave-" << curr_rank << ": Wait for command from master to go on or exit...";
 			MPI_Bcast(&needsFurtherTraining, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
+	    	cout << "FINISHED!" << endl;
     	}
     }
 }
