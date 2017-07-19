@@ -26,6 +26,8 @@ struct GPUTrainingParameters {
 	size_t numHiddenNodes;
 	size_t width;
 	size_t height;
+	// Number of images per training
+	size_t batchSize;
 
 	/* Weight matrices. */
 	float* W12;
@@ -132,6 +134,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.numHiddenNodes = hiddenLayer->nodes.size();
 	trainingParams.errorThreshold = training_error_threshold;
 	trainingParams.maxDerivation = max_derivation;
+	trainingParams.batchSize = MATRIX_SIZE_DIVISOR;
 
 	//
 	// Allocate cuda memory
@@ -163,6 +166,16 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	// Storage for the output layer bias vector
 	trainingParams.bias3_len = outputLayer->nodes.size();
 	err = cudaMalloc((void**) &trainingParams.bias3, trainingParams.bias3_len * sizeof(float));
+	assert(err == cudaSuccess);
+
+	// Storage for the output layer output vectors
+	trainingParams.output2_len = hiddenLayer->nodes.size() * trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.output2, trainingParams.output2_len * sizeof(float));
+	assert(err == cudaSuccess);
+
+	// Storage for the output layer output vectors
+	trainingParams.output3_len = outputLayer->nodes.size() * trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.output3, trainingParams.output3_len * sizeof(float));
 	assert(err == cudaSuccess);
 
 	//
@@ -264,6 +277,10 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.bias2 = nullptr;
 	cudaFree (trainingParams.bias3);
 	trainingParams.bias3 = nullptr;
+	cudaFree (trainingParams.output2);
+	trainingParams.output2 = nullptr;
+	cudaFree (trainingParams.output3);
+	trainingParams.output3 = nullptr;
 
 	//
 	// Copy the weight data into the c++ data structure.
