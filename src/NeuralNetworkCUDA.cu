@@ -18,8 +18,8 @@ __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 
 struct GPUTrainingParameters {
 	/* Training data. */
-	uint8_t* images;
-	uint8_t* labels;
+	float* images;
+	float* labels;
 
 	/* Training data parameters. */
 	size_t numExamples;
@@ -30,12 +30,20 @@ struct GPUTrainingParameters {
 	/* Weight matrices. */
 	float* W12;
 	size_t W12_len;
-	float* bias2;
-	size_t bias2_len;
 	float* W23;
 	size_t W23_len;
+
+	/* Biases */
+	float* bias2;
+	size_t bias2_len;
 	float* bias3;
 	size_t bias3_len;
+
+	/* Layer data */
+	float* output2;
+	size_t output2_len;
+	float* output3;
+	size_t output3_len;
 
 	/* Training parameters. */
 	float errorThreshold;
@@ -62,8 +70,14 @@ struct GPUSharedMemoryLayout {
 } gpuSharedMemoryLayout;
 
 struct Matrix {
+	enum Layout {
+		ROW_MAJOR,
+		COLUMN_MAJOR
+	};
+
 	size_t rows;
 	size_t cols;
+	Layout layout = ROW_MAJOR;
 	float* data;
 };
 
@@ -91,15 +105,18 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	// Collect memory in RAM
 	size_t const singleImgPixCount = images.front().total();
 	size_t const allImgBufElements = singleImgPixCount * images.size();
-	uint8_t* imgData = new uint8_t[allImgBufElements];
-	uint8_t* it = imgData;
+	float* imgData = new float[allImgBufElements];
+	float* dst = imgData;
 	for (cv::Mat const& img : images) {
-		if (img.isContinuous()) {
-			std::copy(img.datastart, img.dataend, it);
-		} else {
-			cerr << "cv::Mat is not continuous." << endl;
+		for (uint8_t* src = img.datastart; src != img.dataend;) {
+			*(dst++) = static_cast<float>(*(src++));
 		}
-		it += img.total() * img.elemSize();
+	}
+
+	float* flabels = new float[labels.size()];
+	dst = flabels;
+	for (uint8_t const& l : labels) {
+		*(dst++) = static_cast<float>(l);
 	}
 
 	cudaError_t err;
@@ -121,11 +138,11 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	//
 
 	// Images
-	err = cudaMalloc((void**) &trainingParams.images, allImgBufElements * sizeof(uint8_t));
+	err = cudaMalloc((void**) &trainingParams.images, allImgBufElements * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Labels
-	err = cudaMalloc((void**) &trainingParams.labels, labels.size() * sizeof(uint8_t));
+	err = cudaMalloc((void**) &trainingParams.labels, labels.size() * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the first weight matrix
@@ -151,13 +168,15 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	//
 	// Copy data to graphics card
 	//
-	err = cudaMemcpy(trainingParams.images, imgData, allImgBufElements * sizeof(uint8_t), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.images, imgData, allImgBufElements * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(trainingParams.labels, labels.data(),labels.size() * sizeof(uint8_t), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.labels, flabels, labels.size() * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
 
 	delete[] imgData;
 	imgData = nullptr;
+	delete[] flabels;
+	flabels = nullptr;
 
 	// Configure Grid, i.e. setup Blocks and Threads
 	dim3 numBlocks(1);
@@ -312,11 +331,6 @@ __global__ void trainCUDA(GPUTrainingParameters const params) {
 	// Initialize the internal weight matrices for each network.
 	//
 
-	// Weight matrices will be column major for better bank access.
-	//extern __shared__ float sharedMem[];
-
-
-	// The layer outputs will be stored in shared vectors.
 
 	//
 	// Start training
@@ -338,7 +352,7 @@ __global__ void trainCUDA(GPUTrainingParameters const params) {
 //				nnp_local.feedInput(images[imgCount]);
 //
 //				// Feed forward all layers (from input to hidden to output) calculating all nodes' output
-				//feedForward(params);
+				feedForward(params);
 
 				// Back propagate the error and adjust weights in all layers accordingly
 				//backPropagate(nullptr);
@@ -379,40 +393,39 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
 
 __device__ void feedForward(GPUTrainingParameters const params) {
 
-	__shared__ float* hiddenOutputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-	__shared__ float* outputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
-	__shared__ float* imageData[MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR];
-	__shared__ float* alignedW2[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+//	__shared__ float* hiddenOutputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+//	__shared__ float* outputs[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+//	__shared__ float* imageData[MATRIX_SIZE_DIVISOR * MATRIX_SIZE_DIVISOR];
+//	__shared__ float* alignedW2[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
 	size_t const numImages = params.numHiddenNodes;
 
-	Matrix W1;
-	W1.rows = params.numHiddenNodes;
-	W1.cols = params.width * params.height;
-	W1.data = params.W12;
+	Matrix W12;
+	W12.rows = params.numHiddenNodes;
+	W12.cols = params.width * params.height;
+	W12.data = params.W12; // Global data pointer
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
 	imgs.cols = numImages;
-	imgs.data = (float*)imageData;
-	imgs.data[threadIdx.x * threadIdx.y] = params.images[threadIdx.x * threadIdx.y];
+	imgs.data = params.images; // Global data pointer, column major.
 
 	Matrix foobar;
 	foobar.rows = params.numHiddenNodes;
 	foobar.cols = numImages;
 	foobar.data = (float*)hiddenOutputs;
 
-	d_mul_shared(W1, imgs, foobar);
+	d_mul_shared(W12, imgs, foobar);
 
-	Matrix W2;
-	W2.rows = foobar.rows;
-	W2.cols = params.numHiddenNodes;
-	W2.data = (float*)alignedW2;
+	Matrix W23;
+	W23.rows = foobar.rows;
+	W23.cols = params.numHiddenNodes;
+	W23.data = (float*)alignedW2;
 	//memcpy(W2.data, params.W2, params.W2_len * sizeof(float));
 	//W23.data = params.W23;
 
 	Matrix O;
-	O.rows = W2.rows;
+	O.rows = W23.rows;
 	O.cols = numImages;
 	O.data = (float*)outputs;
 
