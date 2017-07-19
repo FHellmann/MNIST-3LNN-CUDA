@@ -146,6 +146,9 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 				needsFurtherTraining = false;
 			}
 
+			// 6. Notify slaves to go on or exit
+			MPI_Bcast(&needsFurtherTraining, 1, MPI_CXX_BOOL, curr_rank, MPI_COMM_WORLD);
+
 			cout << " Error: " << newError * 100.0 << "%" << endl;
     	}
     } else {
@@ -153,7 +156,7 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 
     	bool needsFurtherTraining = true;
 
-    	// 1. Receive (MPI_Scatter) training set
+    	// 1. Receive (MPI_Scatter) training set and init data
     	int imageCount;
     	int imageSize;
 		MPI_Bcast(&imageCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -236,6 +239,9 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			MPI_Gather(&deltaWeightsOutput[0], 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
 
 			MPI_Gather(&newError, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+
+			// 7. Wait for command from master to go on or exit
+			MPI_Bcast(&needsFurtherTraining, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
     	}
     }
 }
