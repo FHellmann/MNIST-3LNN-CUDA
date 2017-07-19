@@ -191,14 +191,6 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	delete[] flabels;
 	flabels = nullptr;
 
-	// Configure Grid, i.e. setup Blocks and Threads
-	dim3 numBlocks(1);
-	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
-	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
-			<< endl;
-	cout << "Threads per block: (" << threadsPerBlock.x << ", "
-			<< threadsPerBlock.y << ")" << endl;
-
 //	size_t sharedMemorySize = 0;
 
 	// Size of the first weight matrix
@@ -240,6 +232,14 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	cudaMemset(trainingParams.W23, 0.0, trainingParams.W23_len * sizeof(float));
 	cudaMemset(trainingParams.bias2, 0.0, trainingParams.bias2_len * sizeof(float));
 	cudaMemset(trainingParams.bias3, 0.0, trainingParams.bias3_len * sizeof(float));
+
+	// Configure Grid, i.e. setup Blocks and Threads
+	dim3 numBlocks(12,12);
+	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
+			<< endl;
+	cout << "Threads per block: (" << threadsPerBlock.x << ", "
+			<< threadsPerBlock.y << ")" << endl;
 
 	// Call graphics card functions
 	trainCUDA<<<numBlocks, threadsPerBlock>>>(trainingParams);
