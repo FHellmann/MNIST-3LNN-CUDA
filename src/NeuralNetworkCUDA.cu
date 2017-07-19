@@ -383,6 +383,8 @@ __device__ void backPropagate(float sharedMem[], GPUSharedMemoryLayout const sha
 /**
  * Computes C = AB where the dimensions of A and be have to be a multiple of MATRIX_SIZE_DIVISOR.
  *
+ * Matrices are expected to be row-major.
+ *
  * @param[in] A first factor of the matrix multiplication.
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
@@ -391,7 +393,6 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 
 	if (A.cols != B.rows) {
 
-		//myCudaError = INVALID_MATIRX_SIZES;
 		printf("Invalid matrix sizes: (%lu, %lu)x(%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
 		return;
 	}
@@ -413,8 +414,8 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 	unsigned int const numSubBlocks = A.cols / MATRIX_SIZE_DIVISOR;
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
-		blockCacheA[threadIdx.x][threadIdx.y] = A.data[(blockIdx.y + k * A.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * A.cols];
-		blockCacheB[threadIdx.y][threadIdx.x] = B.data[(k + A.cols * blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * A.cols];
+		blockCacheA[threadIdx.x][threadIdx.y] = A.data[k * MATRIX_SIZE_DIVISOR + threadIdx.y * A.cols + threadIdx.x];
+		blockCacheB[threadIdx.y][threadIdx.x] = B.data[k * B.cols * MATRIX_SIZE_DIVISOR + threadIdx.y * B.cols + threadIdx.x];
 
 		__syncthreads();
 
@@ -427,5 +428,5 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 		__syncthreads();
 	}
 
-	C.data[(blockIdx.y + A.cols * blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * A.cols] = threadValue;
+	C.data[threadIdx.y * C.cols + threadIdx.x] = threadValue;
 }
