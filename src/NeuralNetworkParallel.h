@@ -1,3 +1,6 @@
+#ifndef NEURALNETWORKPARALLEL_H_
+#define NEURALNETWORKPARALLEL_H_
+
 #include "NeuralNetwork.h"
 #include <omp.h>
 #include <iostream>
@@ -23,3 +26,5 @@ public:
 		LayerParallel(LayerParallel const&);
 	};
 };
+
+#endif

@@ -2,8 +2,11 @@
 
 using namespace std;
 
-NeuralNetworkDistributed::NeuralNetworkDistributed(const int inpCount, const int hidCount,
+NeuralNetworkDistributed::NeuralNetworkDistributed(const int _worldSize, const int _currRank,
+		const int inpCount, const int hidCount,
 		const int outCount, const double _learningRate) {
+	world_size = _worldSize;
+	curr_rank = _currRank;
 	learningRate = _learningRate;
 	layers.push_back(new NeuralNetworkParallel::LayerParallel(inpCount, 0, INPUT, NONE, nullptr));
 	layers.push_back(new NeuralNetworkParallel::LayerParallel(hidCount, inpCount, HIDDEN, SIGMOID, layers.back()));
@@ -27,7 +30,7 @@ NeuralNetworkDistributed::NeuralNetworkDistributed(const int inpCount, const int
 	}
 }
 
-void mergeNeuralNetworks(NeuralNetworkParallel& omp_in, NeuralNetworkParallel& omp_out, NeuralNetworkParallel* reset) {
+void mergeNeuralNetworks(NeuralNetworkDistributed& omp_in, NeuralNetworkDistributed& omp_out, NeuralNetworkDistributed* reset) {
 	for(int l=0; l < omp_in.layers.size(); l++) {
 		NeuralNetwork::Layer* layerIn = omp_in.layers.at(l);
 		NeuralNetwork::Layer* layerOut = omp_out.layers.at(l);
@@ -79,25 +82,6 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		double const training_error_threshold,
 		double const max_derivation) {
 
-	/*
-	int argc = 4;
-	char** argv = {
-			""+getLayer(INPUT)->nodes.size(),
-			""+getLayer(HIDDEN)->nodes.size(),
-			""+getLayer(OUTPUT)->nodes.size(),
-			""+learningRate
-	};
-	*/
-
-    //MPI_Init(&argc, &argv);
-	MPI_Init(NULL, NULL);
-
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    int curr_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &curr_rank);
-
     if(curr_rank == 0) {
     	// --- MASTER ---
 
@@ -105,43 +89,52 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	double error = std::numeric_limits<double>::max();
     	double newError = 0;
 
-    	// 1. Send (MPI_Scatter) training set to slaves
-    	uchar **imageArray = new uchar[images.size()][images[0].size];
-    	uint8_t *labelArray = new uint8_t[labels.size()];
+    	// 1. Send (MPI_Scatter) training set and init data to slaves
+    	int imageCount = images.size();
+    	int imageSize = images[0].rows * images[0].cols;
+    	uchar **imageArray = new uchar*[imageCount];
+    	for(int i=0; i < imageCount; i++)
+    		imageArray[i] = new uchar[imageSize];
+    	uint8_t *labelArray = new uint8_t[imageCount];
     	for(int i=0; i < images.size(); i++) {
     		std::copy(images[i].datastart, images[i].dataend, &(imageArray[i][0]));
     		labelArray[i] = labels[i];
     	}
+		MPI_Bcast(&imageCount, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+		MPI_Bcast(&imageSize, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
     	MPI_Scatter(&imageArray[0], 1, MPI_UNSIGNED_CHAR, NULL, 0, MPI_INT, curr_rank, MPI_COMM_WORLD);
     	MPI_Scatter(&labelArray[0], 1, MPI_UNSIGNED_CHAR, NULL, 0, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
+		int weightsHiddenSize = getLayer(OUTPUT)->nodes[0]->weights.size();
+		MPI_Bcast(&weightsHiddenSize, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+		int weightsOutputSize = getLayer(OUTPUT)->nodes[0]->weights.size();
+		MPI_Bcast(&weightsOutputSize, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+
     	// 2. Receive (MPI_Gather) initialization information from slaves
     	int *ready = new int[world_size];
-    	MPI_Gather(NULL, 0, MPI_INT, &ready[0], 1, MPI_INT, world_rank, MPI_COMM_WORLD);
+    	MPI_Gather(NULL, 0, MPI_INT, &ready[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
     	while(needsFurtherTraining) {
 			// 3. Send (MPI_Bcast) weights to slaves
-			double *weightsHidden = getWeightsByLayer(this, HIDDEN);
-			MPI_Bcast(&(getLayer(HIDDEN)->nodes[0]->weights.size()), 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+			double *weightsHidden = getWeightsByLayer(*this, HIDDEN);
 			MPI_Bcast(&weightsHidden[0], 1, MPI_DOUBLE, curr_rank, MPI_COMM_WORLD);
 
-			double *weightsOutput = getWeightsByLayer(this, OUTPUT);
-			MPI_Bcast(&(getLayer(OUTPUT)->nodes[0]->weights.size()), 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+			double *weightsOutput = getWeightsByLayer(*this, OUTPUT);
 			MPI_Bcast(&weightsOutput[0], 1, MPI_DOUBLE, curr_rank, MPI_COMM_WORLD);
 
 			// 4. Receive (MPI_Gather) all delta weights from slaves
 			double *deltaWeightsHidden = new double[getLayer(HIDDEN)->nodes[0]->weights.size()];
-			MPI_Gather(NULL, 0, MPI_INT, &deltaWeightsHidden[0], 1, MPI_INT, world_rank, MPI_COMM_WORLD);
+			MPI_Gather(NULL, 0, MPI_INT, &deltaWeightsHidden[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
 			double *deltaWeightsOutput = new double[getLayer(OUTPUT)->nodes[0]->weights.size()];
-			MPI_Gather(NULL, 0, MPI_INT, &deltaWeightsOutput[0], 1, MPI_INT, world_rank, MPI_COMM_WORLD);
+			MPI_Gather(NULL, 0, MPI_INT, &deltaWeightsOutput[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
 			int *errors = new int[world_size];
-			MPI_Gather(NULL, 0, MPI_INT, &errors[0], 1, MPI_INT, world_rank, MPI_COMM_WORLD);
+			MPI_Gather(NULL, 0, MPI_INT, &errors[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 
 			// 5. Check whether stop or repeat (back to 3.)
-			updateWeights(this, HIDDEN, deltaWeightsHidden);
-			updateWeights(this, OUTPUT, deltaWeightsOutput);
+			updateWeights(*this, HIDDEN, deltaWeightsHidden);
+			updateWeights(*this, OUTPUT, deltaWeightsOutput);
 
 			double const newError = getGlobalError(images.size(), errors, world_size);
 
@@ -161,40 +154,55 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	bool needsFurtherTraining = true;
 
     	// 1. Receive (MPI_Scatter) training set
-    	MPI_Scatter(NULL, 0, MPI_UNSIGNED_CHAR, &imageArray, 1, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
-    	MPI_Scatter(NULL, 0, MPI_UNSIGNED_CHAR, &labelArray, 0, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+    	int imageCount;
+    	int imageSize;
+		MPI_Bcast(&imageCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&imageSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    	uchar **imageArray = new uchar*[imageCount];
+    	for(int i=0; i < imageCount; i++)
+    		imageArray[i] = new uchar[imageSize];
+    	uint8_t *labelArray = new uint8_t[imageCount];
+    	MPI_Scatter(NULL, 0, MPI_UNSIGNED_CHAR, &imageArray[0], 1, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+    	MPI_Scatter(NULL, 0, MPI_UNSIGNED_CHAR, &labelArray[0], 0, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+
+    	int matrixSize = imageSize / imageSize;
+    	cv::Mat *imageMatrixes = new cv::Mat[imageCount];
+    	for(int i=0; i < imageCount; i++)
+    		imageMatrixes[i] = cv::Mat(matrixSize, matrixSize, CV_8UC1, imageArray[i]);
+
+    	int hiddenWeightsCount = 0;
+		MPI_Bcast(&hiddenWeightsCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    	int outputWeightsCount = 0;
+		MPI_Bcast(&outputWeightsCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     	// 2. Send (MPI_Gather) initialization finished
-    	MPI_Gather(&(true), 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+    	bool finished = true;
+    	MPI_Gather(&finished, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
 
     	while(needsFurtherTraining) {
         	double newError = 0;
 
 			// 3. Receive (MPI_Bcast) weights
-        	int hiddenWeightsCount = 0;
-			MPI_Bcast(&hiddenWeightsCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			double *weightsHidden = new double[hiddenWeightsCount];
 			MPI_Bcast(&weightsHidden[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-        	int outputWeightsCount = 0;
-			MPI_Bcast(&outputWeightsCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			double *weightsOutput = new double[outputWeightsCount];
 			MPI_Bcast(&weightsOutput[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 			// 4. Update Weights
-			updateWeights(this, HIDDEN, weightsHidden);
-			updateWeights(this, OUTPUT, weightsOutput);
+			updateWeights(*this, HIDDEN, weightsHidden);
+			updateWeights(*this, OUTPUT, weightsOutput);
 
 			// 5. Perform training on training set
-			NeuralNetworkParallel nnp_merge(*this);
+			NeuralNetworkDistributed nnp_merge(*this);
 
 			#pragma omp parallel shared(newError)
 			{
-				NeuralNetworkParallel nnp_local(*this);
+				NeuralNetworkDistributed nnp_local(*this);
 				size_t localErrCount = 0;
 
 				#pragma omp for
-				for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
+				for (size_t imgCount = 0; imgCount < imageCount; imgCount++) {
 					// Convert the MNIST image to a standardized vector format and feed into the network
 					nnp_local.feedInput(images[imgCount]);
 
@@ -202,11 +210,11 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 					nnp_local.feedForward();
 
 					// Back propagate the error and adjust weights in all layers accordingly
-					nnp_local.backPropagate(labels[imgCount]);
+					nnp_local.backPropagate(labelArray[imgCount]);
 
 					// Classify image by choosing output cell with highest output
 					int classification = nnp_local.getNetworkClassification();
-					if (classification != labels[imgCount])
+					if (classification != labelArray[imgCount])
 						localErrCount++;
 				}
 
@@ -221,15 +229,13 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			mergeNeuralNetworks(nnp_merge, *this, this);
 
 			// 6. Send (MPI_Gather) delta weight
-			double *deltaWeightsHidden = getWeightsByLayer(this, HIDDEN);
+			double *deltaWeightsHidden = getWeightsByLayer(*this, HIDDEN);
 			MPI_Gather(&deltaWeightsHidden[0], 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
 
-			double *deltaWeightsOutput = getWeightsByLayer(this, OUTPUT);
+			double *deltaWeightsOutput = getWeightsByLayer(*this, OUTPUT);
 			MPI_Gather(&deltaWeightsOutput[0], 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
 
 			MPI_Gather(&newError, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
     	}
     }
-
-	MPI_Finalize();
 }

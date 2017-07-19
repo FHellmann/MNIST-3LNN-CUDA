@@ -4,7 +4,11 @@
 
 class NeuralNetworkDistributed : public NeuralNetwork {
 public:
-	NeuralNetworkDistributed(const int inpCount, const int hidCount, const int outCount,
+	int world_size;
+	int curr_rank;
+
+	NeuralNetworkDistributed(const int _worldSize, const int _currRank,
+			const int inpCount, const int hidCount, const int outCount,
 			const double learningRate);
 
 	void train(MNISTImageDataset const& images,
