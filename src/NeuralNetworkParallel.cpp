@@ -63,7 +63,7 @@ void mergeNeuralNetworks(NeuralNetworkParallel& omp_in, NeuralNetworkParallel& o
 	}
 }
 
-void NeuralNetworkParallel::train(MNISTImageDataset const& images,
+double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels,
 		double const training_error_threshold,
 		double const max_derivation) {
@@ -137,6 +137,8 @@ void NeuralNetworkParallel::train(MNISTImageDataset const& images,
 	mergeNeuralNetworks(nnp_merge, *this, this);
 
 	cout << endl;
+
+	return error;
 }
 
 NeuralNetworkParallel::LayerParallel::LayerParallel(const int nodeCount, const int weightCount,

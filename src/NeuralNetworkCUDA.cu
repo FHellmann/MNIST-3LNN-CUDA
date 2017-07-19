@@ -74,14 +74,14 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 __global__ void trainCUDA(GPUTrainingParameters const, GPUSharedMemoryLayout const);
 
-__host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
+__host__ double NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
 		double const max_derivation) {
 
 	if (images.size() <= 0)
-		return;
+		return 0;
 	if (labels.size() <= 0)
-		return;
+		return 0;
 
 	// Collect memory in RAM
 	size_t const singleImgPixCount = images.front().total();
@@ -229,6 +229,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	W1 = nullptr;
 	delete[] W2;
 	W2 = nullptr;
+
+	return 0;
 }
 
 __device__ void feedForward(GPUTrainingParameters const/*, float sharedMem[]*/, GPUSharedMemoryLayout const sharedLayout);

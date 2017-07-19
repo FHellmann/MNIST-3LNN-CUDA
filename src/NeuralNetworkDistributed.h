@@ -4,15 +4,16 @@
 
 class NeuralNetworkDistributed : public NeuralNetwork {
 public:
-	int world_size;
-	int curr_rank;
+	int argc;
+	char** argv;
+	NeuralNetwork& nn;
 
-	NeuralNetworkDistributed(const int _worldSize, const int _currRank,
-			const int inpCount, const int hidCount, const int outCount,
-			const double learningRate);
+	NeuralNetworkDistributed(int argc, char** argv, NeuralNetwork &nn);
 
-	void train(MNISTImageDataset const& images,
+	double train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
 			double const training_error_threshold,
 			double const max_derivation);
+
+	bool saveYAML(std::string const& path);
 };

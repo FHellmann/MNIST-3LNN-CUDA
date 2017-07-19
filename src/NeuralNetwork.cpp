@@ -78,7 +78,7 @@ void NeuralNetwork::feedInput(cv::Mat const& image) {
 	}
 }
 
-void NeuralNetwork::train(MNISTImageDataset const& images,
+double NeuralNetwork::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels,
 		double const training_error_threshold,
 		double const max_derivation) {
@@ -126,6 +126,8 @@ void NeuralNetwork::train(MNISTImageDataset const& images,
 	}
 
 	cout << endl;
+
+	return error;
 }
 
 void NeuralNetwork::feedForward() {

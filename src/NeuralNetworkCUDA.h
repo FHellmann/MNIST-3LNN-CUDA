@@ -16,7 +16,7 @@ public:
 			const int outCount, const double learningRate);
 	virtual ~NeuralNetworkCUDA();
 
-	virtual void train(MNISTImageDataset const& images,
+	virtual double train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
 			double const training_error_threshold, double const max_derivation);
 };

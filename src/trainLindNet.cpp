@@ -22,25 +22,20 @@ unsigned char KEY_ESC = 27;
 
 int main(int argc, char* argv[]) {
 
-    MPI_Init(&argc, &argv);
-
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    int curr_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &curr_rank);
-
 	CmdLine parser("Train the LindNet with the MNIST database.");
 
 	ValueArg<string> mnistPath("", "mnist",
-			"Folder containing the MNIST files.", curr_rank == 0, "", "path", parser);
+			"Folder containing the MNIST files.", false, "", "path", parser);
 
 	ValueArg<string> netDefinitionPath("n", "lindNet",
 			"yaml file for saving the resulting net.", false, "lindNet.yaml",
 			"path", parser);
 
 	ValueArg<string> networkType("t", "networkType",
-			"The neural network type (sequentiell, parallel, distributed, cuda).", false, "sequentiell", "type", parser);
+			"The neural network type (sequentiell, parallel, cuda).", false, "sequentiell", "type", parser);
+
+	SwitchArg distributed("d", "distributed",
+			"The neural network will be executed distributed.", parser, false);
 
 	ValueArg<int> inputLayerNodes("", "inputNodes",
 			"The amount of input nodes.", false, 28*28, "inputLayerNodes", parser);
@@ -83,15 +78,17 @@ int main(int argc, char* argv[]) {
 	if(networkTypeSelection.compare("parallel") == 0) {
 		lindNet = new NeuralNetworkParallel(inputLayerNodes.getValue(), hiddenLayerNodes.getValue(), outputLayerNodes.getValue(), learningRate.getValue());
 		cout << "Neural Network - Parallel" << endl;
-	} else if(networkTypeSelection.compare("distributed") == 0) {
-		lindNet = new NeuralNetworkDistributed(world_size, curr_rank, inputLayerNodes.getValue(), hiddenLayerNodes.getValue(), outputLayerNodes.getValue(), learningRate.getValue());
-		cout << "Neural Network - Distributed" << endl;
 	} else if (networkTypeSelection.compare("cuda") == 0) {
 		lindNet = new NeuralNetworkCUDA(inputLayerNodes.getValue(), hiddenLayerNodes.getValue(), outputLayerNodes.getValue(), learningRate.getValue());
 		cout << "Neural Network - CUDA" << endl;
 	} else {
 		lindNet = new NeuralNetwork(inputLayerNodes.getValue(), hiddenLayerNodes.getValue(), outputLayerNodes.getValue(), learningRate.getValue());
 		cout << "Neural Network - Sequentiell" << endl;
+	}
+
+	if(distributed.isSet()) {
+		lindNet = new NeuralNetworkDistributed(argc, argv, *lindNet);
+		cout << "# !!! Distributed !!! #" << endl;
 	}
 
 	// Do some training.
@@ -106,7 +103,5 @@ int main(int argc, char* argv[]) {
 	lindNet->saveYAML(netDefinitionPath.getValue());
 
 	delete lindNet;
-
-	MPI_Finalize();
 	exit(EXIT_SUCCESS);
 }
