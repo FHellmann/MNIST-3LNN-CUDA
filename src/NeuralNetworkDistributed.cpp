@@ -103,7 +103,11 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		MPI_Bcast(&imageCount, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
 		MPI_Bcast(&imageSize, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
     	MPI_Scatter(&imageArray[0], 1, MPI_UNSIGNED_CHAR, NULL, 0, MPI_INT, curr_rank, MPI_COMM_WORLD);
+    	for(int i=0; i < imageCount; i++)
+    		delete[] imageArray[i];
+		delete[] imageArray;
     	MPI_Scatter(&labelArray[0], 1, MPI_UNSIGNED_CHAR, NULL, 0, MPI_INT, curr_rank, MPI_COMM_WORLD);
+		delete[] labelArray;
 
 		int weightsHiddenSize = getLayer(OUTPUT)->nodes[0]->weights.size();
 		MPI_Bcast(&weightsHiddenSize, 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
@@ -113,14 +117,17 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	// 2. Receive (MPI_Gather) initialization information from slaves
     	int *ready = new int[world_size];
     	MPI_Gather(NULL, 0, MPI_INT, &ready[0], 1, MPI_INT, curr_rank, MPI_COMM_WORLD);
+		delete[] ready;
 
     	while(needsFurtherTraining) {
 			// 3. Send (MPI_Bcast) weights to slaves
 			double *weightsHidden = getWeightsByLayer(*this, HIDDEN);
 			MPI_Bcast(&weightsHidden[0], 1, MPI_DOUBLE, curr_rank, MPI_COMM_WORLD);
+			delete[] weightsHidden;
 
 			double *weightsOutput = getWeightsByLayer(*this, OUTPUT);
 			MPI_Bcast(&weightsOutput[0], 1, MPI_DOUBLE, curr_rank, MPI_COMM_WORLD);
+			delete[] weightsOutput;
 
 			// 4. Receive (MPI_Gather) all delta weights from slaves
 			double *deltaWeightsHidden = new double[getLayer(HIDDEN)->nodes[0]->weights.size()];
@@ -196,6 +203,9 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			updateWeights(*this, HIDDEN, weightsHidden);
 			updateWeights(*this, OUTPUT, weightsOutput);
 
+			delete[] weightsHidden;
+			delete[] weightsOutput;
+
 			// 5. Perform training on training set
 			NeuralNetworkDistributed nnp_merge(*this);
 
@@ -234,9 +244,11 @@ void NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			// 6. Send (MPI_Gather) delta weight
 			double *deltaWeightsHidden = getWeightsByLayer(*this, HIDDEN);
 			MPI_Gather(&deltaWeightsHidden[0], 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+			delete[] deltaWeightsHidden;
 
 			double *deltaWeightsOutput = getWeightsByLayer(*this, OUTPUT);
 			MPI_Gather(&deltaWeightsOutput[0], 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+			delete[] deltaWeightsOutput;
 
 			MPI_Gather(&newError, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
 
