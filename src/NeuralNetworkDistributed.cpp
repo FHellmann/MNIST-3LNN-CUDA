@@ -162,18 +162,6 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     		uchar *image = new uchar[imageSize];
     		std::copy(&(imageArray[i*imageSize]), &(imageArray[(i+1)*imageSize]), &(image[0]));
     		imageMatrixes.push_back(cv::Mat(matrixSize, matrixSize, CV_8UC1, image));
-    		/*
-    		cv::Mat mat = imageMatrixes[i];
-    		for(int r=0; r < mat.rows; r++) {
-    			for(int c=0; c < mat.cols; c++) {
-    				if(static_cast<int>(mat.at<uint8_t>(r, c)) > 0)
-    					cout << "0";
-    				else
-    					cout << ".";
-    			}
-    			cout << endl;
-    		}
-    		*/
     	}
     	imageDataset = new MNISTImageDataset(imageMatrixes);
     	delete[] imageArray;
@@ -189,6 +177,21 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	labelDataset = new MNISTLableDataset(labelVector);
     	delete[] labelArray;
 		logEnd(curr_rank, time);
+
+		/*
+		for(int i=0; i < imageDataset->size(); i++) {
+    		cv::Mat mat = (*imageDataset)[i];
+    		for(int r=0; r < mat.rows; r++) {
+    			for(int c=0; c < mat.cols; c++) {
+    				if(static_cast<int>(mat.at<uint8_t>(r, c)) > 0)
+    					cout << "0";
+    				else
+    					cout << ".";
+    			}
+    			cout << endl;
+    		}
+		}
+		*/
     }
 
     cout << endl;
@@ -289,13 +292,6 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
     	time = logStart(curr_rank, "Notify processes to go on or exit...");
 		MPI_Bcast(&needsFurtherTraining, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		logEnd(curr_rank, time);
-	}
-
-	if(curr_rank > 0) {
-    	// Cleanup memory - Slaves ONLY
-		for(int i=0; i < imageDataset->size(); i++) {
-			delete[] imageDataset->data()->data;
-		}
 	}
 
 	MPI_Finalize();
