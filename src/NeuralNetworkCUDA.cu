@@ -53,6 +53,12 @@ struct GPUTrainingParameters {
 	/* Training parameters. */
 	float errorThreshold;
 	float maxDerivation;
+
+	/* Temporary buffers, e.g. for back propagation. */
+	float* tmp1;
+	size_t tmp1_len;
+	float* tmp2;
+	size_t tmp2_len;
 };
 
 struct GPUSharedMemoryLayout {
@@ -182,6 +188,16 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	err = cudaMalloc((void**) &trainingParams.output3, trainingParams.output3_len * sizeof(float));
 	assert(err == cudaSuccess);
 
+	// Temporary storage of the size of the output vectors
+	trainingParams.tmp1_len = outputLayer->nodes.size() * trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.tmp1, trainingParams.tmp1_len * sizeof(float));
+	assert(err == cudaSuccess);
+
+	// Temporary storage of the size of the output vectors
+	trainingParams.tmp2_len = outputLayer->nodes.size() * trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.tmp2, trainingParams.tmp2_len * sizeof(float));
+	assert(err == cudaSuccess);
+
 	//
 	// Copy data to graphics card
 	//
@@ -288,6 +304,10 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.output2 = nullptr;
 	cudaFree (trainingParams.output3);
 	trainingParams.output3 = nullptr;
+	cudaFree (trainingParams.tmp1);
+	trainingParams.tmp1 = nullptr;
+	cudaFree (trainingParams.tmp2);
+	trainingParams.tmp2 = nullptr;
 
 	//
 	// Copy the weight data into the c++ data structure.
