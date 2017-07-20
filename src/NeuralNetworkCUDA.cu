@@ -365,10 +365,20 @@ __device__ void d_print(GPUTrainingParameters const params) {
 			params.numHiddenNodes);
 }
 
-__device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
-__device__ void d_smul(Matrix A, Matrix B, Matrix C);
-__device__ void d_activate_layer(float* const, size_t const, NeuralNetwork::ActFctType);
+/* Matrix manipulation operations. */
+__device__ void d_mul_base(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float));
+__device__ void d_mul(Matrix A, Matrix B, Matrix C);
+__device__ void d_mul_add(Matrix A, Matrix B, Matrix C);
+__device__ void d_cwise_op(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float));
+__device__ void d_cwise_mul(Matrix A, Matrix B, Matrix C);
+__device__ void d_cwise_sub(Matrix A, Matrix B, Matrix C);
+
+/* Neural network operations. */
+__device__ void d_apply_activation(float* const, size_t const, NeuralNetwork::ActFctType);
 __device__ void d_apply_activation_derivative(float* const, size_t const, NeuralNetwork::ActFctType);
+__device__ void d_back_propagate_output(GPUTrainingParameters const);
+__device__ void d_back_propagate_hidden(GPUTrainingParameters const);
+
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
@@ -400,8 +410,8 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 		printf("ERROR: HiddenOutput matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
 	}
 
-	d_mul_shared(W12, imgs, hiddenOutput);
-	d_activate_layer(params.output2, params.output2_len, params.activationFunction2);
+	d_mul(W12, imgs, hiddenOutput);
+	d_apply_activation(params.output2, params.output2_len, params.activationFunction2);
 
 	Matrix W23;
 	W23.rows = NUM_DIGITS;
@@ -421,13 +431,9 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
 	}
 
-	d_mul_shared(W23, hiddenOutput, output);
-	d_activate_layer(params.output3, params.output3_len, params.activationFunction3);
+	d_mul(W23, hiddenOutput, output);
+	d_apply_activation(params.output3, params.output3_len, params.activationFunction3);
 }
-
-__device__ void d_back_propagate_output(GPUTrainingParameters const);
-__device__ void d_back_propagate_hidden(GPUTrainingParameters const);
-__device__ void d_sub(Matrix A, Matrix B, Matrix C);
 
 __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
@@ -436,6 +442,7 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 	}
 
 	d_back_propagate_output(params);
+	d_back_propagate_hidden(params);
 }
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
@@ -445,7 +452,7 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	targetOutput.cols = params.batchSize;
 	targetOutput.data = params.tmp1;
 	if (targetOutput.rows * targetOutput.cols != params.tmp1_len) {
-		printf("ERROR: targetOutput matrix has wrong dimensions: %lu x %lu != %lu\n", targetOutput.rows, targetOutput.cols, params.tmp1_len);
+		printf("d_back_propagate_output: targetOutput matrix has wrong dimensions: %lu x %lu != %lu\n", targetOutput.rows, targetOutput.cols, params.tmp1_len);
 	}
 
 	Matrix output;
@@ -453,18 +460,44 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	output.cols = params.batchSize;
 	output.data = params.output3;
 	if (output.rows * output.cols != params.output3_len) {
-		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
+		printf("d_back_propagate_output: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
 	}
 
 	Matrix difference = targetOutput;
 	Matrix error = output;
 
-	d_sub(targetOutput, output, difference);
+	d_cwise_sub(targetOutput, output, difference);
 	d_apply_activation_derivative(output.data, output.rows * output.cols, params.activationFunction3);
-	d_smul(output, targetOutput, error);
+	d_cwise_mul(output, targetOutput, error);
+
+	Matrix hiddenOutput;
+	hiddenOutput.rows = params.batchSize;
+	hiddenOutput.cols = params.numHiddenNodes;
+	hiddenOutput.layout = Matrix::ROW_MAJOR;
+	hiddenOutput.data = params.output2;
+	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
+		printf("d_back_propagate_output: hidden output matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
+	}
+
+	Matrix W23;
+	W23.rows = NUM_DIGITS;
+	W23.cols = params.numHiddenNodes;
+	W23.data = params.W23;
+	if (W23.rows * W23.cols != params.W23_len) {
+		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
+	}
+
+	d_mul_add(error, hiddenOutput, W23);
+
 }
 
-__device__ void d_activate_layer(float* const data, size_t const len, NeuralNetwork::ActFctType functionType) {
+__device__ void d_back_propagate_hidden(GPUTrainingParameters const) {
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_back_propagate_hidden\n");
+	}
+}
+
+__device__ void d_apply_activation(float* const data, size_t const len, NeuralNetwork::ActFctType functionType) {
 
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_activate_layer\n");
@@ -512,6 +545,36 @@ __device__ void d_apply_activation_derivative(float* const data, size_t const le
 	}
 }
 
+__device__ void d_assign(float* a, float b, float c) {
+	*a = c;
+}
+
+__device__ void d_add(float* a, float b, float c) {
+	*a = b + c;
+}
+
+__device__ void d_sub(float* a, float b, float c) {
+	*a = b - c;
+}
+
+__device__ void d_mul(float* a, float b, float c) {
+	*a = b * c;
+}
+
+__device__ void d_mul(Matrix A, Matrix B, Matrix C) {
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_mul\n");
+	}
+	d_mul_base(A, B, C, d_assign);
+}
+
+__device__ void d_mul_add(Matrix A, Matrix B, Matrix C) {
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_mul_add\n");
+	}
+	d_mul_base(A, B, C, d_add);
+}
+
 /**
  * Computes C = AB where the dimensions of A and be have to be a multiple of MATRIX_SIZE_DIVISOR.
  *
@@ -519,27 +582,13 @@ __device__ void d_apply_activation_derivative(float* const data, size_t const le
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
  */
-__device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
-
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_mul_shared\n");
-	}
+__device__ void d_mul_base(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float)) {
 
 	if (A.cols != B.rows) {
 
 		printf("Incompatible matrices: (%lu, %lu) x (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
 		return;
 	}
-
-	// Not needed anymore.
-//	if (A.cols % MATRIX_SIZE_DIVISOR != 0 ||
-//	    A.rows % MATRIX_SIZE_DIVISOR != 0 ||
-//	    B.cols % MATRIX_SIZE_DIVISOR != 0 ||
-//	    B.rows % MATRIX_SIZE_DIVISOR != 0) {
-//
-//		printf("Matrix dimensions not a multiple of %hu: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
-//		return;
-//	}
 
 	// The block caches are row major.
 	__shared__ float blockCacheA[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
@@ -578,14 +627,25 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 		__syncthreads();
 	}
 
-	if (C.layout == Matrix::COLUMN_MAJOR) {
-		C.data[(blockIdx.y + blockIdx.x * C.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * C.cols] = threadValue;
-	} else if (C.layout == Matrix::ROW_MAJOR) {
-		C.data[(blockIdx.y * C.cols + blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y * C.cols + threadIdx.x] = threadValue;
+	size_t idx = 0;
+	if (C.layout == Matrix::ROW_MAJOR) {
+		idx = (blockIdx.y * C.cols + blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y * C.cols + threadIdx.x;
+	} else if (C.layout == Matrix::COLUMN_MAJOR) {
+		idx = (blockIdx.y + blockIdx.x * C.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * C.cols;
 	}
+	float* pValue = &(C.data[idx]);
+	op(pValue, *pValue, threadValue);
 }
 
-__device__ void d_sub(Matrix A, Matrix B, Matrix C) {
+__device__ void d_cwise_sub(Matrix A, Matrix B, Matrix C) {
+	d_cwise_op(A, B, C, d_sub);
+}
+
+__device__ void d_cwise_mul(Matrix A, Matrix B, Matrix C) {
+	d_cwise_op(A, B, C, d_mul);
+}
+
+__device__ void d_cwise_op(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float)) {
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
@@ -617,40 +677,6 @@ __device__ void d_sub(Matrix A, Matrix B, Matrix C) {
 		idxC = y + x * C.rows;
 	}
 
-	C.data[idxC] = A.data[idxA] - B.data[idxB];
-}
-
-__device__ void d_smul(Matrix A, Matrix B, Matrix C) {
-
-	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
-
-		printf("Incompatible matrices: (%lu, %lu) + (%lu, %lu) = (%lu, lu)\n", A.rows, A.cols, B.rows, B.cols, C.rows, C.cols);
-		return;
-	}
-
-	size_t const x = blockIdx.x * blockDim.x + threadIdx.x;
-	size_t const y = blockIdx.y * blockDim.y + threadIdx.y;
-
-	if (x >= A.cols || y >= A.rows) {
-		return;
-	}
-
-	// row major
-	size_t idxA = x + y * A.cols;
-	size_t idxB = x + y * B.cols;
-	size_t idxC = x + y * C.cols;
-
-	if (A.layout == Matrix::COLUMN_MAJOR) {
-		idxA = y + x * A.rows;
-	}
-
-	if (B.layout == Matrix::COLUMN_MAJOR) {
-		idxB = y + x * B.rows;
-	}
-
-	if (C.layout == Matrix::COLUMN_MAJOR) {
-		idxC = y + x * C.rows;
-	}
-
-	C.data[idxC] = A.data[idxA] * B.data[idxB];
+	//C.data[idxC] = A.data[idxA] - B.data[idxB];
+	op(&(C.data[idxC]), A.data[idxA], - B.data[idxB]);
 }
