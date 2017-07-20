@@ -378,7 +378,7 @@ __device__ void d_apply_activation(float* const, size_t const, NeuralNetwork::Ac
 __device__ void d_apply_activation_derivative(float* const, size_t const, NeuralNetwork::ActFctType);
 __device__ void d_back_propagate_output(GPUTrainingParameters const);
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const);
-
+__device__ void d_fill_target_output(GPUTrainingParameters const, Matrix);
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
@@ -454,6 +454,9 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	if (targetOutput.rows * targetOutput.cols != params.tmp1_len) {
 		printf("d_back_propagate_output: targetOutput matrix has wrong dimensions: %lu x %lu != %lu\n", targetOutput.rows, targetOutput.cols, params.tmp1_len);
 	}
+
+	// Compute the target output based on the labels
+	d_fill_target_output(params, targetOutput);
 
 	Matrix output;
 	output.rows = NUM_DIGITS;
@@ -543,6 +546,31 @@ __device__ void d_apply_activation_derivative(float* const data, size_t const le
 		data[idx] = 1.0f - t * t;
 		break;
 	}
+}
+
+__device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix targetOutput) {
+
+	if (targetOutput.rows != NUM_DIGITS) {
+		printf("d_fill_target_output: wrong number of rows. Given %lu, expected %u\n", targetOutput.rows, NUM_DIGITS);
+		return;
+	}
+
+	size_t srcIdx = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t targetX = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t targetY = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (targetX >= targetOutput.cols || targetY >= targetOutput.rows) {
+		return;
+	}
+
+	size_t targetIdx = 0;
+	if (targetOutput.layout == Matrix::ROW_MAJOR) {
+		targetIdx = targetX + targetY * targetOutput.cols;
+	} else if (targetOutput.layout == Matrix::COLUMN_MAJOR) {
+		targetIdx = targetX * targetOutput.rows + targetY;
+	}
+
+	targetOutput.data[targetIdx] = (threadIdx.y == params.labels[srcIdx]) ? 1.0f : 0.0f;
 }
 
 __device__ void d_assign(float* a, float b, float c) {
