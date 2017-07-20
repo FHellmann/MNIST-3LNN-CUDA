@@ -47,6 +47,9 @@ struct GPUTrainingParameters {
 	float* output3;
 	size_t output3_len;
 
+	NeuralNetwork::ActFctType activationFunction2;
+	NeuralNetwork::ActFctType activationFunction3;
+
 	/* Training parameters. */
 	float errorThreshold;
 	float maxDerivation;
@@ -93,8 +96,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-__global__ void cudaFeedForward(GPUTrainingParameters const);
-__global__ void cudaBackPropagate(GPUTrainingParameters const);
+__global__ void d_feed_forward(GPUTrainingParameters const);
+__global__ void d_back_propagate(GPUTrainingParameters const);
 
 __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
@@ -243,8 +246,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 			<< threadsPerBlock.y << ")" << endl;
 
 	// Call graphics card functions
-	cudaFeedForward<<<numBlocks, threadsPerBlock>>>(trainingParams);
-	cudaBackPropagate<<<numBlocks, threadsPerBlock>>>(trainingParams);
+	d_feed_forward<<<numBlocks, threadsPerBlock>>>(trainingParams);
+	d_back_propagate<<<numBlocks, threadsPerBlock>>>(trainingParams);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
@@ -288,6 +291,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	// Copy the weight data into the c++ data structure.
 	//
 	Layer* hidden = getLayer(HIDDEN);
+	trainingParams.activationFunction2 = hidden->actFctType;
 	for (size_t j = 0; j < hidden->nodes.size(); ++j) {
 		Layer::Node* node = hidden->nodes[j];
 		node->bias = bias2[j];
@@ -297,6 +301,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	}
 
 	Layer* output = getLayer(OUTPUT);
+	trainingParams.activationFunction3 = output->actFctType;
 	for (size_t j = 0; j < output->nodes.size(); ++j) {
 		Layer::Node* node = output->nodes[j];
 		node->bias = bias3[j];
@@ -316,7 +321,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	bias3 = nullptr;
 }
 
-__device__ void printCuda(GPUTrainingParameters const params) {
+__device__ void d_print(GPUTrainingParameters const params) {
 	printf("TrainingParams:\n"
 			"  W12: %p\n"
 		    "  W1_len: %lu\n"
@@ -339,8 +344,9 @@ __device__ void printCuda(GPUTrainingParameters const params) {
 }
 
 __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
+__device__ void d_activate_layer(float* const, size_t const, NeuralNetwork::ActFctType);
 
-__global__ void cudaFeedForward(GPUTrainingParameters const params) {
+__global__ void d_feed_forward(GPUTrainingParameters const params) {
 
 	size_t const numImages = params.numHiddenNodes;
 
@@ -363,6 +369,7 @@ __global__ void cudaFeedForward(GPUTrainingParameters const params) {
 	hiddenOutput.data = params.output2;
 
 	d_mul_shared(W12, imgs, hiddenOutput);
+	d_activate_layer(params.output2, params.output2_len, params.activationFunction2);
 
 	Matrix W23;
 	W23.rows = hiddenOutput.rows;
@@ -377,10 +384,31 @@ __global__ void cudaFeedForward(GPUTrainingParameters const params) {
 	output.data = params.output3;
 
 	d_mul_shared(W23, hiddenOutput, output);
+	d_activate_layer(params.output3, params.output3_len, params.activationFunction3);
 }
 
-__global__ void cudaBackPropagate(GPUTrainingParameters const params) {
+__global__ void d_back_propagate(GPUTrainingParameters const params) {
 
+}
+
+__device__ void d_activate_layer(float* const data, size_t const len, NeuralNetwork::ActFctType functionType) {
+
+	// Target index for this thread.
+	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
+
+	// If the target index would handle an element outside of the data buffer, terminate.
+	if (idx >= len) {
+		return;
+	}
+
+	switch (functionType) {
+	case NeuralNetwork::SIGMOID:
+		data[idx] = 1.0f / (1.0f + exp(-data[idx]));
+		break;
+	case NeuralNetwork::TANH:
+		data[idx] = tanh(data[idx]);
+		break;
+	}
 }
 
 /**
