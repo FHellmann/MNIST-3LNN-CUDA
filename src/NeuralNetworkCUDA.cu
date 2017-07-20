@@ -366,12 +366,12 @@ __device__ void d_print(GPUTrainingParameters const params) {
 }
 
 /* Matrix manipulation operations. */
-__device__ void d_mul_base(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float));
-__device__ void d_mul(Matrix A, Matrix B, Matrix C);
-__device__ void d_mul_add(Matrix A, Matrix B, Matrix C);
-__device__ void d_cwise_op(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float));
-__device__ void d_cwise_mul(Matrix A, Matrix B, Matrix C);
-__device__ void d_cwise_sub(Matrix A, Matrix B, Matrix C);
+__device__ void d_mul_base(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float));
+__device__ void d_mul(Matrix C, Matrix A, Matrix B);
+__device__ void d_mul_add(Matrix C, Matrix A, Matrix B);
+__device__ void d_cwise_op(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float));
+__device__ void d_cwise_mul(Matrix C, Matrix A, Matrix B);
+__device__ void d_cwise_sub(Matrix C, Matrix A, Matrix B);
 
 /* Neural network operations. */
 __device__ void d_apply_activation(float* const, size_t const, NeuralNetwork::ActFctType);
@@ -410,7 +410,7 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 		printf("ERROR: HiddenOutput matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
 	}
 
-	d_mul(W12, imgs, hiddenOutput);
+	d_mul(hiddenOutput, W12, imgs);
 	d_apply_activation(params.output2, params.output2_len, params.activationFunction2);
 
 	Matrix W23;
@@ -431,7 +431,7 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
 	}
 
-	d_mul(W23, hiddenOutput, output);
+	d_mul(output, W23, hiddenOutput);
 	d_apply_activation(params.output3, params.output3_len, params.activationFunction3);
 }
 
@@ -469,9 +469,9 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	Matrix difference = targetOutput;
 	Matrix error = output;
 
-	d_cwise_sub(targetOutput, output, difference);
+	d_cwise_sub(difference, targetOutput, output);
 	d_apply_activation_derivative(output.data, output.rows * output.cols, params.activationFunction3);
-	d_cwise_mul(output, targetOutput, error);
+	d_cwise_mul(error, output, targetOutput);
 
 	Matrix hiddenOutput;
 	hiddenOutput.rows = params.batchSize;
@@ -490,7 +490,7 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
 	}
 
-	d_mul_add(error, hiddenOutput, W23);
+	d_mul_add(W23, error, hiddenOutput);
 
 }
 
@@ -571,36 +571,40 @@ __device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix 
 	}
 
 	targetOutput.data[targetIdx] = (threadIdx.y == params.labels[srcIdx]) ? 1.0f : 0.0f;
+//	if (threadIdx.x == 0) {
+//		printf("d_fill_target_output: (%lu, %lu) = %f\n", targetX, targetY, targetOutput.data[targetIdx]);
+//	}
 }
 
-__device__ void d_assign(float* a, float b, float c) {
-	*a = c;
+__device__ void d_assign(float* c, float a, float b) {
+	*c = b;
 }
 
-__device__ void d_add(float* a, float b, float c) {
-	*a = b + c;
+__device__ void d_add(float* c, float a, float b) {
+	//printf("d_add(%f, %f, %f)", *a, b, c);
+	*c = a + b;
 }
 
-__device__ void d_sub(float* a, float b, float c) {
-	*a = b - c;
+__device__ void d_sub(float* c, float a, float b) {
+	*c = a - b;
 }
 
-__device__ void d_mul(float* a, float b, float c) {
-	*a = b * c;
+__device__ void d_mul(float* c, float a, float b) {
+	*c = a * b;
 }
 
-__device__ void d_mul(Matrix A, Matrix B, Matrix C) {
+__device__ void d_mul(Matrix C, Matrix A, Matrix B) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul\n");
 	}
-	d_mul_base(A, B, C, &d_assign);
+	d_mul_base(C, A, B, &d_assign);
 }
 
-__device__ void d_mul_add(Matrix A, Matrix B, Matrix C) {
+__device__ void d_mul_add(Matrix C, Matrix A, Matrix B) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul_add\n");
 	}
-	d_mul_base(A, B, C, &d_add);
+	d_mul_base(C, A, B, &d_add);
 }
 
 /**
@@ -610,7 +614,7 @@ __device__ void d_mul_add(Matrix A, Matrix B, Matrix C) {
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
  */
-__device__ void d_mul_base(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float)) {
+__device__ void d_mul_base(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float)) {
 
 	if (A.cols != B.rows) {
 
@@ -665,15 +669,15 @@ __device__ void d_mul_base(Matrix A, Matrix B, Matrix C, void(*op)(float*, float
 	op(pValue, *pValue, threadValue);
 }
 
-__device__ void d_cwise_sub(Matrix A, Matrix B, Matrix C) {
-	d_cwise_op(A, B, C, &d_sub);
+__device__ void d_cwise_sub(Matrix C, Matrix A, Matrix B) {
+	d_cwise_op(C, A, B, &d_sub);
 }
 
-__device__ void d_cwise_mul(Matrix A, Matrix B, Matrix C) {
-	d_cwise_op(A, B, C, &d_mul);
+__device__ void d_cwise_mul(Matrix C, Matrix A, Matrix B) {
+	d_cwise_op(C, A, B, &d_mul);
 }
 
-__device__ void d_cwise_op(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float)) {
+__device__ void d_cwise_op(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float)) {
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
