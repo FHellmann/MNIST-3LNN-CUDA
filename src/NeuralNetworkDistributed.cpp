@@ -35,7 +35,7 @@ void updateWeights(NeuralNetwork &nn, NeuralNetwork::LayerType type, double* del
 			}
 		}
 	}
-	delete[] deltaWeights;
+	//delete[] deltaWeights;
 }
 
 void setWeights(NeuralNetwork &nn, NeuralNetwork::LayerType type, double* weights) {
@@ -194,10 +194,7 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		*/
     }
 
-    cout << endl;
     logStart(curr_rank, "# Start Training-LOOP #");
-    cout << endl;
-    cout << endl;
 
 	while(needsFurtherTraining) {
 		double *weightsHidden;
@@ -214,7 +211,7 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		if(curr_rank == 0)
 			delete[] weightsHidden;
 		else
-			setWeights(nn, HIDDEN, weightsHidden);
+			updateWeights(nn, HIDDEN, weightsHidden, 1);
 		logEnd(curr_rank, time);
 
 		// 2b. Send/Receive (MPI_Bcast) output weights
@@ -227,7 +224,7 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		if(curr_rank == 0)
 			delete[] weightsOutput;
 		else
-			setWeights(nn, OUTPUT, weightsOutput);
+			updateWeights(nn, OUTPUT, weightsOutput, 1);
 		logEnd(curr_rank, time);
 
 		if(curr_rank > 0) {
