@@ -106,8 +106,8 @@ double NeuralNetwork::train(MNISTImageDataset const& images,
 				errCount++;
 
 			// Display progress during training
-			if ((imgCount % every_ten_percent) == 0)
-				cout << "x"; cout.flush();
+			//if ((imgCount % every_ten_percent) == 0)
+			//	cout << "x"; cout.flush();
 		}
 
 		double newError = static_cast<double>(errCount) / static_cast<double>(images.size());
@@ -122,10 +122,10 @@ double NeuralNetwork::train(MNISTImageDataset const& images,
 			needsFurtherTraining = false;
 		}
 
-		cout << " Error: " << error * 100.0 << "%" << endl;
+		//cout << " Error: " << error * 100.0 << "%" << endl;
 	}
 
-	cout << endl;
+	//cout << endl;
 
 	return error;
 }
