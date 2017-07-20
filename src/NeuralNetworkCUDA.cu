@@ -366,11 +366,15 @@ __device__ void d_print(GPUTrainingParameters const params) {
 }
 
 __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C);
+__device__ void d_smul(Matrix A, Matrix B, Matrix C);
 __device__ void d_activate_layer(float* const, size_t const, NeuralNetwork::ActFctType);
+__device__ void d_apply_activation_derivative(float* const, size_t const, NeuralNetwork::ActFctType);
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
-	size_t const numImages = params.numHiddenNodes;
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_feed_forward\n");
+	}
 
 	Matrix W12;
 	W12.rows = params.numHiddenNodes;
@@ -383,13 +387,13 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
-	imgs.cols = numImages;
+	imgs.cols = params.batchSize;
 	imgs.layout = Matrix::COLUMN_MAJOR;
 	imgs.data = params.images; // Global data pointer, column major, yields one image in each column vector.
 
 	Matrix hiddenOutput;
 	hiddenOutput.rows = params.numHiddenNodes;
-	hiddenOutput.cols = numImages;
+	hiddenOutput.cols = params.batchSize;
 	hiddenOutput.layout = Matrix::ROW_MAJOR;
 	hiddenOutput.data = params.output2;
 	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
@@ -421,11 +425,50 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 	d_activate_layer(params.output3, params.output3_len, params.activationFunction3);
 }
 
+__device__ void d_back_propagate_output(GPUTrainingParameters const);
+__device__ void d_back_propagate_hidden(GPUTrainingParameters const);
+__device__ void d_sub(Matrix A, Matrix B, Matrix C);
+
 __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_back_propagate\n");
+	}
+
+	d_back_propagate_output(params);
+}
+
+__device__ void d_back_propagate_output(GPUTrainingParameters const params) {
+
+	Matrix targetOutput;
+	targetOutput.rows = NUM_DIGITS;
+	targetOutput.cols = params.batchSize;
+	targetOutput.data = params.tmp1;
+	if (targetOutput.rows * targetOutput.cols != params.tmp1_len) {
+		printf("ERROR: targetOutput matrix has wrong dimensions: %lu x %lu != %lu\n", targetOutput.rows, targetOutput.cols, params.tmp1_len);
+	}
+
+	Matrix output;
+	output.rows = NUM_DIGITS;
+	output.cols = params.batchSize;
+	output.data = params.output3;
+	if (output.rows * output.cols != params.output3_len) {
+		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
+	}
+
+	Matrix difference = targetOutput;
+	Matrix error = output;
+
+	d_sub(targetOutput, output, difference);
+	d_apply_activation_derivative(output.data, output.rows * output.cols, params.activationFunction3);
+	d_smul(output, targetOutput, error);
 }
 
 __device__ void d_activate_layer(float* const data, size_t const len, NeuralNetwork::ActFctType functionType) {
+
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_activate_layer\n");
+	}
 
 	// Target index for this thread.
 	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
@@ -445,6 +488,30 @@ __device__ void d_activate_layer(float* const data, size_t const len, NeuralNetw
 	}
 }
 
+__device__ void d_apply_activation_derivative(float* const data, size_t const len, NeuralNetwork::ActFctType functionType) {
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_apply_activation_derivative\n");
+	}
+
+	// Target index for this thread.
+	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
+
+	// If the target index would handle an element outside of the data buffer, terminate.
+	if (idx >= len) {
+		return;
+	}
+
+	switch (functionType) {
+	case NeuralNetwork::SIGMOID:
+		data[idx] = data[idx] * (1.0f - data[idx]);
+		break;
+	case NeuralNetwork::TANH:
+		float t = tanh(data[idx]);
+		data[idx] = 1.0f - t * t;
+		break;
+	}
+}
+
 /**
  * Computes C = AB where the dimensions of A and be have to be a multiple of MATRIX_SIZE_DIVISOR.
  *
@@ -453,6 +520,10 @@ __device__ void d_activate_layer(float* const data, size_t const len, NeuralNetw
  * @param[out] C Matrix holding the result. Must provide enough storage space.
  */
 __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
+
+	if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("d_mul_shared\n");
+	}
 
 	if (A.cols != B.rows) {
 
@@ -514,7 +585,7 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 	}
 }
 
-__device__ void d_add(Matrix A, Matrix B, Matrix C) {
+__device__ void d_sub(Matrix A, Matrix B, Matrix C) {
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
@@ -546,5 +617,40 @@ __device__ void d_add(Matrix A, Matrix B, Matrix C) {
 		idxC = y + x * C.rows;
 	}
 
-	C.data[idxC] = A.data[idxA] + B.data[idxB];
+	C.data[idxC] = A.data[idxA] - B.data[idxB];
+}
+
+__device__ void d_smul(Matrix A, Matrix B, Matrix C) {
+
+	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
+
+		printf("Incompatible matrices: (%lu, %lu) + (%lu, %lu) = (%lu, lu)\n", A.rows, A.cols, B.rows, B.cols, C.rows, C.cols);
+		return;
+	}
+
+	size_t const x = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t const y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (x >= A.cols || y >= A.rows) {
+		return;
+	}
+
+	// row major
+	size_t idxA = x + y * A.cols;
+	size_t idxB = x + y * B.cols;
+	size_t idxC = x + y * C.cols;
+
+	if (A.layout == Matrix::COLUMN_MAJOR) {
+		idxA = y + x * A.rows;
+	}
+
+	if (B.layout == Matrix::COLUMN_MAJOR) {
+		idxB = y + x * B.rows;
+	}
+
+	if (C.layout == Matrix::COLUMN_MAJOR) {
+		idxC = y + x * C.rows;
+	}
+
+	C.data[idxC] = A.data[idxA] * B.data[idxB];
 }
