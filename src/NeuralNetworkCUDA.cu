@@ -357,33 +357,45 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 	W12.cols = params.width * params.height;
 	W12.layout = Matrix::ROW_MAJOR;
 	W12.data = params.W12; // Global data pointer
+	if (W12.rows * W12.cols != params.W12_len) {
+		printf("ERROR: W12 matrix has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
+	}
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
 	imgs.cols = numImages;
 	imgs.layout = Matrix::COLUMN_MAJOR;
-	imgs.data = params.images; // Global data pointer, column major.
+	imgs.data = params.images; // Global data pointer, column major, yields one image in each column vector.
 
 	Matrix hiddenOutput;
 	hiddenOutput.rows = params.numHiddenNodes;
 	hiddenOutput.cols = numImages;
 	hiddenOutput.layout = Matrix::ROW_MAJOR;
 	hiddenOutput.data = params.output2;
+	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
+		printf("ERROR: HiddenOutput matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
+	}
 
 	d_mul_shared(W12, imgs, hiddenOutput);
 	d_activate_layer(params.output2, params.output2_len, params.activationFunction2);
 
 	Matrix W23;
-	W23.rows = hiddenOutput.rows;
+	W23.rows = NUM_DIGITS;
 	W23.cols = params.numHiddenNodes;
 	W23.layout = Matrix::ROW_MAJOR;
 	W23.data = params.W23;
+	if (W23.rows * W23.cols != params.W23_len) {
+		printf("ERROR: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
+	}
 
 	Matrix output;
 	output.rows = W23.rows;
-	output.cols = numImages;
+	output.cols = hiddenOutput.cols;
 	output.layout = Matrix::ROW_MAJOR;
 	output.data = params.output3;
+	if (output.rows * output.cols != params.output3_len) {
+		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
+	}
 
 	d_mul_shared(W23, hiddenOutput, output);
 	d_activate_layer(params.output3, params.output3_len, params.activationFunction3);
@@ -428,14 +440,15 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 		return;
 	}
 
-	if (A.cols % MATRIX_SIZE_DIVISOR != 0 ||
-	    A.rows % MATRIX_SIZE_DIVISOR != 0 ||
-	    B.cols % MATRIX_SIZE_DIVISOR != 0 ||
-	    B.rows % MATRIX_SIZE_DIVISOR != 0) {
-
-		printf("Matrix dimensions not a multiple of %hu: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
-		return;
-	}
+	// Not needed anymore.
+//	if (A.cols % MATRIX_SIZE_DIVISOR != 0 ||
+//	    A.rows % MATRIX_SIZE_DIVISOR != 0 ||
+//	    B.cols % MATRIX_SIZE_DIVISOR != 0 ||
+//	    B.rows % MATRIX_SIZE_DIVISOR != 0) {
+//
+//		printf("Matrix dimensions not a multiple of %hu: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
+//		return;
+//	}
 
 	// The block caches are row major.
 	__shared__ float blockCacheA[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
