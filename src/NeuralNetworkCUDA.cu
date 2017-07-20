@@ -565,14 +565,14 @@ __device__ void d_mul(Matrix A, Matrix B, Matrix C) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul\n");
 	}
-	d_mul_base(A, B, C, d_assign);
+	d_mul_base(A, B, C, &d_assign);
 }
 
 __device__ void d_mul_add(Matrix A, Matrix B, Matrix C) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul_add\n");
 	}
-	d_mul_base(A, B, C, d_add);
+	d_mul_base(A, B, C, &d_add);
 }
 
 /**
@@ -638,11 +638,11 @@ __device__ void d_mul_base(Matrix A, Matrix B, Matrix C, void(*op)(float*, float
 }
 
 __device__ void d_cwise_sub(Matrix A, Matrix B, Matrix C) {
-	d_cwise_op(A, B, C, d_sub);
+	d_cwise_op(A, B, C, &d_sub);
 }
 
 __device__ void d_cwise_mul(Matrix A, Matrix B, Matrix C) {
-	d_cwise_op(A, B, C, d_mul);
+	d_cwise_op(A, B, C, &d_mul);
 }
 
 __device__ void d_cwise_op(Matrix A, Matrix B, Matrix C, void(*op)(float*, float, float)) {
