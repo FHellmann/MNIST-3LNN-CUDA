@@ -493,3 +493,38 @@ __device__ void d_mul_shared(Matrix A, Matrix B, Matrix C) {
 		C.data[(blockIdx.y * C.cols + blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y * C.cols + threadIdx.x] = threadValue;
 	}
 }
+
+__device__ void d_add(Matrix A, Matrix B, Matrix C) {
+
+	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
+
+		printf("Incompatible matrices: (%lu, %lu) + (%lu, %lu) = (%lu, lu)\n", A.rows, A.cols, B.rows, B.cols, C.rows, C.cols);
+		return;
+	}
+
+	size_t const x = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t const y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (x >= A.cols || y >= A.rows) {
+		return;
+	}
+
+	// row major
+	size_t idxA = x + y * A.cols;
+	size_t idxB = x + y * B.cols;
+	size_t idxC = x + y * C.cols;
+
+	if (A.layout == Matrix::COLUMN_MAJOR) {
+		idxA = y + x * A.rows;
+	}
+
+	if (B.layout == Matrix::COLUMN_MAJOR) {
+		idxB = y + x * B.rows;
+	}
+
+	if (C.layout == Matrix::COLUMN_MAJOR) {
+		idxC = y + x * C.rows;
+	}
+
+	C.data[idxC] = A.data[idxA] + B.data[idxB];
+}
