@@ -369,7 +369,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	bias3 = nullptr;
 }
 
-__device__ void d_print(GPUTrainingParameters const params) {
+__device__ void d_print(GPUTrainingParameters const& params) {
 	PRINTF("TrainingParams:\n"
 			"  W12: %p\n"
 		    "  W1_len: %lu\n"
@@ -402,9 +402,9 @@ __device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B);
 /* Neural network operations. */
 __device__ void d_apply_activation(Matrix const&, NeuralNetwork::ActFctType);
 __device__ void d_apply_activation_derivative(Matrix const&, NeuralNetwork::ActFctType);
-__device__ void d_back_propagate_output(GPUTrainingParameters const);
-__device__ void d_back_propagate_hidden(GPUTrainingParameters const);
-__device__ void d_fill_target_output(GPUTrainingParameters const, Matrix const&);
+__device__ void d_back_propagate_output(GPUTrainingParameters const&);
+__device__ void d_back_propagate_hidden(GPUTrainingParameters const&);
+__device__ void d_fill_target_output(GPUTrainingParameters const&, Matrix const&);
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias);
 __device__ void d_fill_random(Matrix const&);
 
@@ -435,7 +435,7 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 	//d_back_propagate_hidden(params);
 }
 
-__device__ void d_back_propagate_output(GPUTrainingParameters const params) {
+__device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
 
 	Matrix const& targetOutput = params.tmp3;
 
@@ -458,7 +458,7 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	d_mul_add(params.W23, error, output2);
 }
 
-__device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
+__device__ void d_back_propagate_hidden(GPUTrainingParameters const& params) {
 
 	PRINTF("d_back_propagate_hidden\n");
 
@@ -532,7 +532,7 @@ __device__ void d_apply_activation_derivative(Matrix const& A, NeuralNetwork::Ac
 	//printf("actFctDeriv(%lu) = %f\n", idx, data[idx]);
 }
 
-__device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix const& targetOutput) {
+__device__ void d_fill_target_output(GPUTrainingParameters const& params, Matrix const& targetOutput) {
 
 	if (targetOutput.rows != NUM_DIGITS) {
 		printf("d_fill_target_output: wrong number of rows. Given %lu, expected %u\n", targetOutput.rows, NUM_DIGITS);
