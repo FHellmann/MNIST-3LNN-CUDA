@@ -270,7 +270,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	cudaMemset(trainingParams.bias3, 0.0, trainingParams.bias3_len * sizeof(float));
 
 	// Configure Grid, i.e. setup Blocks and Threads
-	dim3 numBlocks(2,2);
+	dim3 numBlocks(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
 			<< endl;
