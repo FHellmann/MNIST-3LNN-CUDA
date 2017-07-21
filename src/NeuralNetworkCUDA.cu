@@ -6,6 +6,7 @@
 using namespace std;
 
 #define PRINTF(...) {if (threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0) { printf( __VA_ARGS__ ); }}
+//#define PRINTF(...)
 
 __host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
 		const int hidCount, const int outCount, const double learningRate) :
@@ -432,7 +433,7 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 	PRINTF("d_back_propagate\n");
 
 	d_back_propagate_output(params);
-	//d_back_propagate_hidden(params);
+	d_back_propagate_hidden(params);
 }
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
@@ -483,7 +484,7 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const& params) {
 	d_apply_activation_derivative(params.output2, params.activationFunction2);
 	d_mul(params.tmp2, W23, error);
 	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
-//	d_mul_add(params.W12, params.tmp2, images);
+	d_mul_add(params.W12, params.tmp2, images);
 }
 
 __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {
@@ -529,7 +530,6 @@ __device__ void d_apply_activation_derivative(Matrix const& A, NeuralNetwork::Ac
 		A.data[idx] = 1.0f - t * t;
 		break;
 	}
-	//printf("actFctDeriv(%lu) = %f\n", idx, data[idx]);
 }
 
 __device__ void d_fill_target_output(GPUTrainingParameters const& params, Matrix const& targetOutput) {
