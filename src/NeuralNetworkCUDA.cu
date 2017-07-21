@@ -581,10 +581,65 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	d_mul_add(W23, error, hiddenOutput);
 }
 
-__device__ void d_back_propagate_hidden(GPUTrainingParameters const) {
+__device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_back_propagate_hidden\n");
 	}
+
+	// e3 == output, see "back propagation output"
+	// The weight updates are computed by
+	// W23^T * e3 * ∇σ * input^T
+
+	Matrix W23;
+	W23.rows = NUM_DIGITS;
+	W23.cols = params.numHiddenNodes;
+	W23.data = params.W23;
+	if (W23.rows * W23.cols != params.W23_len) {
+		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
+	}
+
+	Matrix error;
+	error.rows = NUM_DIGITS;
+	error.cols = params.batchSize;
+	error.data = params.output3;
+	if (error.rows * error.cols != params.output3_len) {
+		printf("d_back_propagate_output: error matrix has wrong dimensions: %lu x %lu != %lu\n", error.rows, error.cols, params.output3_len);
+	}
+
+	Matrix output;
+	output.rows = params.numHiddenNodes;
+	output.cols = params.batchSize;
+	output.data = params.output2;
+	if (output.rows * output.cols != params.output2_len) {
+		printf("d_back_propagate_output: output vector has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output2_len);
+	}
+
+	Matrix tmp;
+	tmp.rows = params.numHiddenNodes;
+	tmp.cols = params.batchSize;
+	tmp.data = params.tmp2;
+	if (tmp.rows * tmp.cols != params.tmp2_len) {
+		printf("d_back_propagate_output: tmp vector has wrong dimensions: %lu x %lu != %lu\n", tmp.rows, tmp.cols, params.tmp2_len);
+	}
+
+	Matrix W12;
+	W12.rows = params.width * params.height;
+	W12.cols = params.numHiddenNodes;
+	W12.data = params.W12;
+	if (W12.rows * W12.cols != params.W12_len) {
+		printf("d_back_propagate_output: W12 has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
+	}
+
+	Matrix images;
+	images.rows = params.width * params.height;
+	images.cols = params.batchSize;
+	images.layout = Matrix::COLUMN_MAJOR;
+	images.data = params.images;
+
+	d_apply_activation_derivative(output, params.activationFunction2);
+	d_mul(tmp, W23, error);
+	d_cwise_mul(tmp, output, tmp);
+	d_mul_add(W12, tmp, images);
 }
 
 __device__ void d_apply_activation(Matrix A, NeuralNetwork::ActFctType functionType) {
