@@ -483,61 +483,13 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 	imgs.layout = Matrix::COLUMN_MAJOR;
 	imgs.data = params.images; // Global data pointer, column major, yields one image in each column vector.
 
-//	Matrix hiddenOutput;
-//	hiddenOutput.rows = params.numHiddenNodes;
-//	hiddenOutput.cols = params.batchSize;
-//	hiddenOutput.layout = Matrix::ROW_MAJOR;
-//	hiddenOutput.data = params.output2;
-//	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
-//		printf("ERROR: HiddenOutput matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
-//	}
-
-//	Matrix bias2;
-//	bias2.rows = params.numHiddenNodes;
-//	bias2.cols = 1;
-//	bias2.data = params.bias2;
-//	if (bias2.rows * bias2.cols != params.bias2_len) {
-//		printf("ERROR: Bias2 has wrong dimensions: %lu x %lu != %lu\n", bias2.rows, bias2.cols, params.bias2_len);
-//	}
-
 	d_set_bias(params.output2, params.bias2);
 	d_mul_add(params.output2, params.W12, imgs);
 	d_apply_activation(params.output2, params.activationFunction2);
 
-//	Matrix W23;
-//	W23.rows = NUM_DIGITS;
-//	W23.cols = params.numHiddenNodes;
-//	W23.layout = Matrix::ROW_MAJOR;
-//	W23.data = params.W23;
-//	if (W23.rows * W23.cols != params.W23_len) {
-//		printf("ERROR: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
-//	}
-
-//	Matrix output;
-//	output.rows = NUM_DIGITS;
-//	output.cols = params.batchSize;
-//	output.layout = Matrix::ROW_MAJOR;
-//	output.data = params.output3;
-//	if (output.rows * output.cols != params.output3_len) {
-//		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
-//	}
-
-//	Matrix bias3;
-//	bias3.rows = NUM_DIGITS;
-//	bias3.cols = 1;
-//	bias3.data = params.bias3;
-//	if (bias3.rows * bias3.cols != params.bias3_len) {
-//		printf("ERROR: Bias3 has wrong dimensions: %lu x %lu != %lu\n", bias3.rows, bias3.cols, params.bias3_len);
-//	}
-
 	d_set_bias(params.output3, params.bias3);
 	d_mul_add(params.output3, params.W23, params.output2);
 	d_apply_activation(params.output3, params.activationFunction3);
-
-//	d_fill_random(W12);
-//	d_fill_random(W23);
-//	d_fill_random(bias2);
-//	d_fill_random(bias3);
 }
 
 __global__ void d_back_propagate(GPUTrainingParameters const params) {
@@ -552,25 +504,10 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 
-//	Matrix targetOutput;
-//	targetOutput.rows = NUM_DIGITS;
-//	targetOutput.cols = params.batchSize;
-//	targetOutput.data = params.tmp1;
-//	if (targetOutput.rows * targetOutput.cols != params.tmp1_len) {
-//		printf("d_back_propagate_output: targetOutput matrix has wrong dimensions: %lu x %lu != %lu\n", targetOutput.rows, targetOutput.cols, params.tmp1_len);
-//	}
 	Matrix targetOutput = params.tmp1;
 
 	// Compute the target output based on the labels
 	d_fill_target_output(params, targetOutput);
-
-//	Matrix output;
-//	output.rows = NUM_DIGITS;
-//	output.cols = params.batchSize;
-//	output.data = params.output3;
-//	if (output.rows * output.cols != params.output3_len) {
-//		printf("d_back_propagate_output: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
-//	}
 
 	// Save the difference into the target output buffer
 	Matrix difference = targetOutput;
@@ -580,23 +517,6 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	d_cwise_sub(difference, targetOutput, params.output3);
 	d_apply_activation_derivative(params.output3, params.activationFunction3);
 	d_cwise_mul(error, params.output3, difference);
-
-//	Matrix hiddenOutput;
-//	hiddenOutput.rows = params.batchSize;
-//	hiddenOutput.cols = params.numHiddenNodes;
-//	hiddenOutput.layout = Matrix::ROW_MAJOR;
-//	hiddenOutput.data = params.output2;
-//	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
-//		printf("d_back_propagate_output: hidden output matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
-//	}
-
-//	Matrix W23;
-//	W23.rows = NUM_DIGITS;
-//	W23.cols = params.numHiddenNodes;
-//	W23.data = params.W23;
-//	if (W23.rows * W23.cols != params.W23_len) {
-//		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
-//	}
 
 	// Important to make a local copy.
 	// Otherwise every thread would transpose the matrix which
@@ -619,45 +539,9 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 	// would lead to undefined behavior.
 	Matrix W23 = params.W23;
 	d_matrix_transpose(W23);
-//	W23.rows = NUM_DIGITS;
-//	W23.cols = params.numHiddenNodes;
-//	W23.data = params.W23;
-//	if (W23.rows * W23.cols != params.W23_len) {
-//		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
-//	}
 
 	// See d_back_propagation_output
 	Matrix error = params.output3;
-//	error.rows = NUM_DIGITS;
-//	error.cols = params.batchSize;
-//	error.data = params.output3;
-//	if (error.rows * error.cols != params.output3_len) {
-//		printf("d_back_propagate_output: error matrix has wrong dimensions: %lu x %lu != %lu\n", error.rows, error.cols, params.output3_len);
-//	}
-
-//	Matrix output;
-//	output.rows = params.numHiddenNodes;
-//	output.cols = params.batchSize;
-//	output.data = params.output2;
-//	if (output.rows * output.cols != params.output2_len) {
-//		printf("d_back_propagate_output: output vector has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output2_len);
-//	}
-
-//	Matrix tmp;
-//	tmp.rows = params.numHiddenNodes;
-//	tmp.cols = params.batchSize;
-//	tmp.data = params.tmp2;
-//	if (tmp.rows * tmp.cols != params.tmp2_len) {
-//		printf("d_back_propagate_output: tmp vector has wrong dimensions: %lu x %lu != %lu\n", tmp.rows, tmp.cols, params.tmp2_len);
-//	}
-
-//	Matrix W12;
-//	W12.rows = params.width * params.height;
-//	W12.cols = params.numHiddenNodes;
-//	W12.data = params.W12;
-//	if (W12.rows * W12.cols != params.W12_len) {
-//		printf("d_back_propagate_output: W12 has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
-//	}
 
 	Matrix images;
 	images.rows = params.width * params.height;
@@ -735,19 +619,8 @@ __device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix 
 		return;
 	}
 
-//	size_t targetIdx = 0;
-//	if (targetOutput.layout == Matrix::ROW_MAJOR) {
-//		targetIdx = targetX + targetY * targetOutput.cols;
-//	} else if (targetOutput.layout == Matrix::COLUMN_MAJOR) {
-//		targetIdx = targetX * targetOutput.rows + targetY;
-//	}
-
-	//targetOutput.data[targetIdx] = (threadIdx.y == params.labels[srcIdx]) ? 1.0f : 0.0f;
 	float const v = (threadIdx.y == params.labels[srcIdx]) ? 1.0f : 0.0f;
 	d_matrix_set(targetOutput, targetY, targetX, v);
-//	if (threadIdx.x == 0) {
-//		printf("d_fill_target_output: (%lu, %lu) = %f\n", targetX, targetY, targetOutput.data[targetIdx]);
-//	}
 }
 
 __device__ void d_set_bias(Matrix output, Matrix const bias) {
