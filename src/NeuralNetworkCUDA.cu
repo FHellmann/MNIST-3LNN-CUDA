@@ -630,7 +630,7 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	}
 
 	if (A.cols % MATRIX_SIZE_DIVISOR != 0 || B.rows % MATRIX_SIZE_DIVISOR != 0) {
-		printf("d_mul_base: A.cols %lu is not a multiple of %u", A.cols, MATRIX_SIZE_DIVISOR);
+		printf("d_mul_base: A's cols is not a multiple of %u: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
 		return;
 	}
 
@@ -639,10 +639,18 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
 		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
-		blockCacheA[threadIdx.y][threadIdx.x] = d_matrix_get(A, y, xA);
+		if (xA < A.cols) {
+			blockCacheA[threadIdx.y][threadIdx.x] = d_matrix_get(A, y, xA);
+		} else {
+			blockCacheA[threadIdx.y][threadIdx.x] = 0.0f;
+		}
 
 		size_t const yB = k * MATRIX_SIZE_DIVISOR + threadIdx.y;
-		blockCacheB[threadIdx.y][threadIdx.x] = d_matrix_get(B, yB, x);
+		if (yB < B.rows) {
+			blockCacheB[threadIdx.y][threadIdx.x] = d_matrix_get(B, yB, x);
+		} else {
+			blockCacheB[threadIdx.y][threadIdx.x] = 0.0f;
+		}
 
 		__syncthreads();
 
