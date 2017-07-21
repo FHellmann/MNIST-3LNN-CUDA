@@ -112,6 +112,17 @@ size_t matrix_size(Matrix const A) {
 	return A.rows * A.cols;
 }
 
+__device__ void d_matrix_transpose(Matrix A) {
+	size_t tmp = A.rows;
+	A.rows = A.cols;
+	A.cols = tmp;
+	if (A.layout == Matrix::ROW_MAJOR) {
+		A.layout = Matrix::COLUMN_MAJOR;
+	} else {
+		A.layout = Matrix::ROW_MAJOR;
+	}
+}
+
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
