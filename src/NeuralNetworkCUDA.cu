@@ -437,17 +437,17 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 
-	Matrix targetOutput = params.tmp3;
+	Matrix const& targetOutput = params.tmp3;
 
 	// Compute the target output based on the labels
 	d_fill_target_output(params, targetOutput);
 
 	// Save the difference into the target output buffer
-	Matrix difference = targetOutput;
-	// Reuse the output buffer for saving the error, for now. Perhaps this is a problem later on.
-	Matrix error = params.output3;
-
+	Matrix const& difference = targetOutput;
 	d_cwise_sub(difference, targetOutput, params.output3);
+
+	// Reuse the output buffer for saving the error, for now. Perhaps this is a problem later on.
+	Matrix const& error = params.output3;
 	d_apply_activation_derivative(params.output3, params.activationFunction3);
 	d_cwise_mul(error, params.output3, difference);
 
@@ -471,7 +471,7 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 	Matrix W23 = d_matrix_transpose(params.W23);
 
 	// See d_back_propagation_output
-	Matrix error = params.output3;
+	Matrix const& error = params.output3;
 
 	Matrix images;
 	images.rows = params.width * params.height;
@@ -539,9 +539,9 @@ __device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix 
 		return;
 	}
 
-	size_t srcIdx = threadIdx.x + blockIdx.x * blockDim.x;
-	size_t targetX = threadIdx.x + blockIdx.x * blockDim.x;
-	size_t targetY = threadIdx.y + blockIdx.y * blockDim.y;
+	size_t const srcIdx = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t const targetY = threadIdx.y + blockIdx.y * blockDim.y;
 
 	if (targetX >= targetOutput.cols || targetY >= targetOutput.rows) {
 		return;
@@ -620,9 +620,17 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	__shared__ float blockCacheA[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 	__shared__ float blockCacheB[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
+	// Compute the target coordinates.
+	size_t const x = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
+	size_t const y = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
+
 	// If this thread has nothing to do, because it would access invalid memory, exit
-	if (blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x > C.cols ||
-		blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y > C.rows) {
+	if (x >= C.cols || y >= C.rows) {
+		return;
+	}
+
+	if (A.cols % MATRIX_SIZE_DIVISOR != 0 || B.rows % MATRIX_SIZE_DIVISOR != 0) {
+		printf("d_mul_base: A.cols %lu is not a multiple of %u", A.cols, MATRIX_SIZE_DIVISOR);
 		return;
 	}
 
@@ -631,17 +639,15 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
 		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
-		size_t const yA = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
-		blockCacheA[threadIdx.y][threadIdx.x] = d_matrix_get(A, yA, xA);
+		blockCacheA[threadIdx.y][threadIdx.x] = d_matrix_get(A, y, xA);
 
-		size_t const xB = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
 		size_t const yB = k * MATRIX_SIZE_DIVISOR + threadIdx.y;
-		blockCacheB[threadIdx.y][threadIdx.x] = d_matrix_get(B, yB, xB);
+		blockCacheB[threadIdx.y][threadIdx.x] = d_matrix_get(B, yB, x);
 
 		__syncthreads();
 
 		#pragma unroll
-		for (int i = 0; i < MATRIX_SIZE_DIVISOR; ++i)
+		for (size_t i = 0; i < MATRIX_SIZE_DIVISOR; ++i)
 		{
 			threadValue += blockCacheA[threadIdx.y][i] * blockCacheB[i][threadIdx.x];
 		}
@@ -649,8 +655,6 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 		__syncthreads();
 	}
 
-	size_t const x = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
-	size_t const y = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
 	float* const pValue = d_matrix_pget(C, y, x);
 	op(pValue, *pValue, threadValue);
 }
