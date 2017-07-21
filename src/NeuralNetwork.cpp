@@ -37,20 +37,22 @@ NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 	layers.push_back(
 			new Layer(outCount, hidCount, OUTPUT, SIGMOID, layers.back()));
 
-	for (int l = 0; l < layers.size() - 1; l++) { // leave out the output layer
+	for (int l = 0; l < layers.size(); l++) { // leave out the output layer TODO: Why?
 		Layer* layer = layers.at(l);
 		for (int i = 0; i < layer->nodes.size(); i++) {
 			Layer::Node *node = layer->getNode(i);
 
 			for (int j = 0; j < node->weights.size(); j++) {
-				node->weights[j] = 0.7 * (rand() / (double) (RAND_MAX));
-				if(j % 2)
-					node->weights[j] = -node->weights[j]; // make half of the weights negative
+//				node->weights[j] = 0.7 * (rand() / (double) (RAND_MAX));
+//				if(j % 2)
+//					node->weights[j] = -node->weights[j]; // make half of the weights negative
+				node->weights[j] = static_cast<double>(j) / 1000.0;
 			}
 
-			node->bias = rand() / (double) (RAND_MAX);
-			if(i % 2)
-				node->bias = -node->bias; // make half of the bias weights negative
+//			node->bias = rand() / (double) (RAND_MAX);
+//			if(i % 2)
+//				node->bias = -node->bias; // make half of the bias weights negative
+			node->bias = static_cast<double>(i) / 1000.0;
 		}
 	}
 }
