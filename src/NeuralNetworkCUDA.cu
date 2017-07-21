@@ -84,7 +84,7 @@ struct GPUSharedMemoryLayout {
 	size_t image_size = 0;
 } gpuSharedMemoryLayout;
 
-__device__ float* d_matrix_pget(Matrix const M, size_t const y, size_t const x) {
+__device__ float* d_matrix_pget(Matrix const& M, size_t const y, size_t const x) {
 	if (M.layout == Matrix::ROW_MAJOR) {
 		return M.data + (x + y * M.cols);
 	} else {
@@ -92,11 +92,11 @@ __device__ float* d_matrix_pget(Matrix const M, size_t const y, size_t const x) 
 	}
 }
 
-__device__ float d_matrix_get(Matrix const M, size_t const y, size_t const x) {
+__device__ float d_matrix_get(Matrix const& M, size_t const y, size_t const x) {
 	return *d_matrix_pget(M, y, x);
 }
 
-__device__ void d_matrix_set(Matrix const M, size_t const y, size_t const x, float const value) {
+__device__ void d_matrix_set(Matrix const& M, size_t const y, size_t const x, float const value) {
 	if (M.layout == Matrix::ROW_MAJOR) {
 		M.data[x + y * M.cols] = value;
 	} else {
@@ -104,23 +104,23 @@ __device__ void d_matrix_set(Matrix const M, size_t const y, size_t const x, flo
 	}
 }
 
-__device__ size_t d_matrix_size(Matrix const A) {
+__device__ size_t d_matrix_size(Matrix const& A) {
 	return A.rows * A.cols;
 }
 
-size_t matrix_size(Matrix const A) {
+size_t matrix_size(Matrix const& A) {
 	return A.rows * A.cols;
 }
 
-__device__ void d_matrix_transpose(Matrix A) {
-	size_t tmp = A.rows;
-	A.rows = A.cols;
-	A.cols = tmp;
+__device__ Matrix d_matrix_transpose(Matrix const& A) {
+	Matrix T;
+	T.rows = A.cols;
+	T.cols = A.rows;
+	T.layout = Matrix::ROW_MAJOR;
 	if (A.layout == Matrix::ROW_MAJOR) {
-		A.layout = Matrix::COLUMN_MAJOR;
-	} else {
-		A.layout = Matrix::ROW_MAJOR;
+		T.layout = Matrix::COLUMN_MAJOR;
 	}
+	return T;
 }
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -446,36 +446,27 @@ __device__ void d_print(GPUTrainingParameters const params) {
 }
 
 /* Matrix manipulation operations. */
-__device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const));
-__device__ void d_mul(Matrix C, Matrix const A, Matrix const B);
-__device__ void d_mul_add(Matrix C, Matrix const A, Matrix const B);
-__device__ void d_cwise_op(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const));
-__device__ void d_cwise_mul(Matrix C, Matrix const A, Matrix const B);
-__device__ void d_cwise_sub(Matrix C, Matrix const A, Matrix const B);
+__device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const));
+__device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B);
+__device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B);
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const));
+__device__ void d_cwise_mul(Matrix const& C, Matrix const& A, Matrix const& B);
+__device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B);
 
 /* Neural network operations. */
-__device__ void d_apply_activation(Matrix, NeuralNetwork::ActFctType);
-__device__ void d_apply_activation_derivative(Matrix, NeuralNetwork::ActFctType);
+__device__ void d_apply_activation(Matrix const&, NeuralNetwork::ActFctType);
+__device__ void d_apply_activation_derivative(Matrix const&, NeuralNetwork::ActFctType);
 __device__ void d_back_propagate_output(GPUTrainingParameters const);
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const);
-__device__ void d_fill_target_output(GPUTrainingParameters const, Matrix);
-__device__ void d_set_bias(Matrix output, Matrix const bias);
-__device__ void d_fill_random(Matrix);
+__device__ void d_fill_target_output(GPUTrainingParameters const, Matrix const&);
+__device__ void d_set_bias(Matrix const& output, Matrix const& bias);
+__device__ void d_fill_random(Matrix const&);
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_feed_forward\n");
 	}
-
-//	Matrix W12;
-//	W12.rows = params.numHiddenNodes;
-//	W12.cols = params.width * params.height;
-//	W12.layout = Matrix::ROW_MAJOR;
-//	W12.data = params.W12; // Global data pointer
-//	if (W12.rows * W12.cols != params.W12_len) {
-//		printf("ERROR: W12 matrix has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
-//	}
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
@@ -521,8 +512,7 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	// Important to make a local copy.
 	// Otherwise every thread would transpose the matrix which
 	// would lead to undefined behavior.
-	Matrix output2 = params.output2;
-	d_matrix_transpose(output2);
+	Matrix output2 = d_matrix_transpose(params.output2);
 	d_mul_add(params.W23, error, output2);
 }
 
@@ -537,8 +527,7 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 	// Important to make a local copy.
 	// Otherwise every thread would transpose the matrix which
 	// would lead to undefined behavior.
-	Matrix W23 = params.W23;
-	d_matrix_transpose(W23);
+	Matrix W23 = d_matrix_transpose(params.W23);
 
 	// See d_back_propagation_output
 	Matrix error = params.output3;
@@ -548,14 +537,15 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 	images.cols = params.batchSize;
 	images.layout = Matrix::COLUMN_MAJOR;
 	images.data = params.images;
+	images = d_matrix_transpose(images);
 
 	d_apply_activation_derivative(params.output2, params.activationFunction2);
 	d_mul(params.tmp2, W23, error);
 	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
-	d_mul_add(params.W12, params.tmp2, images);
+//	d_mul_add(params.W12, params.tmp2, images);
 }
 
-__device__ void d_apply_activation(Matrix A, NeuralNetwork::ActFctType functionType) {
+__device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {
 
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_activate_layer\n");
@@ -579,7 +569,7 @@ __device__ void d_apply_activation(Matrix A, NeuralNetwork::ActFctType functionT
 	}
 }
 
-__device__ void d_apply_activation_derivative(Matrix A, NeuralNetwork::ActFctType functionType) {
+__device__ void d_apply_activation_derivative(Matrix const& A, NeuralNetwork::ActFctType functionType) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_apply_activation_derivative\n");
 	}
@@ -604,7 +594,7 @@ __device__ void d_apply_activation_derivative(Matrix A, NeuralNetwork::ActFctTyp
 	//printf("actFctDeriv(%lu) = %f\n", idx, data[idx]);
 }
 
-__device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix targetOutput) {
+__device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix const& targetOutput) {
 
 	if (targetOutput.rows != NUM_DIGITS) {
 		printf("d_fill_target_output: wrong number of rows. Given %lu, expected %u\n", targetOutput.rows, NUM_DIGITS);
@@ -623,7 +613,7 @@ __device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix 
 	d_matrix_set(targetOutput, targetY, targetX, v);
 }
 
-__device__ void d_set_bias(Matrix output, Matrix const bias) {
+__device__ void d_set_bias(Matrix const& output, Matrix const& bias) {
 
 	if (bias.rows != output.rows) {
 		printf("d_set_bias: Bias and output dimensions mismatch. Expected same height but bias was %lu and output was %lu\n", bias.rows, output.rows);
@@ -663,14 +653,14 @@ __device__ void d_mul(float* c, float const a, float const b) {
 	*c = a * b;
 }
 
-__device__ void d_mul(Matrix C, Matrix const A, Matrix const B) {
+__device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul\n");
 	}
 	d_mul_base(C, A, B, &d_assign);
 }
 
-__device__ void d_mul_add(Matrix C, Matrix const A, Matrix const B) {
+__device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul_add\n");
 	}
@@ -684,7 +674,7 @@ __device__ void d_mul_add(Matrix C, Matrix const A, Matrix const B) {
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
  */
-__device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const)) {
+__device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const)) {
 
 	if (A.cols != B.rows) {
 
@@ -731,15 +721,15 @@ __device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(f
 	op(pValue, *pValue, threadValue);
 }
 
-__device__ void d_cwise_sub(Matrix C, Matrix const A, Matrix const B) {
+__device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B) {
 	d_cwise_op(C, A, B, &d_sub);
 }
 
-__device__ void d_cwise_mul(Matrix C, Matrix const A, Matrix const B) {
+__device__ void d_cwise_mul(Matrix const& C, Matrix const& A, Matrix const& B) {
 	d_cwise_op(C, A, B, &d_mul);
 }
 
-__device__ void d_cwise_op(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const)) {
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const)) {
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
@@ -758,7 +748,7 @@ __device__ void d_cwise_op(Matrix C, Matrix const A, Matrix const B, void(*op)(f
 	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), d_matrix_get(B, y, x));
 }
 
-__device__ void d_fill_random(Matrix A) {
+__device__ void d_fill_random(Matrix const& A) {
 
 	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
 	size_t const targetY = threadIdx.y + blockIdx.y * blockDim.y;
