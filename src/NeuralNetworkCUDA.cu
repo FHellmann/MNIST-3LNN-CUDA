@@ -598,7 +598,12 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 //		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
 //	}
 
-	d_mul_add(params.W23, error, params.output2);
+	// Important to make a local copy.
+	// Otherwise every thread would transpose the matrix which
+	// would lead to undefined behavior.
+	Matrix output2 = params.output2;
+	d_matrix_transpose(output2);
+	d_mul_add(params.W23, error, output2);
 }
 
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
@@ -606,11 +611,14 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 		printf("d_back_propagate_hidden\n");
 	}
 
-	// e3 == output, see "back propagation output"
 	// The weight updates are computed by
 	// W23^T * e3 * ∇σ * input^T
 
+	// Important to make a local copy.
+	// Otherwise every thread would transpose the matrix which
+	// would lead to undefined behavior.
 	Matrix W23 = params.W23;
+	d_matrix_transpose(W23);
 //	W23.rows = NUM_DIGITS;
 //	W23.cols = params.numHiddenNodes;
 //	W23.data = params.W23;
@@ -618,6 +626,7 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 //		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
 //	}
 
+	// See d_back_propagation_output
 	Matrix error = params.output3;
 //	error.rows = NUM_DIGITS;
 //	error.cols = params.batchSize;
