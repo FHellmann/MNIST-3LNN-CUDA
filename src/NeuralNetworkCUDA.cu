@@ -134,28 +134,9 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	if (labels.size() <= 0)
 		return;
 
-	// Collect memory in RAM
-	size_t const singleImgPixCount = images.front().total();
-	size_t const allImgBufElements = singleImgPixCount * images.size();
-	float* imgData = new float[allImgBufElements];
-	float* dst = imgData;
-	for (cv::Mat const& img : images) {
-		for (uint8_t* src = img.datastart; src != img.dataend;) {
-			*(dst++) = static_cast<float>(*(src++));
-		}
-	}
-
-	float* flabels = new float[labels.size()];
-	dst = flabels;
-	for (uint8_t const& l : labels) {
-		*(dst++) = static_cast<float>(l);
-	}
-
-	cudaError_t err;
-
-	Layer* inputLayer  = getLayer(INPUT);
-	Layer* hiddenLayer = getLayer(HIDDEN);
-	Layer* outputLayer = getLayer(OUTPUT);
+	Layer* const inputLayer  = getLayer(INPUT);
+	Layer* const hiddenLayer = getLayer(HIDDEN);
+	Layer* const outputLayer = getLayer(OUTPUT);
 
 	GPUTrainingParameters trainingParams;
 	trainingParams.numExamples = images.size();
@@ -166,9 +147,13 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.maxDerivation = max_derivation;
 	trainingParams.batchSize = MATRIX_SIZE_DIVISOR;
 
+	cudaError_t err;
+
 	//
 	// Allocate cuda memory
 	//
+	size_t const singleImgPixCount = images.front().total();
+	size_t const allImgBufElements = singleImgPixCount * images.size();
 
 	// Images
 	err = cudaMalloc((void**) &trainingParams.images, allImgBufElements * sizeof(float));
@@ -219,11 +204,70 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	assert(err == cudaSuccess);
 
 	//
+	// Collect memory in RAM
+	//
+	float* imgData = new float[allImgBufElements];
+	float* dst = imgData;
+	for (cv::Mat const& img : images) {
+		for (uint8_t* src = img.datastart; src != img.dataend;) {
+			*(dst++) = static_cast<float>(*(src++));
+		}
+	}
+
+	float* flabels = new float[labels.size()];
+	dst = flabels;
+	for (uint8_t const& l : labels) {
+		*(dst++) = static_cast<float>(l);
+	}
+
+	float* W12 = new float[trainingParams.W12_len];
+	float* W23 = new float[trainingParams.W23_len];
+	float* bias2 = new float[trainingParams.bias2_len];
+	float* bias3 = new float[trainingParams.bias3_len];
+
+	//
+	// Collect the initial weights and biases in buffers for submission to the GPU.
+	//
+	trainingParams.activationFunction2 = hiddenLayer->actFctType;
+	{
+		size_t k = 0;
+		for (size_t j = 0; j < hiddenLayer->nodes.size(); ++j) {
+			Layer::Node* node = hiddenLayer->nodes[j];
+			bias2[j] = node->bias;
+			for (size_t i = 0; i < node->weights.size(); ++i) {
+				W12[k] = node->weights[i];
+				++k;
+			}
+		}
+	}
+
+	trainingParams.activationFunction3 = outputLayer->actFctType;
+	{
+		size_t k = 0;
+		for (size_t j = 0; j < outputLayer->nodes.size(); ++j) {
+			Layer::Node* node = outputLayer->nodes[j];
+			bias3[j] = node->bias;
+			for (size_t i = 0; i < node->weights.size(); ++i) {
+				W23[k] = node->weights[i];
+				++k;
+			}
+		}
+	}
+
+	//
 	// Copy data to graphics card
 	//
 	err = cudaMemcpy(trainingParams.images, imgData, allImgBufElements * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
 	err = cudaMemcpy(trainingParams.labels, flabels, labels.size() * sizeof(float), cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(trainingParams.W12, W12, trainingParams.W12_len * sizeof(float), cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(trainingParams.bias2, bias2, trainingParams.bias2_len * sizeof(float), cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(trainingParams.W23, W23, trainingParams.W23_len * sizeof(float), cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(trainingParams.bias3, bias3, trainingParams.bias3_len * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
 
 	delete[] imgData;
@@ -268,11 +312,6 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 //	gpuSharedMemoryLayout.image_size       = inputLayer->nodes.size() * sizeof(uint8_t);
 //	sharedMemorySize += gpuSharedMemoryLayout.image_size;
 
-	cudaMemset(trainingParams.W12, 0.0, trainingParams.W12_len * sizeof(float));
-	cudaMemset(trainingParams.W23, 0.0, trainingParams.W23_len * sizeof(float));
-	cudaMemset(trainingParams.bias2, 0.0, trainingParams.bias2_len * sizeof(float));
-	cudaMemset(trainingParams.bias3, 0.0, trainingParams.bias3_len * sizeof(float));
-
 	// Configure Grid, i.e. setup Blocks and Threads
 	dim3 numBlocks(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
@@ -292,10 +331,6 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	//
 	// Retreive the data
 	//
-	float* W12 = new float[trainingParams.W12_len];
-	float* W23 = new float[trainingParams.W23_len];
-	float* bias2 = new float[trainingParams.bias2_len];
-	float* bias3 = new float[trainingParams.bias3_len];
 
 	// Copy it back to neural network data structure
 	err = cudaMemcpy(W12, trainingParams.W12, trainingParams.W12_len * sizeof(float), cudaMemcpyDeviceToHost);
@@ -332,27 +367,29 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	//
 	// Copy the weight data into the c++ data structure.
 	//
-	Layer* hidden = getLayer(HIDDEN);
-	trainingParams.activationFunction2 = hidden->actFctType;
-	size_t k = 0;
-	for (size_t j = 0; j < hidden->nodes.size(); ++j) {
-		Layer::Node* node = hidden->nodes[j];
-		node->bias = bias2[j];
-		for (size_t i = 0; i < node->weights.size(); ++i) {
-			node->weights[i] = W12[k];
-			++k;
+	trainingParams.activationFunction2 = hiddenLayer->actFctType;
+	{
+		size_t k = 0;
+		for (size_t j = 0; j < hiddenLayer->nodes.size(); ++j) {
+			Layer::Node* node = hiddenLayer->nodes[j];
+			node->bias = bias2[j];
+			for (size_t i = 0; i < node->weights.size(); ++i) {
+				node->weights[i] = W12[k];
+				++k;
+			}
 		}
 	}
 
-	Layer* output = getLayer(OUTPUT);
-	trainingParams.activationFunction3 = output->actFctType;
-	k = 0;
-	for (size_t j = 0; j < output->nodes.size(); ++j) {
-		Layer::Node* node = output->nodes[j];
-		node->bias = bias3[j];
-		for (size_t i = 0; i < node->weights.size(); ++i) {
-			node->weights[i] = W23[k];
-			++k;
+	trainingParams.activationFunction3 = outputLayer->actFctType;
+	{
+		size_t k = 0;
+		for (size_t j = 0; j < outputLayer->nodes.size(); ++j) {
+			Layer::Node* node = outputLayer->nodes[j];
+			node->bias = bias3[j];
+			for (size_t i = 0; i < node->weights.size(); ++i) {
+				node->weights[i] = W23[k];
+				++k;
+			}
 		}
 	}
 
