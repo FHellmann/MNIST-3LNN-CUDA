@@ -92,12 +92,16 @@ struct Matrix {
 	float* data;
 };
 
-__device__ float d_matrix_get(Matrix const M, size_t const y, size_t const x) {
+__device__ float* d_matrix_pget(Matrix const M, size_t const y, size_t const x) {
 	if (M.layout == Matrix::ROW_MAJOR) {
-		return M.data[x + y * M.cols];
+		return M.data + (x + y * M.cols);
 	} else {
-		return M.data[x * M.rows + y];
+		return M.data + (x * M.rows + y);
 	}
+}
+
+__device__ float d_matrix_get(Matrix const M, size_t const y, size_t const x) {
+	return *d_matrix_pget(M, y, x);
 }
 
 __device__ void d_matrix_set(Matrix const M, size_t const y, size_t const x, float const value) {
@@ -394,8 +398,8 @@ __device__ void d_cwise_mul(Matrix C, Matrix A, Matrix B);
 __device__ void d_cwise_sub(Matrix C, Matrix A, Matrix B);
 
 /* Neural network operations. */
-__device__ void d_apply_activation(float* const, size_t const, NeuralNetwork::ActFctType);
-__device__ void d_apply_activation_derivative(float* const, size_t const, NeuralNetwork::ActFctType);
+__device__ void d_apply_activation(Matrix, NeuralNetwork::ActFctType);
+__device__ void d_apply_activation_derivative(Matrix, NeuralNetwork::ActFctType);
 __device__ void d_back_propagate_output(GPUTrainingParameters const);
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const);
 __device__ void d_fill_target_output(GPUTrainingParameters const, Matrix);
@@ -441,8 +445,8 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 	}
 
 	d_set_bias(hiddenOutput, bias2);
-	d_mul(hiddenOutput, W12, imgs);
-	d_apply_activation(params.output2, params.output2_len, params.activationFunction2);
+	d_mul_add(hiddenOutput, W12, imgs);
+	d_apply_activation(hiddenOutput, params.activationFunction2);
 
 	Matrix W23;
 	W23.rows = NUM_DIGITS;
@@ -470,12 +474,12 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 		printf("ERROR: Bias3 has wrong dimensions: %lu x %lu != %lu\n", bias3.rows, bias3.cols, params.bias3_len);
 	}
 
-//	d_set_bias(hiddenOutput, bias2);
-//	d_mul(output, W23, hiddenOutput);
-//	d_apply_activation(params.output3, params.output3_len, params.activationFunction3);
+	d_set_bias(output, bias3);
+	d_mul_add(output, W23, hiddenOutput);
+	d_apply_activation(output, params.activationFunction3);
 
-	d_fill_random(W12);
-	d_fill_random(W23);
+//	d_fill_random(W12);
+//	d_fill_random(W23);
 //	d_fill_random(bias2);
 //	d_fill_random(bias3);
 }
@@ -517,7 +521,7 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	Matrix error = output;
 
 	d_cwise_sub(difference, targetOutput, output);
-	d_apply_activation_derivative(output.data, output.rows * output.cols, params.activationFunction3);
+	d_apply_activation_derivative(output, params.activationFunction3);
 	d_cwise_mul(error, output, difference);
 
 	Matrix hiddenOutput;
@@ -546,7 +550,7 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const) {
 	}
 }
 
-__device__ void d_apply_activation(float* const data, size_t const len, NeuralNetwork::ActFctType functionType) {
+__device__ void d_apply_activation(Matrix A, NeuralNetwork::ActFctType functionType) {
 
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_activate_layer\n");
@@ -556,21 +560,21 @@ __device__ void d_apply_activation(float* const data, size_t const len, NeuralNe
 	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
 
 	// If the target index would handle an element outside of the data buffer, terminate.
-	if (idx >= len) {
+	if (idx >= A.cols * A.rows) {
 		return;
 	}
 
 	switch (functionType) {
 	case NeuralNetwork::SIGMOID:
-		data[idx] = 1.0f / (1.0f + exp(-data[idx]));
+		A.data[idx] = 1.0f / (1.0f + exp(-A.data[idx]));
 		break;
 	case NeuralNetwork::TANH:
-		data[idx] = tanh(data[idx]);
+		A.data[idx] = tanh(A.data[idx]);
 		break;
 	}
 }
 
-__device__ void d_apply_activation_derivative(float* const data, size_t const len, NeuralNetwork::ActFctType functionType) {
+__device__ void d_apply_activation_derivative(Matrix A, NeuralNetwork::ActFctType functionType) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_apply_activation_derivative\n");
 	}
@@ -579,19 +583,20 @@ __device__ void d_apply_activation_derivative(float* const data, size_t const le
 	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
 
 	// If the target index would handle an element outside of the data buffer, terminate.
-	if (idx >= len) {
+	if (idx >= A.rows * A.cols) {
 		return;
 	}
 
 	switch (functionType) {
 	case NeuralNetwork::SIGMOID:
-		data[idx] = data[idx] * (1.0f - data[idx]);
+		A.data[idx] = A.data[idx] * (1.0f - A.data[idx]);
 		break;
 	case NeuralNetwork::TANH:
-		float t = tanh(data[idx]);
-		data[idx] = 1.0f - t * t;
+		float t = tanh(A.data[idx]);
+		A.data[idx] = 1.0f - t * t;
 		break;
 	}
+	//printf("actFctDeriv(%lu) = %f\n", idx, data[idx]);
 }
 
 __device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix targetOutput) {
@@ -609,14 +614,16 @@ __device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix 
 		return;
 	}
 
-	size_t targetIdx = 0;
-	if (targetOutput.layout == Matrix::ROW_MAJOR) {
-		targetIdx = targetX + targetY * targetOutput.cols;
-	} else if (targetOutput.layout == Matrix::COLUMN_MAJOR) {
-		targetIdx = targetX * targetOutput.rows + targetY;
-	}
+//	size_t targetIdx = 0;
+//	if (targetOutput.layout == Matrix::ROW_MAJOR) {
+//		targetIdx = targetX + targetY * targetOutput.cols;
+//	} else if (targetOutput.layout == Matrix::COLUMN_MAJOR) {
+//		targetIdx = targetX * targetOutput.rows + targetY;
+//	}
 
-	targetOutput.data[targetIdx] = (threadIdx.y == params.labels[srcIdx]) ? 1.0f : 0.0f;
+	//targetOutput.data[targetIdx] = (threadIdx.y == params.labels[srcIdx]) ? 1.0f : 0.0f;
+	float const v = (threadIdx.y == params.labels[srcIdx]) ? 1.0f : 0.0f;
+	d_matrix_set(targetOutput, targetY, targetX, v);
 //	if (threadIdx.x == 0) {
 //		printf("d_fill_target_output: (%lu, %lu) = %f\n", targetX, targetY, targetOutput.data[targetIdx]);
 //	}
@@ -762,25 +769,8 @@ __device__ void d_cwise_op(Matrix C, Matrix A, Matrix B, void(*op)(float*, float
 		return;
 	}
 
-	// row major
-	size_t idxA = x + y * A.cols;
-	size_t idxB = x + y * B.cols;
-	size_t idxC = x + y * C.cols;
-
-	if (A.layout == Matrix::COLUMN_MAJOR) {
-		idxA = y + x * A.rows;
-	}
-
-	if (B.layout == Matrix::COLUMN_MAJOR) {
-		idxB = y + x * B.rows;
-	}
-
-	if (C.layout == Matrix::COLUMN_MAJOR) {
-		idxC = y + x * C.rows;
-	}
-
 	//C.data[idxC] = A.data[idxA] - B.data[idxB];
-	op(&(C.data[idxC]), A.data[idxA], - B.data[idxB]);
+	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), d_matrix_get(B, y, x));
 }
 
 __device__ void d_fill_random(Matrix A) {
