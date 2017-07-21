@@ -330,21 +330,25 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	//
 	Layer* hidden = getLayer(HIDDEN);
 	trainingParams.activationFunction2 = hidden->actFctType;
+	size_t k = 0;
 	for (size_t j = 0; j < hidden->nodes.size(); ++j) {
 		Layer::Node* node = hidden->nodes[j];
 		node->bias = bias2[j];
 		for (size_t i = 0; i < node->weights.size(); ++i) {
-			node->weights[i] = W12[j * hidden->nodes.size() + i];
+			node->weights[i] = W12[k];
+			++k;
 		}
 	}
 
 	Layer* output = getLayer(OUTPUT);
 	trainingParams.activationFunction3 = output->actFctType;
+	k = 0;
 	for (size_t j = 0; j < output->nodes.size(); ++j) {
 		Layer::Node* node = output->nodes[j];
 		node->bias = bias3[j];
 		for (size_t i = 0; i < node->weights.size(); ++i) {
-			node->weights[i] = W23[j * output->nodes.size() + i];
+			node->weights[i] = W23[k];
+			++k;
 		}
 	}
 
