@@ -399,6 +399,8 @@ __device__ void d_apply_activation_derivative(float* const, size_t const, Neural
 __device__ void d_back_propagate_output(GPUTrainingParameters const);
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const);
 __device__ void d_fill_target_output(GPUTrainingParameters const, Matrix);
+__device__ void d_set_bias(Matrix output, Matrix const bias);
+__device__ void d_fill_random(Matrix);
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
@@ -430,6 +432,15 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 		printf("ERROR: HiddenOutput matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
 	}
 
+	Matrix bias2;
+	bias2.rows = params.numHiddenNodes;
+	bias2.cols = 1;
+	bias2.data = params.bias2;
+	if (bias2.rows * bias2.cols != params.bias2_len) {
+		printf("ERROR: Bias2 has wrong dimensions: %lu x %lu != %lu\n", bias2.rows, bias2.cols, params.bias2_len);
+	}
+
+	d_set_bias(hiddenOutput, bias2);
 	d_mul(hiddenOutput, W12, imgs);
 	d_apply_activation(params.output2, params.output2_len, params.activationFunction2);
 
@@ -443,16 +454,30 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 	}
 
 	Matrix output;
-	output.rows = W23.rows;
-	output.cols = hiddenOutput.cols;
+	output.rows = NUM_DIGITS;
+	output.cols = params.batchSize;
 	output.layout = Matrix::ROW_MAJOR;
 	output.data = params.output3;
 	if (output.rows * output.cols != params.output3_len) {
 		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
 	}
 
-	d_mul(output, W23, hiddenOutput);
-	d_apply_activation(params.output3, params.output3_len, params.activationFunction3);
+	Matrix bias3;
+	bias3.rows = NUM_DIGITS;
+	bias3.cols = 1;
+	bias3.data = params.bias3;
+	if (bias3.rows * bias3.cols != params.bias3_len) {
+		printf("ERROR: Bias3 has wrong dimensions: %lu x %lu != %lu\n", bias3.rows, bias3.cols, params.bias3_len);
+	}
+
+//	d_set_bias(hiddenOutput, bias2);
+//	d_mul(output, W23, hiddenOutput);
+//	d_apply_activation(params.output3, params.output3_len, params.activationFunction3);
+
+	d_fill_random(W12);
+	d_fill_random(W23);
+//	d_fill_random(bias2);
+//	d_fill_random(bias3);
 }
 
 __global__ void d_back_propagate(GPUTrainingParameters const params) {
@@ -486,12 +511,14 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 		printf("d_back_propagate_output: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
 	}
 
+	// Save the difference into the target output buffer
 	Matrix difference = targetOutput;
+	// Reuse the output buffer for saving the error, for now. Perhaps this is a problem later on.
 	Matrix error = output;
 
 	d_cwise_sub(difference, targetOutput, output);
 	d_apply_activation_derivative(output.data, output.rows * output.cols, params.activationFunction3);
-	d_cwise_mul(error, output, targetOutput);
+	d_cwise_mul(error, output, difference);
 
 	Matrix hiddenOutput;
 	hiddenOutput.rows = params.batchSize;
@@ -511,7 +538,6 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 	}
 
 	d_mul_add(W23, error, hiddenOutput);
-
 }
 
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const) {
@@ -596,17 +622,41 @@ __device__ void d_fill_target_output(GPUTrainingParameters const params, Matrix 
 //	}
 }
 
+__device__ void d_set_bias(Matrix output, Matrix const bias) {
+
+	if (bias.rows != output.rows) {
+		printf("d_set_bias: Bias and output dimensions mismatch. Expected same height but bias was %lu and output was %lu\n", bias.rows, output.rows);
+		return;
+	}
+
+	if (bias.cols > 1) {
+		printf("d_set_bias: Bias column dimension is %lu > 1. Not handled.\n", bias.cols);
+		return;
+	}
+
+	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t const targetY = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (targetX >= output.cols || targetY >= output.rows) {
+		return;
+	}
+
+	//d_matrix_set(output, targetY, targetX, d_matrix_get(bias, targetY, 1));
+	d_matrix_set(output, targetY, targetX, static_cast<float>(targetY));
+}
+
 __device__ void d_assign(float* c, float a, float b) {
 	*c = b;
 }
 
 __device__ void d_add(float* c, float a, float b) {
-	//printf("d_add(%f, %f, %f)", *a, b, c);
 	*c = a + b;
+	//printf("d_add(%f, %f, %f\n)", *a, b, c);
 }
 
 __device__ void d_sub(float* c, float a, float b) {
 	*c = a - b;
+	//printf("d_add(%f, %f, %f)\n", *c, a, b);
 }
 
 __device__ void d_mul(float* c, float a, float b) {
@@ -731,4 +781,16 @@ __device__ void d_cwise_op(Matrix C, Matrix A, Matrix B, void(*op)(float*, float
 
 	//C.data[idxC] = A.data[idxA] - B.data[idxB];
 	op(&(C.data[idxC]), A.data[idxA], - B.data[idxB]);
+}
+
+__device__ void d_fill_random(Matrix A) {
+
+	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
+	size_t const targetY = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (targetX >= A.cols || targetY >= A.rows) {
+		return;
+	}
+
+	d_matrix_set(A, targetY, targetX, static_cast<float>(targetX));
 }
