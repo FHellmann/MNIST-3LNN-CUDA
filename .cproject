@@ -68,7 +68,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/NeuralNetworkDistributed.cpp|src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -141,13 +141,13 @@
 							</tool>
 							<tool id="nvcc.archiver.base.198202976" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
 							<tool id="com.nvidia.host.assembler.1816791262" name="Host Assembler" superClass="com.nvidia.host.assembler">
-								<option id="gnu.both.asm.option.include.paths.1301819937" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath"/>
+								<option id="gnu.both.asm.option.include.paths.1301819937" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.308616064" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/NeuralNetworkDistributed.cpp|src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -155,6 +155,8 @@
 				<executable devicelink="false">
 					<sass major="6" minor="0"/>
 					<ptx major="6" minor="0"/>
+					<ptx major="2" minor="0"/>
+					<sass major="2" minor="1"/>
 				</executable>
 				<editor-arch major="6" minor="0"/>
 			</storageModule>
@@ -226,7 +228,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/NeuralNetworkDistributed.cpp|src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -305,7 +307,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/NeuralNetworkDistributed.cpp|src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -385,7 +387,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/trainLindNet.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/NeuralNetworkDistributed.cpp|src/trainLindNet.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
