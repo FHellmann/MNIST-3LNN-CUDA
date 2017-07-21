@@ -16,6 +16,18 @@ __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 #define MATRIX_SIZE_DIVISOR 28
 #define NUM_DIGITS 10
 
+struct Matrix {
+	enum Layout {
+		ROW_MAJOR,
+		COLUMN_MAJOR
+	};
+
+	size_t rows;
+	size_t cols;
+	Layout layout = ROW_MAJOR;
+	float* data;
+};
+
 struct GPUTrainingParameters {
 	/* Training data. */
 	float* images;
@@ -30,22 +42,16 @@ struct GPUTrainingParameters {
 	size_t batchSize;
 
 	/* Weight matrices. */
-	float* W12;
-	size_t W12_len;
-	float* W23;
-	size_t W23_len;
+	Matrix W12;
+	Matrix W23;
 
 	/* Biases */
-	float* bias2;
-	size_t bias2_len;
-	float* bias3;
-	size_t bias3_len;
+	Matrix bias2;
+	Matrix bias3;
 
 	/* Layer data */
-	float* output2;
-	size_t output2_len;
-	float* output3;
-	size_t output3_len;
+	Matrix output2;
+	Matrix output3;
 
 	NeuralNetwork::ActFctType activationFunction2;
 	NeuralNetwork::ActFctType activationFunction3;
@@ -55,10 +61,8 @@ struct GPUTrainingParameters {
 	float maxDerivation;
 
 	/* Temporary buffers, e.g. for back propagation. */
-	float* tmp1;
-	size_t tmp1_len;
-	float* tmp2;
-	size_t tmp2_len;
+	Matrix tmp1;
+	Matrix tmp2;
 };
 
 struct GPUSharedMemoryLayout {
@@ -80,18 +84,6 @@ struct GPUSharedMemoryLayout {
 	size_t image_size = 0;
 } gpuSharedMemoryLayout;
 
-struct Matrix {
-	enum Layout {
-		ROW_MAJOR,
-		COLUMN_MAJOR
-	};
-
-	size_t rows;
-	size_t cols;
-	Layout layout = ROW_MAJOR;
-	float* data;
-};
-
 __device__ float* d_matrix_pget(Matrix const M, size_t const y, size_t const x) {
 	if (M.layout == Matrix::ROW_MAJOR) {
 		return M.data + (x + y * M.cols);
@@ -110,6 +102,14 @@ __device__ void d_matrix_set(Matrix const M, size_t const y, size_t const x, flo
 	} else {
 		M.data[x * M.rows + y] = value;
 	}
+}
+
+__device__ size_t d_matrix_size(Matrix const A) {
+	return A.rows * A.cols;
+}
+
+size_t matrix_size(Matrix const A) {
+	return A.rows * A.cols;
 }
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -164,43 +164,51 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	assert(err == cudaSuccess);
 
 	// Storage for the first weight matrix
-	trainingParams.W12_len = inputLayer->nodes.size() * hiddenLayer->nodes.size();
-	err = cudaMalloc((void**) &trainingParams.W12, trainingParams.W12_len * sizeof(float));
+	trainingParams.W12.rows = hiddenLayer->nodes.size();
+	trainingParams.W12.cols = inputLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.W12.data, matrix_size(trainingParams.W12) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the hidden layer bias vector
-	trainingParams.bias2_len = hiddenLayer->nodes.size();
-	err = cudaMalloc((void**) &trainingParams.bias2, trainingParams.bias2_len * sizeof(float));
+	trainingParams.bias2.rows = hiddenLayer->nodes.size();
+	trainingParams.bias2.cols = 1;
+	err = cudaMalloc((void**) &trainingParams.bias2.data, matrix_size(trainingParams.bias2) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the second weight matrix
-	trainingParams.W23_len = hiddenLayer->nodes.size() * outputLayer->nodes.size();
-	err = cudaMalloc((void**) &trainingParams.W23, trainingParams.W23_len * sizeof(float));
+	trainingParams.W23.rows = outputLayer->nodes.size();
+	trainingParams.W23.cols = hiddenLayer->nodes.size();
+	err = cudaMalloc((void**) &trainingParams.W23.data, matrix_size(trainingParams.W23) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the output layer bias vector
-	trainingParams.bias3_len = outputLayer->nodes.size();
-	err = cudaMalloc((void**) &trainingParams.bias3, trainingParams.bias3_len * sizeof(float));
+	trainingParams.bias3.rows = outputLayer->nodes.size();
+	trainingParams.bias3.cols = 1;
+	err = cudaMalloc((void**) &trainingParams.bias3.data, matrix_size(trainingParams.bias3) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the output layer output vectors
-	trainingParams.output2_len = hiddenLayer->nodes.size() * trainingParams.batchSize;
-	err = cudaMalloc((void**) &trainingParams.output2, trainingParams.output2_len * sizeof(float));
+	trainingParams.output2.rows = trainingParams.numHiddenNodes;
+	trainingParams.output2.cols = trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.output2.data, matrix_size(trainingParams.output2) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the output layer output vectors
-	trainingParams.output3_len = outputLayer->nodes.size() * trainingParams.batchSize;
-	err = cudaMalloc((void**) &trainingParams.output3, trainingParams.output3_len * sizeof(float));
+	trainingParams.output3.rows = outputLayer->nodes.size();
+	trainingParams.output3.cols = trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.output3.data, matrix_size(trainingParams.output3) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Temporary storage of the size of the output vectors
-	trainingParams.tmp1_len = outputLayer->nodes.size() * trainingParams.batchSize;
-	err = cudaMalloc((void**) &trainingParams.tmp1, trainingParams.tmp1_len * sizeof(float));
+	trainingParams.tmp1.rows = outputLayer->nodes.size();
+	trainingParams.tmp1.cols = trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.tmp1.data, matrix_size(trainingParams.tmp1) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Temporary storage of the size of the output vectors
-	trainingParams.tmp2_len = outputLayer->nodes.size() * trainingParams.batchSize;
-	err = cudaMalloc((void**) &trainingParams.tmp2, trainingParams.tmp2_len * sizeof(float));
+	trainingParams.tmp2.rows = outputLayer->nodes.size();
+	trainingParams.tmp2.cols = trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.tmp2.data, matrix_size(trainingParams.tmp2) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	//
@@ -220,10 +228,10 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		*(dst++) = static_cast<float>(l);
 	}
 
-	float* W12 = new float[trainingParams.W12_len];
-	float* W23 = new float[trainingParams.W23_len];
-	float* bias2 = new float[trainingParams.bias2_len];
-	float* bias3 = new float[trainingParams.bias3_len];
+	float* W12 = new float[matrix_size(trainingParams.W12)];
+	float* W23 = new float[matrix_size(trainingParams.W23)];
+	float* bias2 = new float[matrix_size(trainingParams.bias2)];
+	float* bias3 = new float[matrix_size(trainingParams.bias3)];
 
 	//
 	// Collect the initial weights and biases in buffers for submission to the GPU.
@@ -261,13 +269,13 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	assert(err == cudaSuccess);
 	err = cudaMemcpy(trainingParams.labels, flabels, labels.size() * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(trainingParams.W12, W12, trainingParams.W12_len * sizeof(float), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.W12.data, W12, matrix_size(trainingParams.W12) * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(trainingParams.bias2, bias2, trainingParams.bias2_len * sizeof(float), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.bias2.data, bias2, matrix_size(trainingParams.bias2) * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(trainingParams.W23, W23, trainingParams.W23_len * sizeof(float), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.W23.data, W23, matrix_size(trainingParams.W23) * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(trainingParams.bias3, bias3, trainingParams.bias3_len * sizeof(float), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(trainingParams.bias3.data, bias3, matrix_size(trainingParams.bias3) * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
 
 	delete[] imgData;
@@ -333,13 +341,13 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	//
 
 	// Copy it back to neural network data structure
-	err = cudaMemcpy(W12, trainingParams.W12, trainingParams.W12_len * sizeof(float), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(W12, trainingParams.W12.data, matrix_size(trainingParams.W12) * sizeof(float), cudaMemcpyDeviceToHost);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(W23, trainingParams.W23, trainingParams.W23_len * sizeof(float), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(W23, trainingParams.W23.data, matrix_size(trainingParams.W23) * sizeof(float), cudaMemcpyDeviceToHost);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(bias2, trainingParams.bias2, trainingParams.bias2_len * sizeof(float), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(bias2, trainingParams.bias2.data, matrix_size(trainingParams.bias2) * sizeof(float), cudaMemcpyDeviceToHost);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(bias3, trainingParams.bias3, trainingParams.bias3_len * sizeof(float), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(bias3, trainingParams.bias3.data, matrix_size(trainingParams.bias3) * sizeof(float), cudaMemcpyDeviceToHost);
 	assert(err == cudaSuccess);
 
 	// Free the cuda buffers
@@ -347,22 +355,22 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.images = nullptr;
 	cudaFree (trainingParams.labels);
 	trainingParams.labels = nullptr;
-	cudaFree (trainingParams.W12);
-	trainingParams.W12 = nullptr;
-	cudaFree (trainingParams.W23);
-	trainingParams.W23 = nullptr;
-	cudaFree (trainingParams.bias2);
-	trainingParams.bias2 = nullptr;
-	cudaFree (trainingParams.bias3);
-	trainingParams.bias3 = nullptr;
-	cudaFree (trainingParams.output2);
-	trainingParams.output2 = nullptr;
-	cudaFree (trainingParams.output3);
-	trainingParams.output3 = nullptr;
-	cudaFree (trainingParams.tmp1);
-	trainingParams.tmp1 = nullptr;
-	cudaFree (trainingParams.tmp2);
-	trainingParams.tmp2 = nullptr;
+	cudaFree (trainingParams.W12.data);
+	trainingParams.W12.data = nullptr;
+	cudaFree (trainingParams.W23.data);
+	trainingParams.W23.data = nullptr;
+	cudaFree (trainingParams.bias2.data);
+	trainingParams.bias2.data = nullptr;
+	cudaFree (trainingParams.bias3.data);
+	trainingParams.bias3.data = nullptr;
+	cudaFree (trainingParams.output2.data);
+	trainingParams.output2.data = nullptr;
+	cudaFree (trainingParams.output3.data);
+	trainingParams.output3.data = nullptr;
+	cudaFree (trainingParams.tmp1.data);
+	trainingParams.tmp1.data = nullptr;
+	cudaFree (trainingParams.tmp2.data);
+	trainingParams.tmp2.data = nullptr;
 
 	//
 	// Copy the weight data into the c++ data structure.
@@ -415,10 +423,10 @@ __device__ void d_print(GPUTrainingParameters const params) {
 			"  height: %lu\n"
 			"  numExamples: %lu\n"
 			"  numHiddenNodes: %lu\n",
-			params.W12,
-			params.W12_len,
-			params.W23,
-			params.W23_len,
+			params.W12.data,
+			d_matrix_size(params.W12),
+			params.W23.data,
+			d_matrix_size(params.W23),
 			params.errorThreshold,
 			params.width,
 			params.height,
@@ -449,14 +457,14 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 		printf("d_feed_forward\n");
 	}
 
-	Matrix W12;
-	W12.rows = params.numHiddenNodes;
-	W12.cols = params.width * params.height;
-	W12.layout = Matrix::ROW_MAJOR;
-	W12.data = params.W12; // Global data pointer
-	if (W12.rows * W12.cols != params.W12_len) {
-		printf("ERROR: W12 matrix has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
-	}
+//	Matrix W12;
+//	W12.rows = params.numHiddenNodes;
+//	W12.cols = params.width * params.height;
+//	W12.layout = Matrix::ROW_MAJOR;
+//	W12.data = params.W12; // Global data pointer
+//	if (W12.rows * W12.cols != params.W12_len) {
+//		printf("ERROR: W12 matrix has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
+//	}
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
@@ -464,56 +472,56 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 	imgs.layout = Matrix::COLUMN_MAJOR;
 	imgs.data = params.images; // Global data pointer, column major, yields one image in each column vector.
 
-	Matrix hiddenOutput;
-	hiddenOutput.rows = params.numHiddenNodes;
-	hiddenOutput.cols = params.batchSize;
-	hiddenOutput.layout = Matrix::ROW_MAJOR;
-	hiddenOutput.data = params.output2;
-	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
-		printf("ERROR: HiddenOutput matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
-	}
+//	Matrix hiddenOutput;
+//	hiddenOutput.rows = params.numHiddenNodes;
+//	hiddenOutput.cols = params.batchSize;
+//	hiddenOutput.layout = Matrix::ROW_MAJOR;
+//	hiddenOutput.data = params.output2;
+//	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
+//		printf("ERROR: HiddenOutput matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
+//	}
 
-	Matrix bias2;
-	bias2.rows = params.numHiddenNodes;
-	bias2.cols = 1;
-	bias2.data = params.bias2;
-	if (bias2.rows * bias2.cols != params.bias2_len) {
-		printf("ERROR: Bias2 has wrong dimensions: %lu x %lu != %lu\n", bias2.rows, bias2.cols, params.bias2_len);
-	}
+//	Matrix bias2;
+//	bias2.rows = params.numHiddenNodes;
+//	bias2.cols = 1;
+//	bias2.data = params.bias2;
+//	if (bias2.rows * bias2.cols != params.bias2_len) {
+//		printf("ERROR: Bias2 has wrong dimensions: %lu x %lu != %lu\n", bias2.rows, bias2.cols, params.bias2_len);
+//	}
 
-	d_set_bias(hiddenOutput, bias2);
-	d_mul_add(hiddenOutput, W12, imgs);
-	d_apply_activation(hiddenOutput, params.activationFunction2);
+	d_set_bias(params.output2, params.bias2);
+	d_mul_add(params.output2, params.W12, imgs);
+	d_apply_activation(params.output2, params.activationFunction2);
 
-	Matrix W23;
-	W23.rows = NUM_DIGITS;
-	W23.cols = params.numHiddenNodes;
-	W23.layout = Matrix::ROW_MAJOR;
-	W23.data = params.W23;
-	if (W23.rows * W23.cols != params.W23_len) {
-		printf("ERROR: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
-	}
+//	Matrix W23;
+//	W23.rows = NUM_DIGITS;
+//	W23.cols = params.numHiddenNodes;
+//	W23.layout = Matrix::ROW_MAJOR;
+//	W23.data = params.W23;
+//	if (W23.rows * W23.cols != params.W23_len) {
+//		printf("ERROR: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
+//	}
 
-	Matrix output;
-	output.rows = NUM_DIGITS;
-	output.cols = params.batchSize;
-	output.layout = Matrix::ROW_MAJOR;
-	output.data = params.output3;
-	if (output.rows * output.cols != params.output3_len) {
-		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
-	}
+//	Matrix output;
+//	output.rows = NUM_DIGITS;
+//	output.cols = params.batchSize;
+//	output.layout = Matrix::ROW_MAJOR;
+//	output.data = params.output3;
+//	if (output.rows * output.cols != params.output3_len) {
+//		printf("ERROR: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
+//	}
 
-	Matrix bias3;
-	bias3.rows = NUM_DIGITS;
-	bias3.cols = 1;
-	bias3.data = params.bias3;
-	if (bias3.rows * bias3.cols != params.bias3_len) {
-		printf("ERROR: Bias3 has wrong dimensions: %lu x %lu != %lu\n", bias3.rows, bias3.cols, params.bias3_len);
-	}
+//	Matrix bias3;
+//	bias3.rows = NUM_DIGITS;
+//	bias3.cols = 1;
+//	bias3.data = params.bias3;
+//	if (bias3.rows * bias3.cols != params.bias3_len) {
+//		printf("ERROR: Bias3 has wrong dimensions: %lu x %lu != %lu\n", bias3.rows, bias3.cols, params.bias3_len);
+//	}
 
-	d_set_bias(output, bias3);
-	d_mul_add(output, W23, hiddenOutput);
-	d_apply_activation(output, params.activationFunction3);
+	d_set_bias(params.output3, params.bias3);
+	d_mul_add(params.output3, params.W23, params.output2);
+	d_apply_activation(params.output3, params.activationFunction3);
 
 //	d_fill_random(W12);
 //	d_fill_random(W23);
@@ -533,52 +541,53 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 
-	Matrix targetOutput;
-	targetOutput.rows = NUM_DIGITS;
-	targetOutput.cols = params.batchSize;
-	targetOutput.data = params.tmp1;
-	if (targetOutput.rows * targetOutput.cols != params.tmp1_len) {
-		printf("d_back_propagate_output: targetOutput matrix has wrong dimensions: %lu x %lu != %lu\n", targetOutput.rows, targetOutput.cols, params.tmp1_len);
-	}
+//	Matrix targetOutput;
+//	targetOutput.rows = NUM_DIGITS;
+//	targetOutput.cols = params.batchSize;
+//	targetOutput.data = params.tmp1;
+//	if (targetOutput.rows * targetOutput.cols != params.tmp1_len) {
+//		printf("d_back_propagate_output: targetOutput matrix has wrong dimensions: %lu x %lu != %lu\n", targetOutput.rows, targetOutput.cols, params.tmp1_len);
+//	}
+	Matrix targetOutput = params.tmp1;
 
 	// Compute the target output based on the labels
 	d_fill_target_output(params, targetOutput);
 
-	Matrix output;
-	output.rows = NUM_DIGITS;
-	output.cols = params.batchSize;
-	output.data = params.output3;
-	if (output.rows * output.cols != params.output3_len) {
-		printf("d_back_propagate_output: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
-	}
+//	Matrix output;
+//	output.rows = NUM_DIGITS;
+//	output.cols = params.batchSize;
+//	output.data = params.output3;
+//	if (output.rows * output.cols != params.output3_len) {
+//		printf("d_back_propagate_output: Output matrix has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output3_len);
+//	}
 
 	// Save the difference into the target output buffer
 	Matrix difference = targetOutput;
 	// Reuse the output buffer for saving the error, for now. Perhaps this is a problem later on.
-	Matrix error = output;
+	Matrix error = params.output3;
 
-	d_cwise_sub(difference, targetOutput, output);
-	d_apply_activation_derivative(output, params.activationFunction3);
-	d_cwise_mul(error, output, difference);
+	d_cwise_sub(difference, targetOutput, params.output3);
+	d_apply_activation_derivative(params.output3, params.activationFunction3);
+	d_cwise_mul(error, params.output3, difference);
 
-	Matrix hiddenOutput;
-	hiddenOutput.rows = params.batchSize;
-	hiddenOutput.cols = params.numHiddenNodes;
-	hiddenOutput.layout = Matrix::ROW_MAJOR;
-	hiddenOutput.data = params.output2;
-	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
-		printf("d_back_propagate_output: hidden output matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
-	}
+//	Matrix hiddenOutput;
+//	hiddenOutput.rows = params.batchSize;
+//	hiddenOutput.cols = params.numHiddenNodes;
+//	hiddenOutput.layout = Matrix::ROW_MAJOR;
+//	hiddenOutput.data = params.output2;
+//	if (hiddenOutput.rows * hiddenOutput.cols != params.output2_len) {
+//		printf("d_back_propagate_output: hidden output matrix has wrong dimensions: %lu x %lu != %lu\n", hiddenOutput.rows, hiddenOutput.cols, params.output2_len);
+//	}
 
-	Matrix W23;
-	W23.rows = NUM_DIGITS;
-	W23.cols = params.numHiddenNodes;
-	W23.data = params.W23;
-	if (W23.rows * W23.cols != params.W23_len) {
-		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
-	}
+//	Matrix W23;
+//	W23.rows = NUM_DIGITS;
+//	W23.cols = params.numHiddenNodes;
+//	W23.data = params.W23;
+//	if (W23.rows * W23.cols != params.W23_len) {
+//		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
+//	}
 
-	d_mul_add(W23, error, hiddenOutput);
+	d_mul_add(params.W23, error, params.output2);
 }
 
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
@@ -590,45 +599,45 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 	// The weight updates are computed by
 	// W23^T * e3 * ∇σ * input^T
 
-	Matrix W23;
-	W23.rows = NUM_DIGITS;
-	W23.cols = params.numHiddenNodes;
-	W23.data = params.W23;
-	if (W23.rows * W23.cols != params.W23_len) {
-		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
-	}
+	Matrix W23 = params.W23;
+//	W23.rows = NUM_DIGITS;
+//	W23.cols = params.numHiddenNodes;
+//	W23.data = params.W23;
+//	if (W23.rows * W23.cols != params.W23_len) {
+//		printf("d_back_propagate_output: W23 matrix has wrong dimensions: %lu x %lu != %lu\n", W23.rows, W23.cols, params.W23_len);
+//	}
 
-	Matrix error;
-	error.rows = NUM_DIGITS;
-	error.cols = params.batchSize;
-	error.data = params.output3;
-	if (error.rows * error.cols != params.output3_len) {
-		printf("d_back_propagate_output: error matrix has wrong dimensions: %lu x %lu != %lu\n", error.rows, error.cols, params.output3_len);
-	}
+	Matrix error = params.output3;
+//	error.rows = NUM_DIGITS;
+//	error.cols = params.batchSize;
+//	error.data = params.output3;
+//	if (error.rows * error.cols != params.output3_len) {
+//		printf("d_back_propagate_output: error matrix has wrong dimensions: %lu x %lu != %lu\n", error.rows, error.cols, params.output3_len);
+//	}
 
-	Matrix output;
-	output.rows = params.numHiddenNodes;
-	output.cols = params.batchSize;
-	output.data = params.output2;
-	if (output.rows * output.cols != params.output2_len) {
-		printf("d_back_propagate_output: output vector has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output2_len);
-	}
+//	Matrix output;
+//	output.rows = params.numHiddenNodes;
+//	output.cols = params.batchSize;
+//	output.data = params.output2;
+//	if (output.rows * output.cols != params.output2_len) {
+//		printf("d_back_propagate_output: output vector has wrong dimensions: %lu x %lu != %lu\n", output.rows, output.cols, params.output2_len);
+//	}
 
-	Matrix tmp;
-	tmp.rows = params.numHiddenNodes;
-	tmp.cols = params.batchSize;
-	tmp.data = params.tmp2;
-	if (tmp.rows * tmp.cols != params.tmp2_len) {
-		printf("d_back_propagate_output: tmp vector has wrong dimensions: %lu x %lu != %lu\n", tmp.rows, tmp.cols, params.tmp2_len);
-	}
+//	Matrix tmp;
+//	tmp.rows = params.numHiddenNodes;
+//	tmp.cols = params.batchSize;
+//	tmp.data = params.tmp2;
+//	if (tmp.rows * tmp.cols != params.tmp2_len) {
+//		printf("d_back_propagate_output: tmp vector has wrong dimensions: %lu x %lu != %lu\n", tmp.rows, tmp.cols, params.tmp2_len);
+//	}
 
-	Matrix W12;
-	W12.rows = params.width * params.height;
-	W12.cols = params.numHiddenNodes;
-	W12.data = params.W12;
-	if (W12.rows * W12.cols != params.W12_len) {
-		printf("d_back_propagate_output: W12 has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
-	}
+//	Matrix W12;
+//	W12.rows = params.width * params.height;
+//	W12.cols = params.numHiddenNodes;
+//	W12.data = params.W12;
+//	if (W12.rows * W12.cols != params.W12_len) {
+//		printf("d_back_propagate_output: W12 has wrong dimensions: %lu x %lu != %lu\n", W12.rows, W12.cols, params.W12_len);
+//	}
 
 	Matrix images;
 	images.rows = params.width * params.height;
@@ -636,10 +645,10 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 	images.layout = Matrix::COLUMN_MAJOR;
 	images.data = params.images;
 
-	d_apply_activation_derivative(output, params.activationFunction2);
-	d_mul(tmp, W23, error);
-	d_cwise_mul(tmp, output, tmp);
-	d_mul_add(W12, tmp, images);
+	d_apply_activation_derivative(params.output2, params.activationFunction2);
+	d_mul(params.tmp2, W23, error);
+	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
+	d_mul_add(params.W12, params.tmp2, images);
 }
 
 __device__ void d_apply_activation(Matrix A, NeuralNetwork::ActFctType functionType) {
@@ -787,7 +796,7 @@ __device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(f
 
 	if (A.cols != B.rows) {
 
-		printf("Incompatible matrices: (%lu, %lu) x (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
+		printf("d_mul_base: Incompatible matrices: (%lu, %lu) x (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
 		return;
 	}
 
@@ -850,7 +859,7 @@ __device__ void d_cwise_op(Matrix C, Matrix const A, Matrix const B, void(*op)(f
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
-		printf("Incompatible matrices: (%lu, %lu) + (%lu, %lu) = (%lu, lu)\n", A.rows, A.cols, B.rows, B.cols, C.rows, C.cols);
+		printf("d_cwise_op: Incompatible matrices: (%lu, %lu) + (%lu, %lu) = (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols, C.rows, C.cols);
 		return;
 	}
 
