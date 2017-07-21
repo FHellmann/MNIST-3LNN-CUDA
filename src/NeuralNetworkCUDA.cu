@@ -706,17 +706,13 @@ __device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(f
 	unsigned int const numSubBlocks = A.cols / MATRIX_SIZE_DIVISOR;
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
-		if (A.layout == Matrix::COLUMN_MAJOR) {
-			blockCacheA[threadIdx.y][threadIdx.x] = A.data[(blockIdx.y + k * A.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * A.cols];
-		} else if (A.layout == Matrix::ROW_MAJOR) {
-			blockCacheA[threadIdx.y][threadIdx.x] = A.data[(blockIdx.y * A.cols + k) * MATRIX_SIZE_DIVISOR + threadIdx.y * A.cols + threadIdx.x];
-		}
+		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
+		size_t const yA = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
+		blockCacheA[threadIdx.y][threadIdx.x] = d_matrix_get(A, yA, xA);
 
-		if (B.layout == Matrix::COLUMN_MAJOR) {
-			blockCacheB[threadIdx.y][threadIdx.x] = B.data[(blockIdx.x * B.cols + k) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * B.cols];
-		} else if (B.layout == Matrix::ROW_MAJOR) {
-			blockCacheB[threadIdx.y][threadIdx.x] = B.data[(blockIdx.x + k * B.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y * B.cols + threadIdx.x];
-		}
+		size_t const xB = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
+		size_t const yB = k * MATRIX_SIZE_DIVISOR + threadIdx.y;
+		blockCacheB[threadIdx.y][threadIdx.x] = d_matrix_get(B, yB, xB);
 
 		__syncthreads();
 
@@ -729,13 +725,9 @@ __device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(f
 		__syncthreads();
 	}
 
-	size_t idx = 0;
-	if (C.layout == Matrix::ROW_MAJOR) {
-		idx = (blockIdx.y * C.cols + blockIdx.x) * MATRIX_SIZE_DIVISOR + threadIdx.y * C.cols + threadIdx.x;
-	} else if (C.layout == Matrix::COLUMN_MAJOR) {
-		idx = (blockIdx.y + blockIdx.x * C.cols) * MATRIX_SIZE_DIVISOR + threadIdx.y + threadIdx.x * C.cols;
-	}
-	float* pValue = &(C.data[idx]);
+	size_t const x = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
+	size_t const y = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
+	float* const pValue = d_matrix_pget(C, y, x);
 	op(pValue, *pValue, threadValue);
 }
 
