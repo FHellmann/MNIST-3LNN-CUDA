@@ -5,6 +5,8 @@
 
 using namespace std;
 
+#define PRINTF(...) {if (threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0) { printf( __VA_ARGS__ ); }}
+
 __host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
 		const int hidCount, const int outCount, const double learningRate) :
 		NeuralNetwork(inpCount, hidCount, outCount, learningRate) {
@@ -424,7 +426,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 }
 
 __device__ void d_print(GPUTrainingParameters const params) {
-	printf("TrainingParams:\n"
+	PRINTF("TrainingParams:\n"
 			"  W12: %p\n"
 		    "  W1_len: %lu\n"
 			"  W2: %p\n"
@@ -464,9 +466,7 @@ __device__ void d_fill_random(Matrix const&);
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_feed_forward\n");
-	}
+	PRINTF("d_feed_forward\n");
 
 	Matrix imgs;
 	imgs.rows = params.width * params.height;
@@ -485,12 +485,10 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
 __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_back_propagate\n");
-	}
+	PRINTF("d_back_propagate\n");
 
 	d_back_propagate_output(params);
-	d_back_propagate_hidden(params);
+	//d_back_propagate_hidden(params);
 }
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
@@ -517,9 +515,8 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 }
 
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_back_propagate_hidden\n");
-	}
+
+	PRINTF("d_back_propagate_hidden\n");
 
 	// The weight updates are computed by
 	// W23^T * e3 * ∇σ * input^T
@@ -547,9 +544,7 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const params) {
 
 __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {
 
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_activate_layer\n");
-	}
+	PRINTF("d_activate_layer\n");
 
 	// Target index for this thread.
 	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
@@ -570,9 +565,8 @@ __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType fu
 }
 
 __device__ void d_apply_activation_derivative(Matrix const& A, NeuralNetwork::ActFctType functionType) {
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_apply_activation_derivative\n");
-	}
+
+	PRINTF("d_apply_activation_derivative\n");
 
 	// Target index for this thread.
 	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
@@ -654,16 +648,12 @@ __device__ void d_mul(float* c, float const a, float const b) {
 }
 
 __device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B) {
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_mul\n");
-	}
+	PRINTF("d_mul\n");
 	d_mul_base(C, A, B, &d_assign);
 }
 
 __device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B) {
-	if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("d_mul_add\n");
-	}
+	PRINTF("d_mul_add\n");
 	d_mul_base(C, A, B, &d_add);
 }
 
