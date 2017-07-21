@@ -390,12 +390,12 @@ __device__ void d_print(GPUTrainingParameters const params) {
 }
 
 /* Matrix manipulation operations. */
-__device__ void d_mul_base(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float));
-__device__ void d_mul(Matrix C, Matrix A, Matrix B);
-__device__ void d_mul_add(Matrix C, Matrix A, Matrix B);
-__device__ void d_cwise_op(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float));
-__device__ void d_cwise_mul(Matrix C, Matrix A, Matrix B);
-__device__ void d_cwise_sub(Matrix C, Matrix A, Matrix B);
+__device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const));
+__device__ void d_mul(Matrix C, Matrix const A, Matrix const B);
+__device__ void d_mul_add(Matrix C, Matrix const A, Matrix const B);
+__device__ void d_cwise_op(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const));
+__device__ void d_cwise_mul(Matrix C, Matrix const A, Matrix const B);
+__device__ void d_cwise_sub(Matrix C, Matrix const A, Matrix const B);
 
 /* Neural network operations. */
 __device__ void d_apply_activation(Matrix, NeuralNetwork::ActFctType);
@@ -652,32 +652,32 @@ __device__ void d_set_bias(Matrix output, Matrix const bias) {
 	d_matrix_set(output, targetY, targetX, static_cast<float>(targetY));
 }
 
-__device__ void d_assign(float* c, float a, float b) {
+__device__ void d_assign(float* c, float const a, float const b) {
 	*c = b;
 }
 
-__device__ void d_add(float* c, float a, float b) {
+__device__ void d_add(float* c, float const a, float const b) {
 	*c = a + b;
 	//printf("d_add(%f, %f, %f\n)", *a, b, c);
 }
 
-__device__ void d_sub(float* c, float a, float b) {
+__device__ void d_sub(float* c, float const a, float const b) {
 	*c = a - b;
 	//printf("d_add(%f, %f, %f)\n", *c, a, b);
 }
 
-__device__ void d_mul(float* c, float a, float b) {
+__device__ void d_mul(float* c, float const a, float const b) {
 	*c = a * b;
 }
 
-__device__ void d_mul(Matrix C, Matrix A, Matrix B) {
+__device__ void d_mul(Matrix C, Matrix const A, Matrix const B) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul\n");
 	}
 	d_mul_base(C, A, B, &d_assign);
 }
 
-__device__ void d_mul_add(Matrix C, Matrix A, Matrix B) {
+__device__ void d_mul_add(Matrix C, Matrix const A, Matrix const B) {
 	if (threadIdx.x == 0 && threadIdx.y == 0) {
 		printf("d_mul_add\n");
 	}
@@ -691,7 +691,7 @@ __device__ void d_mul_add(Matrix C, Matrix A, Matrix B) {
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
  */
-__device__ void d_mul_base(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float)) {
+__device__ void d_mul_base(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const)) {
 
 	if (A.cols != B.rows) {
 
@@ -746,15 +746,15 @@ __device__ void d_mul_base(Matrix C, Matrix A, Matrix B, void(*op)(float*, float
 	op(pValue, *pValue, threadValue);
 }
 
-__device__ void d_cwise_sub(Matrix C, Matrix A, Matrix B) {
+__device__ void d_cwise_sub(Matrix C, Matrix const A, Matrix const B) {
 	d_cwise_op(C, A, B, &d_sub);
 }
 
-__device__ void d_cwise_mul(Matrix C, Matrix A, Matrix B) {
+__device__ void d_cwise_mul(Matrix C, Matrix const A, Matrix const B) {
 	d_cwise_op(C, A, B, &d_mul);
 }
 
-__device__ void d_cwise_op(Matrix C, Matrix A, Matrix B, void(*op)(float*, float, float)) {
+__device__ void d_cwise_op(Matrix C, Matrix const A, Matrix const B, void(*op)(float*, float const, float const)) {
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
