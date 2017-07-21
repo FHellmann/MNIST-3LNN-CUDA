@@ -61,7 +61,7 @@ struct GPUTrainingParameters {
 	float maxDerivation;
 
 	/* Temporary buffers, e.g. for back propagation. */
-	Matrix tmp1;
+	Matrix tmp3;
 	Matrix tmp2;
 };
 
@@ -210,14 +210,14 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	err = cudaMalloc((void**) &trainingParams.output3.data, matrix_size(trainingParams.output3) * sizeof(float));
 	assert(err == cudaSuccess);
 
-	// Temporary storage of the size of the output vectors
-	trainingParams.tmp1.rows = outputLayer->nodes.size();
-	trainingParams.tmp1.cols = trainingParams.batchSize;
-	err = cudaMalloc((void**) &trainingParams.tmp1.data, matrix_size(trainingParams.tmp1) * sizeof(float));
+	// Temporary storage of the size of the output layer output vectors
+	trainingParams.tmp3.rows = outputLayer->nodes.size();
+	trainingParams.tmp3.cols = trainingParams.batchSize;
+	err = cudaMalloc((void**) &trainingParams.tmp3.data, matrix_size(trainingParams.tmp3) * sizeof(float));
 	assert(err == cudaSuccess);
 
-	// Temporary storage of the size of the output vectors
-	trainingParams.tmp2.rows = outputLayer->nodes.size();
+	// Temporary storage of the size of the hidden layer output vectors
+	trainingParams.tmp2.rows = hiddenLayer->nodes.size();
 	trainingParams.tmp2.cols = trainingParams.batchSize;
 	err = cudaMalloc((void**) &trainingParams.tmp2.data, matrix_size(trainingParams.tmp2) * sizeof(float));
 	assert(err == cudaSuccess);
@@ -378,8 +378,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.output2.data = nullptr;
 	cudaFree (trainingParams.output3.data);
 	trainingParams.output3.data = nullptr;
-	cudaFree (trainingParams.tmp1.data);
-	trainingParams.tmp1.data = nullptr;
+	cudaFree (trainingParams.tmp3.data);
+	trainingParams.tmp3.data = nullptr;
 	cudaFree (trainingParams.tmp2.data);
 	trainingParams.tmp2.data = nullptr;
 
@@ -504,7 +504,7 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const params) {
 
-	Matrix targetOutput = params.tmp1;
+	Matrix targetOutput = params.tmp3;
 
 	// Compute the target output based on the labels
 	d_fill_target_output(params, targetOutput);
