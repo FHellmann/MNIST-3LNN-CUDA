@@ -67,25 +67,6 @@ struct GPUTrainingParameters {
 	Matrix tmp2;
 };
 
-struct GPUSharedMemoryLayout {
-	size_t W1_pos = 0;
-	size_t W1_size = 0;
-	size_t W2_pos = 0;
-	size_t W2_size = 0;
-	size_t inputBias_pos = 0;
-	size_t inputBias_size = 0;
-	size_t hiddenOutput_pos = 0;
-	size_t hiddenOutput_size = 0;
-	size_t hiddenBias_pos = 0;
-	size_t hiddenBias_size = 0;
-	size_t outputOutput_pos = 0;
-	size_t outputOutput_size = 0;
-	size_t outputBias_pos = 0;
-	size_t outputBias_size = 0;
-	size_t image_pos = 0;
-	size_t image_size = 0;
-} gpuSharedMemoryLayout;
-
 __device__ float* d_matrix_pget(Matrix const& M, size_t const y, size_t const x) {
 	if (M.layout == Matrix::ROW_MAJOR) {
 		return M.data + (x + y * M.cols);
@@ -295,43 +276,6 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	imgData = nullptr;
 	delete[] flabels;
 	flabels = nullptr;
-
-//	size_t sharedMemorySize = 0;
-
-	// Size of the first weight matrix
-//	gpuSharedMemoryLayout.W1_pos = 0;
-//	gpuSharedMemoryLayout.W1_size = trainingParams.W1_len * sizeof(float);
-//	sharedMemorySize += gpuSharedMemoryLayout.W1_size;
-//
-//	// Size of the second weight matrix
-//	gpuSharedMemoryLayout.W2_pos = gpuSharedMemoryLayout.W1_pos + gpuSharedMemoryLayout.W1_size;
-//	gpuSharedMemoryLayout.W2_size = trainingParams.W2_len * sizeof(float);
-//	sharedMemorySize += gpuSharedMemoryLayout.W2_size;
-//
-//	// Size of the hidden layer output nodes
-//	gpuSharedMemoryLayout.hiddenOutput_pos = gpuSharedMemoryLayout.W2_pos + gpuSharedMemoryLayout.W2_size;
-//	gpuSharedMemoryLayout.hiddenOutput_size = hiddenLayer->nodes.size() * sizeof(float);
-//	sharedMemorySize += gpuSharedMemoryLayout.hiddenOutput_size;
-//
-//	// Size of the output layer output values
-//	gpuSharedMemoryLayout.outputOutput_pos = gpuSharedMemoryLayout.hiddenOutput_pos + gpuSharedMemoryLayout.hiddenOutput_size;
-//	gpuSharedMemoryLayout.outputOutput_size = outputLayer->nodes.size() * sizeof(float);
-//	sharedMemorySize += gpuSharedMemoryLayout.outputOutput_size;
-//
-//	// Size of the hidden bias vector
-//	gpuSharedMemoryLayout.hiddenBias_pos   = gpuSharedMemoryLayout.outputOutput_pos + gpuSharedMemoryLayout.outputOutput_size;
-//	gpuSharedMemoryLayout.hiddenBias_size  = hiddenLayer->nodes.size() * sizeof(float);
-//	sharedMemorySize += gpuSharedMemoryLayout.hiddenBias_size;
-//
-//	// Size of the input bias vector
-//	gpuSharedMemoryLayout.inputBias_pos    = gpuSharedMemoryLayout.hiddenOutput_pos + gpuSharedMemoryLayout.hiddenOutput_size;
-//	gpuSharedMemoryLayout.inputBias_size   = inputLayer->nodes.size() * sizeof(float);
-//	sharedMemorySize += gpuSharedMemoryLayout.inputBias_size;
-//
-//	// Size of the input vector
-//	gpuSharedMemoryLayout.image_pos        = gpuSharedMemoryLayout.inputBias_pos + gpuSharedMemoryLayout.inputBias_size;
-//	gpuSharedMemoryLayout.image_size       = inputLayer->nodes.size() * sizeof(uint8_t);
-//	sharedMemorySize += gpuSharedMemoryLayout.image_size;
 
 	// Configure Grid, i.e. setup Blocks and Threads
 	dim3 numBlocks(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
@@ -734,7 +678,6 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, vo
 		return;
 	}
 
-	//C.data[idxC] = A.data[idxA] - B.data[idxB];
 	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), d_matrix_get(B, y, x));
 }
 
