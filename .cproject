@@ -41,13 +41,16 @@
 									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
 								<option id="nvcc.compiler.option.lineinfo.620341618" name="Generate line-number information for device code (-lineinfo)" superClass="nvcc.compiler.option.lineinfo" value="true" valueType="boolean"/>
+								<option id="nvcc.compiler.maxregcount.1145742484" name="Maximum number of registers (-maxrregcount)" superClass="nvcc.compiler.maxregcount" value="32" valueType="string"/>
+								<option id="nvcc.compiler.ptxasoptions.1168334309" name="ptaxas options (-Xptxas)" superClass="nvcc.compiler.ptxasoptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-v"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1527245790" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.631074203" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.389341790" superClass="nvcc.compiler.input.c"/>
 							</tool>
 							<tool id="nvcc.linker.base.890508319" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.292909493" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -74,10 +77,10 @@
 			</storageModule>
 			<storageModule moduleId="com.nvidia.cuda.ide.build.project.ICudaProjectConfiguration">
 				<executable devicelink="false">
-					<sass major="6" minor="0"/>
-					<ptx major="6" minor="0"/>
+					<ptx major="2" minor="0"/>
+					<sass major="2" minor="1"/>
 				</executable>
-				<editor-arch major="6" minor="0"/>
+				<editor-arch major="2" minor="0"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
@@ -120,6 +123,10 @@
 								<option id="nvcc.compiler.compileroptions.1863078188" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
+								<option id="nvcc.compiler.maxregcount.933799812" name="Maximum number of registers (-maxrregcount)" superClass="nvcc.compiler.maxregcount" value="64" valueType="string"/>
+								<option id="nvcc.compiler.ptxasoptions.1413041593" name="ptaxas options (-Xptxas)" superClass="nvcc.compiler.ptxasoptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-v"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.2074622702" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.820903444" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.523683720" superClass="nvcc.compiler.input.c"/>
@@ -153,12 +160,10 @@
 			</storageModule>
 			<storageModule moduleId="com.nvidia.cuda.ide.build.project.ICudaProjectConfiguration">
 				<executable devicelink="false">
-					<sass major="6" minor="0"/>
-					<ptx major="6" minor="0"/>
 					<ptx major="2" minor="0"/>
 					<sass major="2" minor="1"/>
 				</executable>
-				<editor-arch major="6" minor="0"/>
+				<editor-arch major="2" minor="0"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
@@ -201,13 +206,16 @@
 								<option id="nvcc.compiler.compileroptions.1807426989" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
+								<option id="nvcc.compiler.maxregcount.730102877" name="Maximum number of registers (-maxrregcount)" superClass="nvcc.compiler.maxregcount" value="64" valueType="string"/>
+								<option id="nvcc.compiler.ptxasoptions.837845946" name="ptaxas options (-Xptxas)" superClass="nvcc.compiler.ptxasoptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-v"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1347120078" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.579226282" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.1774115075" superClass="nvcc.compiler.input.c"/>
 							</tool>
 							<tool id="nvcc.linker.base.1607503486" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.506600022" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -234,10 +242,10 @@
 			</storageModule>
 			<storageModule moduleId="com.nvidia.cuda.ide.build.project.ICudaProjectConfiguration">
 				<executable devicelink="false">
-					<sass major="6" minor="0"/>
-					<ptx major="6" minor="0"/>
+					<ptx major="2" minor="0"/>
+					<sass major="2" minor="1"/>
 				</executable>
-				<editor-arch major="6" minor="0"/>
+				<editor-arch major="2" minor="0"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
@@ -280,13 +288,16 @@
 								<option id="nvcc.compiler.compileroptions.2120991079" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
+								<option id="nvcc.compiler.maxregcount.791710409" name="Maximum number of registers (-maxrregcount)" superClass="nvcc.compiler.maxregcount" value="64" valueType="string"/>
+								<option id="nvcc.compiler.ptxasoptions.1272956905" name="ptaxas options (-Xptxas)" superClass="nvcc.compiler.ptxasoptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-v"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.2039839043" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.1780124361" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.601940690" superClass="nvcc.compiler.input.c"/>
 							</tool>
 							<tool id="nvcc.linker.base.1993764303" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.606083753" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -313,10 +324,10 @@
 			</storageModule>
 			<storageModule moduleId="com.nvidia.cuda.ide.build.project.ICudaProjectConfiguration">
 				<executable devicelink="false">
-					<sass major="6" minor="0"/>
-					<ptx major="6" minor="0"/>
+					<ptx major="2" minor="0"/>
+					<sass major="2" minor="1"/>
 				</executable>
-				<editor-arch major="6" minor="0"/>
+				<editor-arch major="2" minor="0"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
@@ -360,13 +371,16 @@
 									<listOptionValue builtIn="false" value="-fopenmp"/>
 								</option>
 								<option id="nvcc.compiler.option.lineinfo.1297162045" name="Generate line-number information for device code (-lineinfo)" superClass="nvcc.compiler.option.lineinfo" value="true" valueType="boolean"/>
+								<option id="nvcc.compiler.maxregcount.1554212704" name="Maximum number of registers (-maxrregcount)" superClass="nvcc.compiler.maxregcount" value="64" valueType="string"/>
+								<option id="nvcc.compiler.ptxasoptions.593722032" name="ptaxas options (-Xptxas)" superClass="nvcc.compiler.ptxasoptions" valueType="stringList">
+									<listOptionValue builtIn="false" value="-v"/>
+								</option>
 								<inputType id="nvcc.compiler.input.cu.1878915745" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.777026897" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.1963935465" superClass="nvcc.compiler.input.c"/>
 							</tool>
 							<tool id="nvcc.linker.base.1579309827" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.2519040" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="mpicc"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -393,10 +407,10 @@
 			</storageModule>
 			<storageModule moduleId="com.nvidia.cuda.ide.build.project.ICudaProjectConfiguration">
 				<executable devicelink="false">
-					<sass major="6" minor="0"/>
-					<ptx major="6" minor="0"/>
+					<ptx major="2" minor="0"/>
+					<sass major="2" minor="1"/>
 				</executable>
-				<editor-arch major="6" minor="0"/>
+				<editor-arch major="2" minor="0"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
