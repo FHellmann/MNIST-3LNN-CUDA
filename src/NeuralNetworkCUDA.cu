@@ -642,8 +642,7 @@ __device__ void d_set_bias(Matrix output, Matrix const bias) {
 		return;
 	}
 
-	//d_matrix_set(output, targetY, targetX, d_matrix_get(bias, targetY, 1));
-	d_matrix_set(output, targetY, targetX, static_cast<float>(targetY));
+	d_matrix_set(output, targetY, targetX, d_matrix_get(bias, targetY, 1));
 }
 
 __device__ void d_assign(float* c, float const a, float const b) {
