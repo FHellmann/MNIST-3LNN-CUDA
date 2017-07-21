@@ -1,8 +1,5 @@
 #include "NeuralNetworkDistributed.h"
 
-#define LOG_MASTER 1
-#define LOG_SLAVE 0
-
 using namespace std;
 
 NeuralNetworkDistributed::NeuralNetworkDistributed(int _argc, char** _argv,
@@ -58,60 +55,6 @@ void updateWeights(NeuralNetwork &nn, NeuralNetwork::LayerType type,
 	}
 }
 
-/**
- * A simple logging method to print something out.
- *
- * @param rank The rank of the process.
- * @param msg The message to print out.
- */
-void log(int const rank, std::string const msg) {
-	if ((!LOG_MASTER && rank == 0) || (!LOG_SLAVE && rank > 0))
-		return;
-
-	if (rank == 0)
-		cout << "MASTER: ";
-	else
-		cout << "SLAVE-" << rank << ": ";
-	cout << msg << endl;
-	cout.flush();
-}
-
-/**
- * The logging method to measure the execution time of everything which
- * is between logStart and logEnd.
- *
- * @param rank The rank of the process.
- * @param msg The message to print out.
- */
-double logStart(int const rank, std::string const msg) {
-	if ((!LOG_MASTER && rank == 0) || (!LOG_SLAVE && rank > 0))
-		return 0;
-
-	if (rank == 0)
-		cout << "MASTER: ";
-	else
-		cout << "SLAVE-" << rank << ": ";
-	cout << msg;
-	cout.flush();
-
-	return MPI_Wtime();
-}
-
-/**
- * The finishing logging method to logStart(int, string). It will
- * print the needed time between logStart and logEnd.
- *
- * @param rank The rank of the process.
- * @param time The time which was returned from logStart.
- */
-void logEnd(int const rank, double const time) {
-	if ((!LOG_MASTER && rank == 0) || (!LOG_SLAVE && rank > 0))
-		return;
-
-	cout << "FINISHED! (Time=" << MPI_Wtime() - time << "s)" << endl;
-	cout.flush();
-}
-
 double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
 		double const max_derivation) {
@@ -149,14 +92,14 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		// #################################################################################
 
 		// 1. Send (MPI_Scatter) training set and init data to slaves
-		time = logStart(curr_rank, "Send init data to slaves...");
+		time = logStart("Send init data to slaves...");
 		imageCount = imageDataset->size();
 		imageSize = (*imageDataset)[0].rows * (*imageDataset)[0].cols;
 		MPI_Bcast(&imageCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Bcast(&imageSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		logEnd(curr_rank, time);
+		logEnd(time);
 
-		time = logStart(curr_rank, "Send training set to slaves...");
+		time = logStart("Send training set to slaves...");
 		uchar *imageArray = new uchar[imageCount * imageSize];
 		uint8_t *labelArray = new uint8_t[imageCount];
 		for (int i = 0; i < imageDataset->size(); i++) {
@@ -169,24 +112,24 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		delete[] imageArray;
 		MPI_Bcast(&labelArray[0], imageCount, MPI_UINT8_T, 0, MPI_COMM_WORLD);
 		delete[] labelArray;
-		logEnd(curr_rank, time);
+		logEnd(time);
 	} else {
 		// #################################################################################
 		// Slave
 		// #################################################################################
 
 		// 1. Receive (MPI_Scatter) training set and init data
-		time = logStart(curr_rank, "Receive init data...");
+		time = logStart("Receive init data...", curr_rank);
 		MPI_Bcast(&imageCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Bcast(&imageSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 
 		workSize = imageCount / (world_size - 1);
 		startWork = workSize * (curr_rank - 1);
 		endWork = workSize * curr_rank;
 
 		// 1a. Receive images
-		time = logStart(curr_rank, "Receive training images...");
+		time = logStart("Receive training images...", curr_rank);
 		uchar *imageArray = new uchar[imageCount * imageSize];
 		MPI_Bcast(&imageArray[0], imageCount * imageSize, MPI_UNSIGNED_CHAR, 0,
 		MPI_COMM_WORLD);
@@ -201,10 +144,10 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		}
 		imageDataset = new MNISTImageDataset(imageMatrixes);
 		delete[] imageArray;
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 
 		// 1b. Receive labels
-		time = logStart(curr_rank, "Receive training images...");
+		time = logStart("Receive training images...", curr_rank);
 		uint8_t *labelArray = new uint8_t[imageCount];
 		MPI_Bcast(&labelArray[0], imageCount, MPI_UINT8_T, 0, MPI_COMM_WORLD);
 		vector<uint8_t> labelVector;
@@ -212,10 +155,10 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			labelVector.push_back(labelArray[i]);
 		labelDataset = new MNISTLableDataset(labelVector);
 		delete[] labelArray;
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 	}
 
-	logStart(curr_rank, "# Start Training-LOOP #");
+	logStart("# Start Training-LOOP #", curr_rank);
 
 	while (needsFurtherTraining) {
 		double *weightsHidden;
@@ -223,7 +166,7 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 		double localError = 0;
 
 		// 2a. Send/Receive (MPI_Bcast) hidden weights
-		time = logStart(curr_rank, "Send/Receive hidden weights to slaves...");
+		time = logStart("Send/Receive hidden weights to slaves...", curr_rank);
 		if (curr_rank == 0)
 			weightsHidden = getDeltaWeightsByLayer(nn, HIDDEN);
 		else
@@ -234,10 +177,10 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			delete[] weightsHidden;
 		else
 			updateWeights(nn, HIDDEN, weightsHidden);
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 
 		// 2b. Send/Receive (MPI_Bcast) output weights
-		time = logStart(curr_rank, "Send/Receive output weights and update...");
+		time = logStart("Send/Receive output weights and update...", curr_rank);
 		if (curr_rank == 0)
 			weightsOutput = getDeltaWeightsByLayer(nn, OUTPUT);
 		else
@@ -248,17 +191,17 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			delete[] weightsOutput;
 		else
 			updateWeights(nn, OUTPUT, weightsOutput);
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 
 		if (curr_rank > 0) {
 			// 3. Perform training step - Slaves ONLY
-			time = logStart(curr_rank, "Execute training...");
+			time = logStart("Execute training...", curr_rank);
 			localError = nn.train(*imageDataset, *labelDataset, 100.0, 0.0);
-			logEnd(curr_rank, time);
+			logEnd(time, curr_rank);
 		}
 
 		// 4a. (MPI_Gather) delta weights - HIDDEN
-		time = logStart(curr_rank, "Send/Receive hidden delta weights...");
+		time = logStart("Send/Receive hidden delta weights...", curr_rank);
 		double *deltaWeightsHidden;
 		if (curr_rank == 0)
 			deltaWeightsHidden = new double[world_size * hiddenWeightsCount];
@@ -272,10 +215,10 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			updateWeights(nn, HIDDEN, deltaWeightsHidden, world_size);
 		else
 			delete[] deltaWeightsHidden;
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 
 		// 4b. (MPI_Gather) delta weights - OUTPUT
-		time = logStart(curr_rank, "Send/Receive output delta weights...");
+		time = logStart("Send/Receive output delta weights...", curr_rank);
 		double *deltaWeightsOutput;
 		if (curr_rank == 0)
 			deltaWeightsOutput = new double[world_size * outputWeightsCount];
@@ -289,18 +232,18 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 			updateWeights(nn, OUTPUT, deltaWeightsOutput, world_size);
 		else
 			delete[] deltaWeightsOutput;
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 
 		// 4c. (MPI_Reduce) local errors
-		time = logStart(curr_rank, "Send/Receive local error...");
+		time = logStart("Send/Receive local error...", curr_rank);
 		double errorSum;
 		MPI_Reduce(&localError, &errorSum, 1, MPI_DOUBLE, MPI_SUM, 0,
 		MPI_COMM_WORLD);
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 
 		if (curr_rank == 0) {
 			// 4. Check whether stop or repeat (back to 2.) - Master ONLY
-			time = logStart(curr_rank, "Check whether stop or repeat...");
+			time = logStart("Check whether stop or repeat...");
 			errorSum /= world_size - 1; // -1 to remove the master
 
 			if (errorSum < error) {
@@ -311,15 +254,15 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 					|| errorSum > error + max_derivation) {
 				needsFurtherTraining = false;
 			}
-			logEnd(curr_rank, time);
+			logEnd(time, curr_rank);
 
-			cout << "MASTER: Error: " << errorSum * 100.0 << "%" << endl;
+			log("Error: " + to_string(errorSum * 100.0) + "%");
 		}
 
 		// 5. Wait for command from master to go on or exit
-		time = logStart(curr_rank, "Notify processes to go on or exit...");
+		time = logStart("Notify processes to go on or exit...", curr_rank);
 		MPI_Bcast(&needsFurtherTraining, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		logEnd(curr_rank, time);
+		logEnd(time, curr_rank);
 	}
 
 	MPI_Finalize();

@@ -1,9 +1,10 @@
 #ifndef NEURALNETWORKPARALLEL_H_
 #define NEURALNETWORKPARALLEL_H_
 
-#include "NeuralNetwork.h"
 #include <omp.h>
 #include <iostream>
+#include "NeuralNetwork.h"
+#include "utils/Log.hpp"
 
 class NeuralNetworkParallel: public NeuralNetwork {
 public:

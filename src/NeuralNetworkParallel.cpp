@@ -117,10 +117,9 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 					localErrCount++;
 
 				// Display progress during training
-				//if ((imgCount % every_ten_percent) == 0) {
-				//	cout << "x";
-				//	cout.flush();
-				//}
+				if ((imgCount % every_ten_percent) == 0) {
+					logStart(to_string(imgCount / every_ten_percent * 100.0) + "%", omp_get_thread_num());
+				}
 			}
 
 #pragma omp atomic
@@ -147,7 +146,7 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 
 #pragma omp master
 			{
-				//cout << " Error: " << newError * 100.0 << "%" << endl;
+				log("Error: " + to_string(newError * 100.0) + "%");
 
 				newError = 0;
 			}
@@ -156,8 +155,6 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 
 	// Merge the global weights into the real neural network
 	mergeNeuralNetworks(nnp_merge, *this, this);
-
-	//cout << endl;
 
 	return error;
 }

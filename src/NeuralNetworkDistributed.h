@@ -3,6 +3,7 @@
 
 #include "NeuralNetwork.h"
 #include "NeuralNetworkParallel.h"
+#include "utils/Log.hpp"
 #include <mpi.h>
 #include <math.h>
 

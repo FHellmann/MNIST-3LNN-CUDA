@@ -10,6 +10,7 @@
 #include <yaml-cpp/yaml.h>
 #include <opencv2/core/core.hpp>
 #include "MNISTDataset.h"
+#include "utils/Log.hpp"
 
 class NeuralNetwork {
 public:
@@ -74,8 +75,7 @@ public:
 	 */
 	virtual double train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
-			double const training_error_threshold,
-			double const max_derivation);
+			double const training_error_threshold, double const max_derivation);
 
 	/**
 	 * Get the network's classification using the ID of the node with
