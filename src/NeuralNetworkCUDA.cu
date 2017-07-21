@@ -92,6 +92,22 @@ struct Matrix {
 	float* data;
 };
 
+__device__ float d_matrix_get(Matrix const M, size_t const y, size_t const x) {
+	if (M.layout == Matrix::ROW_MAJOR) {
+		return M.data[x + y * M.cols];
+	} else {
+		return M.data[x * M.rows + y];
+	}
+}
+
+__device__ void d_matrix_set(Matrix const M, size_t const y, size_t const x, float const value) {
+	if (M.layout == Matrix::ROW_MAJOR) {
+		M.data[x + y * M.cols] = value;
+	} else {
+		M.data[x * M.rows + y] = value;
+	}
+}
+
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
