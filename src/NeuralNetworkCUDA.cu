@@ -97,6 +97,7 @@ __device__ Matrix d_matrix_transpose(Matrix const& A) {
 	T.rows = A.cols;
 	T.cols = A.rows;
 	T.layout = Matrix::ROW_MAJOR;
+	T.data = A.data;
 	if (A.layout == Matrix::ROW_MAJOR) {
 		T.layout = Matrix::COLUMN_MAJOR;
 	}
