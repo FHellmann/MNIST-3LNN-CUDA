@@ -81,11 +81,7 @@ __device__ float d_matrix_get(Matrix const& M, size_t const y, size_t const x) {
 }
 
 __device__ void d_matrix_set(Matrix const& M, size_t const y, size_t const x, float const value) {
-	if (M.layout == Matrix::ROW_MAJOR) {
-		M.data[x + y * M.cols] = value;
-	} else {
-		M.data[x * M.rows + y] = value;
-	}
+	*d_matrix_pget(M, y, x) = value;
 }
 
 __device__ size_t d_matrix_size(Matrix const& A) {
