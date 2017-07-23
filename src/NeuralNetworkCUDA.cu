@@ -626,10 +626,10 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 		return;
 	}
 
-	if (A.cols % MATRIX_SIZE_DIVISOR != 0 || B.rows % MATRIX_SIZE_DIVISOR != 0) {
-		printf("d_mul_base: A's cols is not a multiple of %u: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
-		return;
-	}
+//	if (A.cols % MATRIX_SIZE_DIVISOR != 0 || B.rows % MATRIX_SIZE_DIVISOR != 0) {
+//		printf("d_mul_base: A's cols is not a multiple of %u: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
+//		return;
+//	}
 
 	float threadValue = 0.0f;
 	unsigned int const numSubBlocks = A.cols / MATRIX_SIZE_DIVISOR;
