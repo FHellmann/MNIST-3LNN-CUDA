@@ -62,6 +62,7 @@ struct GPUTrainingParameters {
 	/* Training parameters. */
 	float errorThreshold;
 	float maxDerivation;
+	float learningRate;
 
 	/* Temporary buffers, e.g. for back propagation. */
 	Matrix tmp3;
@@ -135,6 +136,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	trainingParams.width = images.front().cols;
 	trainingParams.height = images.front().rows;
 	trainingParams.numHiddenNodes = hiddenLayer->nodes.size();
+	trainingParams.learningRate = learningRate;
 	trainingParams.errorThreshold = training_error_threshold;
 	trainingParams.maxDerivation = max_derivation;
 	trainingParams.batchSize = MATRIX_SIZE_DIVISOR;
@@ -394,7 +396,9 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 __device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B);
 __device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B);
 __device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const));
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void(*op)(float*, float const, float const));
 __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, Matrix const& B);
+__device__ void d_cwise_mul(Matrix const& C, Matrix const& A, float const v);
 __device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B);
 
 /* Neural network operations. */
@@ -405,6 +409,7 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const&);
 __device__ void d_fill_target_output(GPUTrainingParameters const&, Matrix const&);
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias);
 __device__ void d_fill_random(Matrix const&);
+__device__ void d_update_bias(Matrix const& bias, Matrix const& error);
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
 
@@ -448,12 +453,15 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
 	Matrix const& error = params.output3;
 	d_apply_activation_derivative(params.output3, params.activationFunction3);
 	d_cwise_mul(error, params.output3, difference);
+	d_cwise_mul(error, error, params.learningRate);
 
 	// Important to make a local copy.
 	// Otherwise every thread would transpose the matrix which
 	// would lead to undefined behavior.
 	Matrix output2 = d_matrix_transpose(params.output2);
 	d_mul_add(params.W23, error, output2);
+
+	d_update_bias(params.bias3, error);
 }
 
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const& params) {
@@ -469,7 +477,17 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const& params) {
 	Matrix W23 = d_matrix_transpose(params.W23);
 
 	// See d_back_propagation_output
+	// Already contains the learningRate.
 	Matrix const& error = params.output3;
+
+	// Backpropagate the error.
+	d_mul(params.tmp2, W23, error);
+
+	d_update_bias(params.bias2, params.tmp2);
+
+	// And then compute the weight update
+	d_apply_activation_derivative(params.output2, params.activationFunction2);
+	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
 
 	Matrix images;
 	images.rows = params.width * params.height;
@@ -478,9 +496,6 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const& params) {
 	images.data = params.images;
 	images = d_matrix_transpose(images);
 
-	d_apply_activation_derivative(params.output2, params.activationFunction2);
-	d_mul(params.tmp2, W23, error);
-	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
 	d_mul_add(params.W12, params.tmp2, images);
 }
 
@@ -690,6 +705,28 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), d_matrix_get(B, y, x));
 }
 
+__device__ void d_cwise_mul(Matrix const& C, Matrix const& A, float const v) {
+	d_cwise_op(C, A, v, &d_mul);
+}
+
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void(*op)(float*, float const, float const)) {
+
+	if (A.cols != C.cols || A.rows != C.rows) {
+
+		printf("d_cwise_op: Incompatible matrices: v * (%lu, %lu) = (%lu, %lu)\n", A.rows, A.cols, C.rows, C.cols);
+		return;
+	}
+
+	size_t const x = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t const y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (x >= A.cols || y >= A.rows) {
+		return;
+	}
+
+	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), v);
+}
+
 __device__ void d_fill_random(Matrix const& A) {
 
 	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
@@ -700,4 +737,48 @@ __device__ void d_fill_random(Matrix const& A) {
 	}
 
 	d_matrix_set(A, targetY, targetX, static_cast<float>(targetX));
+}
+
+__device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
+
+	if (bias.rows != error.rows|| bias.cols != 1) {
+
+		printf("d_update_bias: Invalid matrices: bias(%lu, %lu) error(%lu, %lu)\n", bias.rows, bias.cols, error.rows, error.cols);
+		return;
+	}
+
+	// The block caches are row major.
+	__shared__ float blockCacheError[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
+
+	// Compute the target coordinates.
+	size_t const y = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
+
+	// If this thread has nothing to do, because it would access invalid memory, exit
+	if (y >= bias.rows) {
+		return;
+	}
+
+	float threadValue = 0.0f;
+	unsigned int const numSubBlocks = error.cols / MATRIX_SIZE_DIVISOR;
+	for (int k = 0; k < numSubBlocks; ++k)
+	{
+		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
+		if (xA < error.cols) {
+			blockCacheError[threadIdx.y][threadIdx.x] = d_matrix_get(error, y, xA);
+		} else {
+			blockCacheError[threadIdx.y][threadIdx.x] = 0.0f;
+		}
+
+		__syncthreads();
+
+		#pragma unroll
+		for (size_t i = 0; i < MATRIX_SIZE_DIVISOR; ++i)
+		{
+			threadValue += blockCacheError[threadIdx.y][i];
+		}
+
+		__syncthreads();
+	}
+
+	d_matrix_set(bias, y, 1, threadValue);
 }
