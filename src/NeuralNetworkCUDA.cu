@@ -188,15 +188,15 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	cout << "Threads per block: (" << threadsPerBlock.x << ", "
 			<< threadsPerBlock.y << ")" << endl;
 
-	for (int batchId = 0; batchId < images.size() / trainingParams.batchSize; ++batchId)
+	//for (int batchId = 0; batchId < images.size() / trainingParams.batchSize; ++batchId)
 	{
-		cout << "Processing batch " << batchId << endl;
+		//cout << "Processing batch " << batchId << endl;
 		trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize;
 		trainingParams.labels.data = d_labels + trainingParams.batchSize;
 		// Call graphics card functions
-		d_feed_forward<<<numBlocks, threadsPerBlock>>>(trainingParams);
-		gpuErrchk( cudaPeekAtLastError() );
-		gpuErrchk( cudaDeviceSynchronize() );
+//		d_feed_forward<<<numBlocks, threadsPerBlock>>>(trainingParams);
+//		gpuErrchk( cudaPeekAtLastError() );
+//		gpuErrchk( cudaDeviceSynchronize() );
 		d_back_propagate<<<numBlocks, threadsPerBlock>>>(trainingParams);
 		gpuErrchk( cudaPeekAtLastError() );
 		gpuErrchk( cudaDeviceSynchronize() );
@@ -463,9 +463,8 @@ __global__ void d_feed_forward(GPUTrainingParameters const params) {
 __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
 	PRINTF("d_back_propagate\n");
-
 	d_back_propagate_output(params);
-	d_back_propagate_hidden(params);
+	//d_back_propagate_hidden(params);
 }
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
@@ -483,10 +482,17 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
 	d_cwise_mul(error, params.output3, difference);
 	d_cwise_mul(error, error, params.learningRate);
 
+
 	// Important to make a local copy.
 	// Otherwise every thread would transpose the matrix which
 	// would lead to undefined behavior.
 	Matrix output2 = d_matrix_transpose(params.output2);
+
+	d_fill(params.W23, 0.0f);
+	d_fill(error, 1.0f);
+	d_fill(output2, 1.0f);
+
+	//d_mul_add(params.W23, error, output2);
 	d_mul_add(params.W23, error, output2);
 
 	d_update_bias(params.bias3, error);
