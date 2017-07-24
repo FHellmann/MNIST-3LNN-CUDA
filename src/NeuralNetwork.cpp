@@ -105,8 +105,8 @@ double NeuralNetwork::train(MNISTImageDataset const& images,
 				errCount++;
 
 			// Display progress during training
-			if ((imgCount % every_ten_percent) == 0)
-				logStart(to_string(imgCount / every_ten_percent * 100.0) + "%");
+			//if ((imgCount % every_ten_percent) == 0)
+			//	log(to_string(imgCount / every_ten_percent * 10.0) + "%");
 		}
 
 		double newError = static_cast<double>(errCount)
