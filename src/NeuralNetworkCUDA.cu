@@ -18,6 +18,7 @@ __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 
 #define MATRIX_SIZE_DIVISOR 28
 #define NUM_DIGITS 10
+#define BATCH_SIZE 600
 
 struct Matrix {
 	enum Layout {
@@ -175,18 +176,21 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	flabels = nullptr;
 
 
+	GPUTrainingParameters trainingParams = initTrainingParams(*this, BATCH_SIZE, 0, d_images, singleImgPixCount, d_labels, 1);
+	cout << "Batch size: " << trainingParams.batchSize << endl;
+	// Configure Grid, i.e. setup Blocks and Threads
+	dim3 numBlocks(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
+			<< endl;
+	cout << "Threads per block: (" << threadsPerBlock.x << ", "
+			<< threadsPerBlock.y << ")" << endl;
+
+	for (int batchId = 0; batchId < images.size() / trainingParams.batchSize; ++batchId)
 	{
-		GPUTrainingParameters trainingParams = initTrainingParams(*this, 600, 0, d_images, singleImgPixCount, d_labels, 1);
-		cout << "Batch size: " << trainingParams.batchSize << endl;
-
-		// Configure Grid, i.e. setup Blocks and Threads
-		dim3 numBlocks(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
-		dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
-		cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
-				<< endl;
-		cout << "Threads per block: (" << threadsPerBlock.x << ", "
-				<< threadsPerBlock.y << ")" << endl;
-
+		cout << "Processing batch " << batchId << endl;
+		trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize;
+		trainingParams.labels.data = d_labels + trainingParams.batchSize;
 		// Call graphics card functions
 		d_feed_forward<<<numBlocks, threadsPerBlock>>>(trainingParams);
 		gpuErrchk( cudaPeekAtLastError() );
@@ -194,69 +198,69 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		d_back_propagate<<<numBlocks, threadsPerBlock>>>(trainingParams);
 		gpuErrchk( cudaPeekAtLastError() );
 		gpuErrchk( cudaDeviceSynchronize() );
-
-		//
-		// Retreive the data
-		//
-		float* W12 = new float[matrix_size(trainingParams.W12)];
-		float* W23 = new float[matrix_size(trainingParams.W23)];
-		float* bias2 = new float[matrix_size(trainingParams.bias2)];
-		float* bias3 = new float[matrix_size(trainingParams.bias3)];
-
-		// Copy it back to neural network data structure
-		err = cudaMemcpy(W12, trainingParams.W12.data, matrix_size(trainingParams.W12) * sizeof(float), cudaMemcpyDeviceToHost);
-		assert(err == cudaSuccess);
-		err = cudaMemcpy(W23, trainingParams.W23.data, matrix_size(trainingParams.W23) * sizeof(float), cudaMemcpyDeviceToHost);
-		assert(err == cudaSuccess);
-		err = cudaMemcpy(bias2, trainingParams.bias2.data, matrix_size(trainingParams.bias2) * sizeof(float), cudaMemcpyDeviceToHost);
-		assert(err == cudaSuccess);
-		err = cudaMemcpy(bias3, trainingParams.bias3.data, matrix_size(trainingParams.bias3) * sizeof(float), cudaMemcpyDeviceToHost);
-		assert(err == cudaSuccess);
-
-		//
-		// Copy the weight data into the c++ data structure.
-		//
-		Layer* const inputLayer  = getLayer(INPUT);
-		Layer* const hiddenLayer = getLayer(HIDDEN);
-		Layer* const outputLayer = getLayer(OUTPUT);
-		trainingParams.activationFunction2 = hiddenLayer->actFctType;
-		{
-			size_t k = 0;
-			for (size_t j = 0; j < hiddenLayer->nodes.size(); ++j) {
-				Layer::Node* node = hiddenLayer->nodes[j];
-				node->bias = bias2[j];
-				for (size_t i = 0; i < node->weights.size(); ++i) {
-					node->weights[i] = W12[k];
-					++k;
-				}
-			}
-		}
-
-		trainingParams.activationFunction3 = outputLayer->actFctType;
-		{
-			size_t k = 0;
-			for (size_t j = 0; j < outputLayer->nodes.size(); ++j) {
-				Layer::Node* node = outputLayer->nodes[j];
-				node->bias = bias3[j];
-				for (size_t i = 0; i < node->weights.size(); ++i) {
-					node->weights[i] = W23[k];
-					++k;
-				}
-			}
-		}
-
-		// Delete the host buffers
-		delete[] W12;
-		W12 = nullptr;
-		delete[] W23;
-		W23 = nullptr;
-		delete[] bias2;
-		bias2 = nullptr;
-		delete[] bias3;
-		bias3 = nullptr;
-
-		freeTrainingParams(trainingParams);
 	}
+
+	//
+	// Retreive the data
+	//
+	float* W12 = new float[matrix_size(trainingParams.W12)];
+	float* W23 = new float[matrix_size(trainingParams.W23)];
+	float* bias2 = new float[matrix_size(trainingParams.bias2)];
+	float* bias3 = new float[matrix_size(trainingParams.bias3)];
+
+	// Copy it back to neural network data structure
+	err = cudaMemcpy(W12, trainingParams.W12.data, matrix_size(trainingParams.W12) * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(W23, trainingParams.W23.data, matrix_size(trainingParams.W23) * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(bias2, trainingParams.bias2.data, matrix_size(trainingParams.bias2) * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(bias3, trainingParams.bias3.data, matrix_size(trainingParams.bias3) * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+
+	//
+	// Copy the weight data into the c++ data structure.
+	//
+	Layer* const inputLayer  = getLayer(INPUT);
+	Layer* const hiddenLayer = getLayer(HIDDEN);
+	Layer* const outputLayer = getLayer(OUTPUT);
+	trainingParams.activationFunction2 = hiddenLayer->actFctType;
+	{
+		size_t k = 0;
+		for (size_t j = 0; j < hiddenLayer->nodes.size(); ++j) {
+			Layer::Node* node = hiddenLayer->nodes[j];
+			node->bias = bias2[j];
+			for (size_t i = 0; i < node->weights.size(); ++i) {
+				node->weights[i] = W12[k];
+				++k;
+			}
+		}
+	}
+
+	trainingParams.activationFunction3 = outputLayer->actFctType;
+	{
+		size_t k = 0;
+		for (size_t j = 0; j < outputLayer->nodes.size(); ++j) {
+			Layer::Node* node = outputLayer->nodes[j];
+			node->bias = bias3[j];
+			for (size_t i = 0; i < node->weights.size(); ++i) {
+				node->weights[i] = W23[k];
+				++k;
+			}
+		}
+	}
+
+	// Delete the host buffers
+	delete[] W12;
+	W12 = nullptr;
+	delete[] W23;
+	W23 = nullptr;
+	delete[] bias2;
+	bias2 = nullptr;
+	delete[] bias3;
+	bias3 = nullptr;
+
+	freeTrainingParams(trainingParams);
 
 	// Free the cuda buffers
 	cudaFree (d_images);
@@ -799,5 +803,5 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 		__syncthreads();
 	}
 
-	d_matrix_set(bias, y, 1, threadValue);
+	d_matrix_set(bias, y, 1, threadValue); // Fixme: Update bias make totally no sense!
 }
