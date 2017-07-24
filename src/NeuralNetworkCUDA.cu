@@ -148,10 +148,12 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		}
 	}
 
-	float* flabels = new float[labels.size()];
+	float* flabels = new float[labels.size() * NUM_DIGITS];
 	dst = flabels;
 	for (uint8_t const& l : labels) {
-		*(dst++) = static_cast<float>(l);
+		for (uint8_t i = 0; i < NUM_DIGITS; ++i) {
+			*(dst++) = (l == i) ? 1.0f : 0.0f;
+		}
 	}
 
 	//
@@ -162,11 +164,11 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 
 	err = cudaMalloc((void**) &d_images, allImgBufElements * sizeof(float));
 	assert(err == cudaSuccess);
-	err = cudaMalloc((void**) &d_labels, labels.size() * sizeof(float));
+	err = cudaMalloc((void**) &d_labels, labels.size() * NUM_DIGITS * sizeof(float));
 	assert(err == cudaSuccess);
 	err = cudaMemcpy(d_images, fImgData, allImgBufElements * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
-	err = cudaMemcpy(d_labels, flabels, labels.size() * sizeof(float), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(d_labels, flabels, labels.size() * NUM_DIGITS * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
 
 	// Delete the image and label buffers on the host.
@@ -176,7 +178,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	flabels = nullptr;
 
 
-	GPUTrainingParameters trainingParams = initTrainingParams(*this, BATCH_SIZE, 0, d_images, singleImgPixCount, d_labels, 1);
+	GPUTrainingParameters trainingParams = initTrainingParams(*this, BATCH_SIZE, 0, d_images, singleImgPixCount, d_labels, NUM_DIGITS);
 	cout << "Batch size: " << trainingParams.batchSize << endl;
 	// Configure Grid, i.e. setup Blocks and Threads
 	dim3 numBlocks(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
@@ -291,7 +293,7 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 	trainingParams.images.layout = Matrix::COLUMN_MAJOR;
 	trainingParams.images.data = d_images + imageSize * batchOffset;
 
-	trainingParams.labels.rows = 1;
+	trainingParams.labels.rows = NUM_DIGITS;
 	trainingParams.labels.cols = batchSize;
 	trainingParams.labels.layout = Matrix::COLUMN_MAJOR;
 	trainingParams.labels.data = d_labels + labelSize * batchOffset;
@@ -468,14 +470,12 @@ __global__ void d_back_propagate(GPUTrainingParameters const params) {
 
 __device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
 
-	Matrix const& targetOutput = params.tmp3;
-
 	// Compute the target output based on the labels
-	d_fill_target_output(params, targetOutput);
+	//d_fill_target_output(params, targetOutput);
 
 	// Save the difference into the target output buffer
-	Matrix const& difference = targetOutput;
-	d_cwise_sub(difference, targetOutput, params.output3);
+	Matrix const& difference = params.tmp3;
+	d_cwise_sub(difference, params.labels, params.output3);
 
 	// Reuse the output buffer for saving the error, for now. Perhaps this is a problem later on.
 	Matrix const& error = params.output3;
