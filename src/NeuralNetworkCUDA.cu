@@ -16,7 +16,7 @@ __host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
 __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 }
 
-#define MATRIX_SIZE_DIVISOR 28
+#define MATRIX_SIZE_DIVISOR 7
 #define NUM_DIGITS 10
 #define BATCH_SIZE 600
 
@@ -181,7 +181,9 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	GPUTrainingParameters trainingParams = initTrainingParams(*this, BATCH_SIZE, 0, d_images, singleImgPixCount, d_labels, NUM_DIGITS);
 	cout << "Batch size: " << trainingParams.batchSize << endl;
 	// Configure Grid, i.e. setup Blocks and Threads
-	dim3 numBlocks(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+	dim3 numBlocks(
+			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1,
+			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1);
 	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
 			<< endl;
@@ -492,7 +494,6 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
 	d_fill(error, 1.0f);
 	d_fill(output2, 1.0f);
 
-	//d_mul_add(params.W23, error, output2);
 	d_mul_add(params.W23, error, output2);
 
 	d_update_bias(params.bias3, error);
