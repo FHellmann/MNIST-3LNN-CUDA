@@ -8,19 +8,21 @@
 #include <math.h>
 
 class NeuralNetworkDistributed: public NeuralNetwork {
-public:
+private:
 	int argc;
 	char** argv;
 	NeuralNetwork& nn;
-
+	std::string netDefinitionPath;
+public:
 	/**
 	 * Creates a dummy neural network to work distributed.
 	 *
 	 * @param argc The command line arguments count.
 	 * @param argv The command line arguments values.
+	 * @param netDefinitionPath The path where the network should be safed.
 	 * @param nn The neural network to work with.
 	 */
-	NeuralNetworkDistributed(int argc, char** argv, NeuralNetwork &nn);
+	NeuralNetworkDistributed(int argc, char** argv, std::string netDefinitionPath, NeuralNetwork &nn);
 
 	double train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,

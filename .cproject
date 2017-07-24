@@ -131,9 +131,10 @@
 								<inputType id="nvcc.compiler.input.cpp.820903444" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.523683720" superClass="nvcc.compiler.input.c"/>
 							</tool>
-							<tool command="nvcc" id="nvcc.linker.base.965541482" name="NVCC Linker" superClass="nvcc.linker.base">
+							<tool command="nvcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX} ${OUTPUT} ${INPUTS}" id="nvcc.linker.base.965541482" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.1527158700" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
+									<listOptionValue builtIn="false" value="mpi_cxx"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -200,6 +201,14 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/build}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr//lib"/>
 									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/openmpi/lib"/>
+								</option>
+								<option id="gnu.c.link.option.libs.672766095" superClass="gnu.c.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="mpi"/>
+									<listOptionValue builtIn="false" value="mpi_cxx"/>
+									<listOptionValue builtIn="false" value="opencv_core"/>
+									<listOptionValue builtIn="false" value="gomp"/>
+									<listOptionValue builtIn="false" value="opencv_highgui"/>
+									<listOptionValue builtIn="false" value="yaml-cpp"/>
 								</option>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.1205282850" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
@@ -314,6 +323,7 @@
 							<tool command="nvcc" id="nvcc.linker.base.1993764303" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.606083753" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
+									<listOptionValue builtIn="false" value="mpi_cxx"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -401,6 +411,7 @@
 							<tool command="nvcc" id="nvcc.linker.base.1579309827" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.2519040" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
+									<listOptionValue builtIn="false" value="mpi_cxx"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>

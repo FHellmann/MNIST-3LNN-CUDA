@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (distributed.isSet()) {
-		lindNet = new NeuralNetworkDistributed(argc, argv, *lindNet);
+		lindNet = new NeuralNetworkDistributed(argc, argv, netDefinitionPath.getValue(), *lindNet);
 		cout << "# !!! Distributed !!! #" << endl;
 	}
 
@@ -115,8 +115,10 @@ int main(int argc, char* argv[]) {
 			std::chrono::duration<double>>(end - start);
 	cout << "Taining done in " << sec.count() << "s" << endl;
 
-	// Save the trained net.
-	lindNet->saveYAML(netDefinitionPath.getValue());
+	if (!distributed.isSet()) {
+		// Save the trained net.
+		lindNet->saveYAML(netDefinitionPath.getValue());
+	}
 
 	delete lindNet;
 	exit(EXIT_SUCCESS);
