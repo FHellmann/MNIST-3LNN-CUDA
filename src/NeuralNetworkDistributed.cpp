@@ -79,7 +79,7 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 	int startWork;
 	int endWork;
 
-	double time;
+	chrono::high_resolution_clock::time_point time;
 
 	int hiddenWeightsCount = nn.getLayer(HIDDEN)->nodes.size()
 			* nn.getLayer(HIDDEN)->nodes[0]->weights.size();

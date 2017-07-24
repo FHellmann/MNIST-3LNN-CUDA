@@ -8,7 +8,6 @@
 #include <tclap/CmdLine.h>
 #include <algorithm>
 #include <yaml-cpp/yaml.h>
-#include <mpi.h>
 #include "MNISTDataset.h"
 #include "NeuralNetwork.h"
 #include "NeuralNetworkParallel.h"
