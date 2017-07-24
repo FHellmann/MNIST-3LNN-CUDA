@@ -774,10 +774,11 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 	__shared__ float blockCacheError[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
 	// Compute the target coordinates.
+	size_t const x = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
 	size_t const y = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
 
 	// If this thread has nothing to do, because it would access invalid memory, exit
-	if (y >= bias.rows) {
+	if (y >= bias.rows || x >= bias.cols) {
 		return;
 	}
 
@@ -803,5 +804,5 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 		__syncthreads();
 	}
 
-	*d_matrix_pget(bias, y, 1) += threadValue;
+	*d_matrix_pget(bias, y, x) += threadValue;
 }
