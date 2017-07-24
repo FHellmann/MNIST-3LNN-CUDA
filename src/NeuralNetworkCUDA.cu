@@ -160,48 +160,56 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	// Storage for the first weight matrix
 	trainingParams.W12.rows = hiddenLayer->nodes.size();
 	trainingParams.W12.cols = inputLayer->nodes.size();
+	trainingParams.W12.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.W12.data, matrix_size(trainingParams.W12) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the hidden layer bias vector
 	trainingParams.bias2.rows = hiddenLayer->nodes.size();
 	trainingParams.bias2.cols = 1;
+	trainingParams.bias2.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.bias2.data, matrix_size(trainingParams.bias2) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the second weight matrix
 	trainingParams.W23.rows = outputLayer->nodes.size();
 	trainingParams.W23.cols = hiddenLayer->nodes.size();
+	trainingParams.W23.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.W23.data, matrix_size(trainingParams.W23) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the output layer bias vector
 	trainingParams.bias3.rows = outputLayer->nodes.size();
 	trainingParams.bias3.cols = 1;
+	trainingParams.bias3.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.bias3.data, matrix_size(trainingParams.bias3) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the output layer output vectors
 	trainingParams.output2.rows = trainingParams.numHiddenNodes;
 	trainingParams.output2.cols = trainingParams.batchSize;
+	trainingParams.output2.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.output2.data, matrix_size(trainingParams.output2) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Storage for the output layer output vectors
 	trainingParams.output3.rows = outputLayer->nodes.size();
 	trainingParams.output3.cols = trainingParams.batchSize;
+	trainingParams.output3.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.output3.data, matrix_size(trainingParams.output3) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Temporary storage of the size of the output layer output vectors
 	trainingParams.tmp3.rows = outputLayer->nodes.size();
 	trainingParams.tmp3.cols = trainingParams.batchSize;
+	trainingParams.tmp3.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.tmp3.data, matrix_size(trainingParams.tmp3) * sizeof(float));
 	assert(err == cudaSuccess);
 
 	// Temporary storage of the size of the hidden layer output vectors
 	trainingParams.tmp2.rows = hiddenLayer->nodes.size();
 	trainingParams.tmp2.cols = trainingParams.batchSize;
+	trainingParams.tmp2.layout = Matrix::ROW_MAJOR;
 	err = cudaMalloc((void**) &trainingParams.tmp2.data, matrix_size(trainingParams.tmp2) * sizeof(float));
 	assert(err == cudaSuccess);
 
@@ -236,9 +244,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		for (size_t j = 0; j < hiddenLayer->nodes.size(); ++j) {
 			Layer::Node* node = hiddenLayer->nodes[j];
 			bias2[j] = node->bias;
-			for (size_t i = 0; i < node->weights.size(); ++i) {
+			for (size_t i = 0; i < node->weights.size(); ++i, ++k) {
 				W12[k] = node->weights[i];
-				++k;
 			}
 		}
 	}
@@ -249,9 +256,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		for (size_t j = 0; j < outputLayer->nodes.size(); ++j) {
 			Layer::Node* node = outputLayer->nodes[j];
 			bias3[j] = node->bias;
-			for (size_t i = 0; i < node->weights.size(); ++i) {
+			for (size_t i = 0; i < node->weights.size(); ++i, ++k) {
 				W23[k] = node->weights[i];
-				++k;
 			}
 		}
 	}
@@ -367,28 +373,6 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	bias2 = nullptr;
 	delete[] bias3;
 	bias3 = nullptr;
-}
-
-__device__ void d_print(GPUTrainingParameters const& params) {
-	PRINTF("TrainingParams:\n"
-			"  W12: %p\n"
-		    "  W1_len: %lu\n"
-			"  W2: %p\n"
-			"  W2_len: %lu\n"
-			"  errorThreshold: %f\n"
-			"  width: %lu\n"
-			"  height: %lu\n"
-			"  numExamples: %lu\n"
-			"  numHiddenNodes: %lu\n",
-			params.W12.data,
-			d_matrix_size(params.W12),
-			params.W23.data,
-			d_matrix_size(params.W23),
-			params.errorThreshold,
-			params.width,
-			params.height,
-			params.numExamples,
-			params.numHiddenNodes);
 }
 
 /* Matrix manipulation operations. */
