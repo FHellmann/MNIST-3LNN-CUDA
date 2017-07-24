@@ -663,13 +663,17 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	__shared__ float blockCacheB[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
 	// Compute the target coordinates.
-	size_t const x = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
-	size_t const y = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
+	size_t const blockX = blockIdx.x * MATRIX_SIZE_DIVISOR;
+	size_t const blockY = blockIdx.y * MATRIX_SIZE_DIVISOR;
 
-	// If this thread has nothing to do, because it would access invalid memory, exit
-	if (x >= C.cols || y >= C.rows) {
+	// If this block does not completely lie within the destination matrix,
+	// exit. If it parly lies within, we need some threads for loading data.
+	if (blockX >= C.cols || blockY >= C.rows) {
 		return;
 	}
+
+	size_t const x = blockX + threadIdx.x;
+	size_t const y = blockY + threadIdx.y;
 
 //	if (A.cols % MATRIX_SIZE_DIVISOR != 0 || B.rows % MATRIX_SIZE_DIVISOR != 0) {
 //		printf("d_mul_base: A's cols is not a multiple of %u: (%lu, %lu) x (%lu, %lu)\n", MATRIX_SIZE_DIVISOR, A.rows, A.cols, B.rows, B.cols);
@@ -677,8 +681,8 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 //	}
 
 	float threadValue = 0.0f;
-	unsigned int const numSubBlocks = A.cols / MATRIX_SIZE_DIVISOR;
-	for (int k = 0; k < numSubBlocks; ++k)
+	unsigned int const numSubBlocks = (A.cols - 1) / MATRIX_SIZE_DIVISOR + 1;
+	for (size_t k = 0; k < numSubBlocks; ++k)
 	{
 		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
 		if (xA < A.cols) {
@@ -703,6 +707,11 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 		}
 
 		__syncthreads();
+	}
+
+	// If this thread has nothing to do, because it would access invalid memory, exit
+	if (x >= C.cols || y >= C.rows) {
+		return;
 	}
 
 	float* const pValue = d_matrix_pget(C, y, x);
