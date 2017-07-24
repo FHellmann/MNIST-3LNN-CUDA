@@ -45,9 +45,10 @@
 								<inputType id="nvcc.compiler.input.cpp.631074203" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.389341790" superClass="nvcc.compiler.input.c"/>
 							</tool>
-							<tool command="mpic++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX} ${OUTPUT} ${INPUTS}" id="nvcc.linker.base.890508319" name="NVCC Linker" superClass="nvcc.linker.base">
+							<tool command="nvcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX} ${OUTPUT} ${INPUTS}" id="nvcc.linker.base.890508319" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.292909493" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
+									<listOptionValue builtIn="false" value="mpi_cxx"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
 									<listOptionValue builtIn="false" value="gomp"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
@@ -66,7 +67,7 @@
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-							<tool id="nvcc.archiver.base.734358929" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
+							<tool command="nvcc" id="nvcc.archiver.base.734358929" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
 							<tool id="com.nvidia.host.assembler.431818954" name="Host Assembler" superClass="com.nvidia.host.assembler">
 								<option id="gnu.both.asm.option.include.paths.145173896" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.731161242" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
@@ -130,7 +131,7 @@
 								<inputType id="nvcc.compiler.input.cpp.820903444" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.523683720" superClass="nvcc.compiler.input.c"/>
 							</tool>
-							<tool command="mpic++" id="nvcc.linker.base.965541482" name="NVCC Linker" superClass="nvcc.linker.base">
+							<tool command="nvcc" id="nvcc.linker.base.965541482" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.1527158700" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
@@ -152,7 +153,7 @@
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-							<tool id="nvcc.archiver.base.198202976" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
+							<tool command="nvcc" id="nvcc.archiver.base.198202976" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
 							<tool id="com.nvidia.host.assembler.1816791262" name="Host Assembler" superClass="com.nvidia.host.assembler">
 								<option id="gnu.both.asm.option.include.paths.1301819937" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.308616064" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
@@ -193,9 +194,9 @@
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.600457493" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.522712585" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
 							<builder buildPath="${workspace_loc:/MNIST-3LNN-CUDA}/query-Debug" id="cdt.managedbuild.target.gnu.builder.base.1974735571" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
-							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1250068207" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
-							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.268039259" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">
-								<option id="gnu.c.link.option.paths.1702068047" superClass="gnu.c.link.option.paths" valueType="libPaths">
+							<tool command="nvcc" id="cdt.managedbuild.tool.gnu.archiver.base.1250068207" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+							<tool command="nvcc" id="cdt.managedbuild.tool.gnu.c.linker.base.268039259" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">
+								<option id="gnu.c.link.option.paths.1702068047" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MNIST-3LNN-CUDA/yaml-cpp/build}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr//lib"/>
 									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/openmpi/lib"/>
@@ -218,7 +219,7 @@
 								<option id="gnu.c.compiler.option.debugging.level.189070399" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.159407950" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1362494235" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
+							<tool command="nvcc" id="cdt.managedbuild.tool.gnu.cpp.linker.base.1362494235" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option id="gnu.cpp.link.option.libs.2033236738" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
@@ -310,7 +311,7 @@
 								<inputType id="nvcc.compiler.input.cpp.1780124361" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.601940690" superClass="nvcc.compiler.input.c"/>
 							</tool>
-							<tool id="nvcc.linker.base.1993764303" name="NVCC Linker" superClass="nvcc.linker.base">
+							<tool command="nvcc" id="nvcc.linker.base.1993764303" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.606083753" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
@@ -332,7 +333,7 @@
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-							<tool id="nvcc.archiver.base.92015836" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
+							<tool command="nvcc" id="nvcc.archiver.base.92015836" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
 							<tool id="com.nvidia.host.assembler.1334172256" name="Host Assembler" superClass="com.nvidia.host.assembler">
 								<option id="gnu.both.asm.option.include.paths.1996357095" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.950931336" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
@@ -397,7 +398,7 @@
 								<inputType id="nvcc.compiler.input.cpp.777026897" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.1963935465" superClass="nvcc.compiler.input.c"/>
 							</tool>
-							<tool id="nvcc.linker.base.1579309827" name="NVCC Linker" superClass="nvcc.linker.base">
+							<tool command="nvcc" id="nvcc.linker.base.1579309827" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option id="nvcc.linker.option.libs.2519040" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
@@ -419,7 +420,7 @@
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-							<tool id="nvcc.archiver.base.979727635" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
+							<tool command="nvcc" id="nvcc.archiver.base.979727635" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
 							<tool id="com.nvidia.host.assembler.682900437" name="Host Assembler" superClass="com.nvidia.host.assembler">
 								<option id="gnu.both.asm.option.include.paths.1679189737" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1012480935" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
