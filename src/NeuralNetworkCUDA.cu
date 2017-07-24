@@ -803,5 +803,5 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 		__syncthreads();
 	}
 
-	d_matrix_set(bias, y, 1, threadValue); // Fixme: Update bias make totally no sense!
+	*d_matrix_pget(bias, y, 1) += threadValue;
 }
