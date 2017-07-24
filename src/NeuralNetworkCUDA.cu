@@ -444,7 +444,7 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const&);
 __device__ void d_back_propagate_hidden(GPUTrainingParameters const&);
 __device__ void d_fill_target_output(GPUTrainingParameters const&, Matrix const&);
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias);
-__device__ void d_fill_random(Matrix const&);
+__device__ void d_fill(Matrix const&, float const);
 __device__ void d_update_bias(Matrix const& bias, Matrix const& error);
 
 __global__ void d_feed_forward(GPUTrainingParameters const params) {
@@ -750,7 +750,7 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void
 	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), v);
 }
 
-__device__ void d_fill_random(Matrix const& A) {
+__device__ void d_fill(Matrix const& A, float const v) {
 
 	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
 	size_t const targetY = threadIdx.y + blockIdx.y * blockDim.y;
@@ -759,7 +759,7 @@ __device__ void d_fill_random(Matrix const& A) {
 		return;
 	}
 
-	d_matrix_set(A, targetY, targetX, static_cast<float>(targetX));
+	d_matrix_set(A, targetY, targetX, v);
 }
 
 __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
