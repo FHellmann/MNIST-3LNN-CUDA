@@ -143,16 +143,16 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	float* fImgData = new float[allImgBufElements];
 	float* dst = fImgData;
 	for (cv::Mat const& img : images) {
-		for (uint8_t* src = img.datastart; src != img.dataend;) {
-			*(dst++) = static_cast<float>(*(src++));
+		for (uint8_t* src = img.datastart; src != img.dataend; ++src, ++dst) {
+			*dst = static_cast<float>(*src);
 		}
 	}
 
 	float* flabels = new float[labels.size() * NUM_DIGITS];
 	dst = flabels;
 	for (uint8_t const& l : labels) {
-		for (uint8_t i = 0; i < NUM_DIGITS; ++i) {
-			*(dst++) = (l == i) ? 1.0f : 0.0f;
+		for (uint8_t i = 0; i < NUM_DIGITS; ++i, ++dst) {
+			*dst = (l == i) ? 1.0f : 0.0f;
 		}
 	}
 
