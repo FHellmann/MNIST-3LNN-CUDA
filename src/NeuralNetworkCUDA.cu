@@ -570,7 +570,7 @@ __device__ void d_apply_activation_derivative(Matrix const& A, NeuralNetwork::Ac
 __device__ void d_fill_target_output(GPUTrainingParameters const& params, Matrix const& targetOutput) {
 
 	if (targetOutput.rows != NUM_DIGITS) {
-		printf("d_fill_target_output: wrong number of rows. Given %lu, expected %u\n", targetOutput.rows, NUM_DIGITS);
+		PRINTF("d_fill_target_output: wrong number of rows. Given %lu, expected %u\n", targetOutput.rows, NUM_DIGITS);
 		return;
 	}
 
@@ -589,12 +589,12 @@ __device__ void d_fill_target_output(GPUTrainingParameters const& params, Matrix
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias) {
 
 	if (bias.rows != output.rows) {
-		printf("d_set_bias: Bias and output dimensions mismatch. Expected same height but bias was %lu and output was %lu\n", bias.rows, output.rows);
+		PRINTF("d_set_bias: Bias and output dimensions mismatch. Expected same height but bias was %lu and output was %lu\n", bias.rows, output.rows);
 		return;
 	}
 
 	if (bias.cols > 1) {
-		printf("d_set_bias: Bias column dimension is %lu > 1. Not handled.\n", bias.cols);
+		PRINTF("d_set_bias: Bias column dimension is %lu > 1. Not handled.\n", bias.cols);
 		return;
 	}
 
@@ -647,7 +647,7 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 
 	if (A.cols != B.rows) {
 
-		printf("d_mul_base: Incompatible matrices: (%lu, %lu) x (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
+		PRINTF("d_mul_base: Incompatible matrices: (%lu, %lu) x (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols);
 		return;
 	}
 
@@ -714,7 +714,7 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, vo
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
-		printf("d_cwise_op: Incompatible matrices: (%lu, %lu) + (%lu, %lu) = (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols, C.rows, C.cols);
+		PRINTF("d_cwise_op: Incompatible matrices: (%lu, %lu) + (%lu, %lu) = (%lu, %lu)\n", A.rows, A.cols, B.rows, B.cols, C.rows, C.cols);
 		return;
 	}
 
@@ -736,7 +736,7 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void
 
 	if (A.cols != C.cols || A.rows != C.rows) {
 
-		printf("d_cwise_op: Incompatible matrices: v * (%lu, %lu) = (%lu, %lu)\n", A.rows, A.cols, C.rows, C.cols);
+		PRINTF("d_cwise_op: Incompatible matrices: v * (%lu, %lu) = (%lu, %lu)\n", A.rows, A.cols, C.rows, C.cols);
 		return;
 	}
 
@@ -766,7 +766,7 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 
 	if (bias.rows != error.rows|| bias.cols != 1) {
 
-		printf("d_update_bias: Invalid matrices: bias(%lu, %lu) error(%lu, %lu)\n", bias.rows, bias.cols, error.rows, error.cols);
+		PRINTF("d_update_bias: Invalid matrices: bias(%lu, %lu) error(%lu, %lu)\n", bias.rows, bias.cols, error.rows, error.cols);
 		return;
 	}
 
