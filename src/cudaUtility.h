@@ -10,7 +10,7 @@
 
 #include "NeuralNetworkCUDA.h"
 
-#define MATRIX_SIZE_DIVISOR 28
+#define MATRIX_SIZE_DIVISOR 7
 
 struct Matrix {
 	enum Layout {
@@ -57,8 +57,8 @@ struct GPUTrainingParameters {
 //	float maxDerivation;
 
 	/* Temporary buffers, e.g. for back propagation. */
-	Matrix tmp3;
-	Matrix tmp2;
+	Matrix error3;
+	Matrix error2;
 };
 
 /* Utility functions */
@@ -74,26 +74,26 @@ __device__ void d_fill(Matrix const&, float const);
 __device__ void d_fill_pattern(Matrix const&);
 
 /* Neural network stuff */
-__global__ void calculateOutputError(Matrix const output, Matrix const labels, Matrix const outError, Matrix const tmp, float const learningRate, NeuralNetwork::ActFctType actFct);
-__global__ void backpropagateOutputError(Matrix const transposedPreviousWeights, Matrix const previousError, Matrix const outError, float const learningRate);
+__global__ void calculateOutputError(Matrix const error, Matrix const output, Matrix const labels, NeuralNetwork::ActFctType);
+__global__ void calculateHiddenError(Matrix const error, Matrix const transposedPreviousWeights, Matrix const previousError, Matrix const hiddenOutput, NeuralNetwork::ActFctType);
 __global__ void updateBias(Matrix const bias, Matrix const error);
-__global__ void finalizeHiddenError(Matrix const hiddenOutput, Matrix const outError, NeuralNetwork::ActFctType actFct);
-__global__ void updateWeights(Matrix const weights, Matrix const bias, Matrix const errors, Matrix const transposedLayerInput);
+__global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias, Matrix const error, Matrix const transposedOutput, float const learningRate);
 __global__ void feedForwardLayer(Matrix const input, Matrix const weights, Matrix const bias, NeuralNetwork::ActFctType actFct, Matrix const output);
 
 __device__ void d_apply_activation(Matrix const&, NeuralNetwork::ActFctType);
 __device__ void d_apply_activation_derivative(Matrix const&, NeuralNetwork::ActFctType);
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias);
-__device__ void d_update_bias(Matrix const& bias, Matrix const& error);
+__device__ void d_update_bias(Matrix const& bias, Matrix const& error, float const learningRate = 1.0f);
 
 /* Matrix manipulation operations. */
-__device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const));
-__device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B);
-__device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B);
-__device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const));
-__device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void(*op)(float*, float const, float const));
+__device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const), float const c = 1.0f);
+__device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B, float const c = 1.0f);
+__device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B, float const c = 1.0f);
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const), NeuralNetwork::ActFctType const actFct = NeuralNetwork::NONE);
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, float v, void(*op)(float*, float const, float const), NeuralNetwork::ActFctType const actFct = NeuralNetwork::NONE);
 __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, Matrix const& B);
 __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, float const v);
+__device__ void d_cwise_mul_act_deriv(Matrix const& C, Matrix const& A, Matrix const& B, NeuralNetwork::ActFctType const actFct);
 __device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B);
 
 /* Matrix access */

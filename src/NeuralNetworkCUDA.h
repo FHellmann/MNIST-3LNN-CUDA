@@ -10,8 +10,8 @@
 
 #include "NeuralNetwork.h"
 
-//#define PRINTF(...) {printf(__VA_ARGS__);}
-#define PRINTF(...)
+#define PRINTF(...) {printf(__VA_ARGS__);}
+//#define PRINTF(...)
 
 struct GPUTrainingParameters;
 

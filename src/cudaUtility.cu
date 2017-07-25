@@ -13,59 +13,89 @@
 __global__ void feedForwardLayer(Matrix const input, Matrix const weights,
 		Matrix const bias, NeuralNetwork::ActFctType actFct,
 		Matrix const output) {
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < input.cols && threadIdx.y < input.rows) {
+			printf("input_%p(%u, %u): %f\n", input.data, threadIdx.y, threadIdx.x, d_matrix_get(input, threadIdx.y, threadIdx.x));
+		}
+	}
+
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < bias.cols && threadIdx.y < bias.rows) {
+			printf("bias_%p(%u, %u): %f\n", bias.data, threadIdx.y, threadIdx.x, d_matrix_get(bias, threadIdx.y, threadIdx.x));
+		}
+	}
+
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < weights.cols && threadIdx.y < weights.rows) {
+			printf("weights_%p(%u, %u): %f\n", weights.data, threadIdx.y, threadIdx.x, d_matrix_get(weights, threadIdx.y, threadIdx.x));
+		}
+	}
 
 	d_set_bias(output, bias);
 	__syncthreads();
 	d_mul_add(output, weights, input);
 	__syncthreads();
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < output.cols && threadIdx.y < output.rows) {
+			printf("output_%p(%u, %u): %f\n", output.data, threadIdx.y, threadIdx.x, d_matrix_get(output, threadIdx.y, threadIdx.x));
+		}
+	}
 	d_apply_activation(output, actFct);
+
 }
 
 /** Saves the error in output3! */
-__global__ void calculateOutputError(Matrix const output, Matrix const labels,
-		Matrix const outError, Matrix const tmp, float const learningRate,
+__global__ void calculateOutputError(Matrix const error, Matrix const output, Matrix const labels,
 		NeuralNetwork::ActFctType actFct) {
 
 	/* No thread synchronization should be required in this method
 	 * because it only uses component wise operations. */
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < output.cols && threadIdx.y < output.rows) {
-//			printf("output(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(output, threadIdx.y, threadIdx.x));
-//		}
-//	}
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < output.cols && threadIdx.y < output.rows) {
+			printf("output(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(output, threadIdx.y, threadIdx.x));
+		}
+	}
+
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < labels.cols && threadIdx.y < labels.rows) {
+			printf("labels(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(labels, threadIdx.y, threadIdx.x));
+		}
+	}
 
 	// Save the difference into tmp buffer
-	Matrix const& difference = tmp;
 	// l - o
-	d_cwise_sub(difference, labels, output);
+	d_cwise_sub(error, labels, output);
 
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < difference.cols && threadIdx.y < difference.rows) {
-//			printf("difference(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(difference, threadIdx.y, threadIdx.x));
-//		}
-//	}
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < error.cols && threadIdx.y < error.rows) {
+			printf("error(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(error, threadIdx.y, threadIdx.x));
+		}
+	}
 
 	// Reuse the output buffer for saving the error.
 	// s'(o)
-	d_apply_activation_derivative(output, actFct);
+	//d_apply_activation_derivative(output, actFct);
 	// s'(o)(l - o)
-	d_cwise_mul(outError, output, difference);
+	d_cwise_mul_act_deriv(error, error, output, actFct);
 	// n s'(o)(l - o)
-	d_cwise_mul(outError, outError, learningRate);
+	//d_cwise_mul(outError, outError, learningRate);
 
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < outError.cols && threadIdx.y < outError.rows) {
-//			printf("outError(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(outError, threadIdx.y, threadIdx.x));
-//		}
-//	}
+	if (blockIdx.x == 0 && blockIdx.y == 0) {
+		if (threadIdx.x < error.cols && threadIdx.y < error.rows) {
+			printf("outError(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(error, threadIdx.y, threadIdx.x));
+		}
+	}
 }
 
-__global__ void backpropagateOutputError(Matrix const transposedPreviousWeight,
-		Matrix const previousError, Matrix const outError, float const learningRate) {
+__global__ void calculateHiddenError(Matrix const error, Matrix const transposedPreviousWeight,
+		Matrix const previousError, Matrix const hiddenOutput, NeuralNetwork::ActFctType actFct) {
 
 	// Backpropagate the error.
-	d_mul(outError, transposedPreviousWeight, previousError);
-	d_cwise_mul(outError, outError, learningRate);
+	d_mul(error, transposedPreviousWeight, previousError);
+	//d_cwise_mul(outError, outError, learningRate);
+
+	//d_apply_activation_derivative(hiddenOutput, actFct);
+	d_cwise_mul_act_deriv(error, error, hiddenOutput, actFct);
 }
 
 __global__ void updateBias(Matrix const bias, Matrix const error) {
@@ -73,32 +103,14 @@ __global__ void updateBias(Matrix const bias, Matrix const error) {
 	d_update_bias(bias, error);
 }
 
-__global__ void finalizeHiddenError(Matrix const hiddenOutput,
-		Matrix const outError, NeuralNetwork::ActFctType actFct) {
-
-	/* No thread synchronization should be required in this method
-	 * because after the multiplication only component wise
-	 * operations are used which are independent of the matrix
-	 * multiplication's operands. */
-
-	// And then compute the weight update
-	d_apply_activation_derivative(hiddenOutput, actFct);
-	d_cwise_mul(outError, outError, hiddenOutput);
-
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < outError.cols && threadIdx.y < outError.rows) {
-//			printf("backPropFinalError(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(outError, threadIdx.y, threadIdx.x));
-//		}
-//	}
-}
-
-__global__ void updateWeights(Matrix const weights, Matrix const bias,
-		Matrix const errors, Matrix const transposedLayerInput) {
+__global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias,
+		Matrix const error, Matrix const transposedLayerInput, float const learningRate) {
 
 	/* No thread synchronization should be required in this method
 	 * because the target matrices are different and the
 	 * operands are constant. */
-	d_mul_add(weights, errors, transposedLayerInput);
+	d_mul_add(weights, error, transposedLayerInput, learningRate);
+	d_update_bias(bias, error, learningRate);
 }
 
 __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {
@@ -188,14 +200,14 @@ __device__ void d_mul(float* c, float const a, float const b) {
 	*c = a * b;
 }
 
-__device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B) {
+__device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B, float const c) {
 	PRINTF("d_mul\n");
-	d_mul_base(C, A, B, &d_assign);
+	d_mul_base(C, A, B, &d_assign, c);
 }
 
-__device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B) {
+__device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B, float const c) {
 	PRINTF("d_mul_add\n");
-	d_mul_base(C, A, B, &d_add);
+	d_mul_base(C, A, B, &d_add, c);
 }
 
 /**
@@ -205,7 +217,7 @@ __device__ void d_mul_add(Matrix const& C, Matrix const& A, Matrix const& B) {
  * @param[in] B second factor of the multiplication.
  * @param[out] C Matrix holding the result. Must provide enough storage space.
  */
-__device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const)) {
+__device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const), float const c) {
 
 	if (A.cols != B.rows) {
 
@@ -270,7 +282,7 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	}
 
 	float* const pValue = d_matrix_pget(C, y, x);
-	op(pValue, *pValue, threadValue);
+	op(pValue, *pValue, threadValue * c);
 }
 
 __device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B) {
@@ -281,7 +293,11 @@ __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, Matrix const& B) {
 	d_cwise_op(C, A, B, &d_mul);
 }
 
-__device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const)) {
+__device__ void d_cwise_mul_act_deriv(Matrix const& C, Matrix const& A, Matrix const& B, NeuralNetwork::ActFctType const actFct) {
+	d_cwise_op(C, A, B, &d_mul, actFct);
+}
+
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const), NeuralNetwork::ActFctType const actFct) {
 
 	if (A.cols != B.cols || A.rows != B.rows || B.cols != C.cols || B.rows != C.rows) {
 
@@ -296,14 +312,24 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, Matrix const& B, vo
 		return;
 	}
 
-	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), d_matrix_get(B, y, x));
+	float b =  d_matrix_get(B, y, x);
+	switch (actFct) {
+	case NeuralNetwork::SIGMOID:
+		b = b * (1.0f - b);
+		break;
+	case NeuralNetwork::TANH:
+		b = 1.0f - b * b;
+		break;
+	}
+
+	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), b);
 }
 
 __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, float const v) {
 	d_cwise_op(C, A, v, &d_mul);
 }
 
-__device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void(*op)(float*, float const, float const)) {
+__device__ void d_cwise_op(Matrix const& C, Matrix const& A, float v, void(*op)(float*, float const, float const), NeuralNetwork::ActFctType const actFct) {
 
 	if (A.cols != C.cols || A.rows != C.rows) {
 
@@ -316,6 +342,15 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void
 
 	if (x >= A.cols || y >= A.rows) {
 		return;
+	}
+
+	switch (actFct) {
+	case NeuralNetwork::SIGMOID:
+		v = v * (1.0f - v);
+		break;
+	case NeuralNetwork::TANH:
+		v = 1.0f - v * v;
+		break;
 	}
 
 	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), v);
@@ -347,7 +382,7 @@ __device__ void d_fill_pattern(Matrix const& A) {
 	d_fill(A, threadIdx.y + blockIdx.y * blockDim.y);
 }
 
-__device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
+__device__ void d_update_bias(Matrix const& bias, Matrix const& error, float const c) {
 
 	if (bias.rows != error.rows|| bias.cols != 1) {
 
@@ -396,7 +431,7 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 		return;
 	}
 
-	*d_matrix_pget(bias, y, x) += threadValue;
+	*d_matrix_pget(bias, y, x) += threadValue * c;
 }
 
 __device__ float* d_matrix_pget(Matrix const& M, size_t const y, size_t const x) {
@@ -442,4 +477,3 @@ Matrix matrix_transpose(Matrix const& A) {
 	}
 	return T;
 }
-
