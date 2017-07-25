@@ -11,8 +11,11 @@
 #include <opencv2/core/core.hpp>
 #include "MNISTDataset.h"
 #include "utils/Log.hpp"
+#include "utils/MNISTStats.h"
 
 class NeuralNetwork {
+private:
+	MNISTStats mnistStats;
 public:
 	enum ActFctType {
 		SIGMOID, TANH, NONE

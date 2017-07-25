@@ -2,6 +2,7 @@
 #include <tclap/CmdLine.h>
 #include "NeuralNetwork.h"
 #include "MNISTDataset.h"
+#include "utils/MNISTStats.h"
 
 using namespace std;
 using namespace TCLAP;
@@ -35,30 +36,24 @@ int main(int argc, char* argv[]) {
 	NeuralNetwork net = NeuralNetwork::LoadYAML(netDefinitionPath.getValue());
 
 	size_t const showProgressEach = 1000;
+	MNISTStats mnistStats;
 
-	int every_ten_percent = testingImages.size() / 10;
-	size_t correct = 0;
+	int every_ten_percent = testingImages.size() * 5 / 100;
+	int error = 0;
 	for (size_t i = 0; i < testingImages.size(); ++i) {
 
 		net.feedInput(testingImages[i]);
 		net.feedForward();
 		int const classification = net.getNetworkClassification();
-		if (classification == testingLabels[i]) {
-			++correct;
+		if (classification != testingLabels[i]) {
+			++error;
 		}
 
-		if ((i % every_ten_percent) == 0)
-			cout << "x";
-		cout.flush();
+		mnistStats.displayTestingProgress(testingImages.size(), testingImages.size(), error, 5, 5);
+		if(i % every_ten_percent == 0) {
+			mnistStats.displayImage(testingImages[i], testingLabels[i], classification, 7,6);
+		}
 	}
-	cout << endl;
-
-	double const classificationRate = static_cast<double>(correct)
-			/ static_cast<double>(testingImages.size());
-
-	cout << "Test finished." << endl;
-	cout << "Correct classifications: " << classificationRate * 100.0 << "%"
-			<< endl;
 
 	exit(EXIT_SUCCESS);
 }

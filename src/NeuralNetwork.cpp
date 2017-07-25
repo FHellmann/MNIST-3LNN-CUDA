@@ -83,6 +83,7 @@ double NeuralNetwork::train(MNISTImageDataset const& images,
 		double const max_derivation) {
 	bool needsFurtherTraining = true;
 	double error = std::numeric_limits<double>::max();
+	int iter = 1;
 	while (needsFurtherTraining) {
 
 		int every_ten_percent = images.size() / 10;
@@ -103,10 +104,6 @@ double NeuralNetwork::train(MNISTImageDataset const& images,
 			int classification = getNetworkClassification();
 			if (classification != labels[imgCount])
 				errCount++;
-
-			// Display progress during training
-			//if ((imgCount % every_ten_percent) == 0)
-			//	log(to_string(imgCount / every_ten_percent * 10.0) + "%");
 		}
 
 		double newError = static_cast<double>(errCount)
@@ -122,7 +119,9 @@ double NeuralNetwork::train(MNISTImageDataset const& images,
 			needsFurtherTraining = false;
 		}
 
-		log("Error: " + to_string(newError * 100.0) + "%");
+		iter++;
+
+		//log("Error: " + to_string(newError * 100.0) + "%");
 	}
 
 	return error;

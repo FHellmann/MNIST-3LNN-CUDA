@@ -5,8 +5,11 @@
 #include <iostream>
 #include "NeuralNetwork.h"
 #include "utils/Log.hpp"
+#include "utils/MNISTStats.h"
 
 class NeuralNetworkParallel: public NeuralNetwork {
+private:
+	MNISTStats mnistStats;
 public:
 	/**
 	 * Creates a new simple 3-layer neural network.

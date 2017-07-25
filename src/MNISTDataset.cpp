@@ -15,12 +15,14 @@ bool MNISTDataset<uint8_t>::load() {
 	IdxHeader header;
 	fread(&header, sizeof(header), 1, f);
 	header.magicnumber = bigToLittleEndian(header.magicnumber);
+	/*
 	std::cout << "Header size: " << sizeof(IdxHeader) << std::endl;
 	std::cout << "Magic Number: " << std::hex << header.magicnumber
 			<< std::endl;
 	std::cout << "Datatype: " << std::hex << (int) header.datatype << std::endl;
 	std::cout << "Dimensions: " << std::hex << (int) header.dimensions
 			<< std::endl;
+			*/
 
 	if (header.datatype != UBYTE) {
 		std::cerr << "Unhandled datatype: " << (int) header.datatype
@@ -41,7 +43,7 @@ bool MNISTDataset<uint8_t>::load() {
 
 	m_Count = bigToLittleEndian(num);
 
-	std::cout << std::dec << "Reading " << m_Count << " labels." << std::endl;
+	//std::cout << std::dec << "Reading " << m_Count << " labels." << std::endl;
 
 	m_Images.reserve(m_Count);
 	// Actually read the images.

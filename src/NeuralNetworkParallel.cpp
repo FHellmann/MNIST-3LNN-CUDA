@@ -121,9 +121,10 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 					localErrCount++;
 
 				// Display progress during training
-				//if ((imgCount % every_ten_percent) == 0) {
-				//	log(to_string(imgCount / every_ten_percent * 10.0) + "%", omp_get_thread_num());
-				//}
+				mnistStats.displayTrainingProgress(iter, images.size(), imgCount, errCount, 3, 5);
+				if(imgCount % every_ten_percent == 0) {
+					mnistStats.displayImage(images[imgCount], labels[imgCount], classification, 7, 6);
+				}
 			}
 			//logEnd(time, omp_get_thread_num());
 
