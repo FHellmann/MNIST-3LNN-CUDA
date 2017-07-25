@@ -629,25 +629,6 @@ __device__ void d_apply_activation_derivative(Matrix const& A, NeuralNetwork::Ac
 	}
 }
 
-__device__ void d_fill_target_output(GPUTrainingParameters const& params, Matrix const& targetOutput) {
-
-	if (targetOutput.rows != NUM_DIGITS) {
-		PRINTF("d_fill_target_output: wrong number of rows. Given %lu, expected %u\n", targetOutput.rows, NUM_DIGITS);
-		return;
-	}
-
-	size_t const imgIdx = threadIdx.x + blockIdx.x * blockDim.x;
-	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
-	size_t const targetY = threadIdx.y + blockIdx.y * blockDim.y;
-
-	if (targetX >= targetOutput.cols || targetY >= targetOutput.rows) {
-		return;
-	}
-
-	float const v = (threadIdx.y == d_matrix_get(params.labels, 1, imgIdx)) ? 1.0f : 0.0f;
-	d_matrix_set(targetOutput, targetY, targetX, v);
-}
-
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias) {
 
 	if (bias.rows != output.rows) {
