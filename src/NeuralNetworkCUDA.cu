@@ -93,7 +93,7 @@ size_t matrix_size(Matrix const& A) {
 	return A.rows * A.cols;
 }
 
-__device__ Matrix d_matrix_transpose(Matrix const& A) {
+Matrix matrix_transpose(Matrix const& A) {
 	Matrix T;
 	T.rows = A.cols;
 	T.cols = A.rows;
@@ -115,8 +115,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-__global__ void d_feed_forward(GPUTrainingParameters const);
-__global__ void d_back_propagate(GPUTrainingParameters const);
+void feedForwardBatch(GPUTrainingParameters const&);
+void backPropagateBatch(GPUTrainingParameters const&);
 
 __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net,
 		size_t const batchSize, size_t const batchOffset, float* const d_images,
@@ -196,12 +196,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize;
 		trainingParams.labels.data = d_labels + trainingParams.batchSize;
 		// Call graphics card functions
-//		d_feed_forward<<<numBlocks, threadsPerBlock>>>(trainingParams);
-//		gpuErrchk( cudaPeekAtLastError() );
-//		gpuErrchk( cudaDeviceSynchronize() );
-		d_back_propagate<<<numBlocks, threadsPerBlock>>>(trainingParams);
-		gpuErrchk( cudaPeekAtLastError() );
-		gpuErrchk( cudaDeviceSynchronize() );
+		feedForwardBatch(trainingParams);
+		backPropagateBatch(trainingParams);
 	}
 
 	//
@@ -440,39 +436,52 @@ __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, float const v);
 __device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B);
 
 /* Neural network operations. */
+void backPropagateOutput(GPUTrainingParameters const&);
+void backPropagateHidden(GPUTrainingParameters const&);
 __device__ void d_apply_activation(Matrix const&, NeuralNetwork::ActFctType);
 __device__ void d_apply_activation_derivative(Matrix const&, NeuralNetwork::ActFctType);
-__device__ void d_back_propagate_output(GPUTrainingParameters const&);
-__device__ void d_back_propagate_hidden(GPUTrainingParameters const&);
-__device__ void d_fill_target_output(GPUTrainingParameters const&, Matrix const&);
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias);
-__device__ void d_fill(Matrix const&, float const);
 __device__ void d_update_bias(Matrix const& bias, Matrix const& error);
 
-__global__ void d_feed_forward(GPUTrainingParameters const params) {
+/* Utility functions */
+__device__ void d_fill(Matrix const&, float const);
 
-	PRINTF("d_feed_forward\n");
+__global__ void feedForwardLayer(Matrix const input, Matrix const weights,
+		Matrix const bias, NeuralNetwork::ActFctType actFct,
+		Matrix const output) {
 
-	d_set_bias(params.output2, params.bias2);
-	d_mul_add(params.output2, params.W12, params.images);
-	d_apply_activation(params.output2, params.activationFunction2);
-
-	d_set_bias(params.output3, params.bias3);
-	d_mul_add(params.output3, params.W23, params.output2);
-	d_apply_activation(params.output3, params.activationFunction3);
+	d_set_bias(output, bias);
+	d_mul_add(output, weights, input);
+	d_apply_activation(output, actFct);
 }
 
-__global__ void d_back_propagate(GPUTrainingParameters const params) {
+void feedForwardBatch(GPUTrainingParameters const& params) {
 
-	PRINTF("d_back_propagate\n");
-	d_back_propagate_output(params);
-	//d_back_propagate_hidden(params);
+	cout << "feedForwardBatch" << endl;
+	size_t const largestMatDim = params.images.rows;
+	dim3 numBlocks(
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
+	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+
+	feedForwardLayer<<<numBlocks, threadsPerBlock>>>(params.images, params.W12, params.bias2, params.activationFunction2, params.output2);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+
+	feedForwardLayer<<<numBlocks, threadsPerBlock>>>(params.output2, params.W23, params.bias3, params.activationFunction3, params.output3);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
 }
 
-__device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
+void backPropagateBatch(GPUTrainingParameters const& params) {
 
-	// Compute the target output based on the labels
-	//d_fill_target_output(params, targetOutput);
+	cout << "backPropagateBatch" << endl;
+	backPropagateOutput(params);
+	backPropagateHidden(params);
+}
+
+/** Saves the error in output3! */
+__global__ void calculateOutputError(GPUTrainingParameters const params) {
 
 	// Save the difference into the target output buffer
 	Matrix const& difference = params.tmp3;
@@ -483,25 +492,56 @@ __device__ void d_back_propagate_output(GPUTrainingParameters const& params) {
 	d_apply_activation_derivative(params.output3, params.activationFunction3);
 	d_cwise_mul(error, params.output3, difference);
 	d_cwise_mul(error, error, params.learningRate);
-
-
-	// Important to make a local copy.
-	// Otherwise every thread would transpose the matrix which
-	// would lead to undefined behavior.
-	Matrix output2 = d_matrix_transpose(params.output2);
-
-	d_fill(params.W23, 0.0f);
-	d_fill(error, 1.0f);
-	d_fill(output2, 1.0f);
-
-	d_mul_add(params.W23, error, output2);
-
-	d_update_bias(params.bias3, error);
 }
 
-__device__ void d_back_propagate_hidden(GPUTrainingParameters const& params) {
+__global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias,
+		Matrix const errors, Matrix const transposedLayerInput) {
 
-	PRINTF("d_back_propagate_hidden\n");
+	d_mul_add(weights, errors, transposedLayerInput);
+	d_update_bias(bias, errors);
+}
+
+void backPropagateOutput(GPUTrainingParameters const& params) {
+
+	cout << "backPropagateOutput" << endl;
+	size_t const largestMatDim = params.images.rows;
+	dim3 numBlocks(
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
+	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+
+	calculateOutputError<<<numBlocks, threadsPerBlock>>>(params);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+
+	Matrix output2 = matrix_transpose(params.output2);
+	// output3 contains the errors.
+	Matrix const& error = params.output3;
+	updateWeightsAndBias<<<numBlocks, threadsPerBlock>>>(params.W23, params.bias3, error, output2);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+}
+
+__global__ void calculateHiddenError(Matrix const transposedPreviousWeights,
+		Matrix const previousErrors, Matrix const hiddenOutput,
+		Matrix const outError, NeuralNetwork::ActFctType actFct) {
+
+	// Backpropagate the error.
+	d_mul(outError, transposedPreviousWeights, previousErrors);
+
+	// And then compute the weight update
+	d_apply_activation_derivative(hiddenOutput, actFct);
+	d_cwise_mul(outError, outError, hiddenOutput);
+}
+
+void backPropagateHidden(GPUTrainingParameters const& params) {
+
+	cout << "backPropagateHidden" << endl;
+	size_t const largestMatDim = params.images.rows;
+	dim3 numBlocks(
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
+	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 
 	// The weight updates are computed by
 	// W23^T * e3 * ∇σ * input^T
@@ -509,24 +549,35 @@ __device__ void d_back_propagate_hidden(GPUTrainingParameters const& params) {
 	// Important to make a local copy.
 	// Otherwise every thread would transpose the matrix which
 	// would lead to undefined behavior.
-	Matrix W23 = d_matrix_transpose(params.W23);
+	Matrix W23 = matrix_transpose(params.W23);
 
 	// See d_back_propagation_output
 	// Already contains the learningRate.
-	Matrix const& error = params.output3;
+//	Matrix const& error = params.output3;
+	Matrix const& previousError = params.output3;
+	Matrix const& error = params.tmp2;
 
-	// Backpropagate the error.
-	d_mul(params.tmp2, W23, error);
+//	// Backpropagate the error.
+//	d_mul(params.tmp2, W23, error);
+	calculateHiddenError<<<numBlocks, threadsPerBlock>>>(
+			W23, previousError, params.output2, error,
+			params.activationFunction3);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
 
-	d_update_bias(params.bias2, params.tmp2);
+//	d_update_bias(params.bias2, params.tmp2);
 
-	// And then compute the weight update
-	d_apply_activation_derivative(params.output2, params.activationFunction2);
-	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
+//	// And then compute the weight update
+//	d_apply_activation_derivative(params.output2, params.activationFunction2);
+//	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
 
 
-	Matrix images = d_matrix_transpose(params.images);
-	d_mul_add(params.W12, params.tmp2, images);
+	Matrix images = matrix_transpose(params.images);
+//	d_mul_add(params.W12, params.tmp2, images);
+	updateWeightsAndBias<<<numBlocks, threadsPerBlock>>>(params.W12,
+			params.bias2, error, images);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
 }
 
 __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {
