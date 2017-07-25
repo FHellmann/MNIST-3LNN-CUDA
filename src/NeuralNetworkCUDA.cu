@@ -371,19 +371,26 @@ void backPropagateOutput(GPUTrainingParameters const& params) {
 
 	PRINTF("backPropagateOutput\n");
 	size_t const largestMatDim = params.images.rows;
-	dim3 numBlocks(
+	dim3 blocks(
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
-	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+	dim3 threads(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 
-	calculateOutputError<<<numBlocks, threadsPerBlock>>>(params);
+	// output3 contains the errors.
+	Matrix const& error = params.output3;
+
+	calculateOutputError<<<blocks, threads>>>(params.output3,
+			params.labels, error, params.tmp3, params.learningRate,
+			params.activationFunction3);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
-	Matrix output2 = matrix_transpose(params.output2);
-	// output3 contains the errors.
-	Matrix const& error = params.output3;
-	updateWeightsAndBias<<<numBlocks, threadsPerBlock>>>(params.W23, params.bias3, error, output2);
+	//fill<<<blocks, threads>>>(params.W23, 0.0f);
+	//fill<<<blocks, threads>>>(params.output3, 2.0f);
+	//fill<<<blocks, threads>>>(params.output2, 1.0f);
+
+	Matrix const output2Transposed = matrix_transpose(params.output2);
+	updateWeights<<<blocks, threads>>>(params.W23, params.bias3, error, output2Transposed);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 }
@@ -392,44 +399,43 @@ void backPropagateHidden(GPUTrainingParameters const& params) {
 
 	PRINTF("backPropagateHidden");
 	size_t const largestMatDim = params.images.rows;
-	dim3 numBlocks(
+	dim3 blocks(
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
-	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+	dim3 threads(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 
 	// The weight updates are computed by
 	// W23^T * e3 * ∇σ * input^T
-
-	// Important to make a local copy.
-	// Otherwise every thread would transpose the matrix which
-	// would lead to undefined behavior.
-	Matrix W23 = matrix_transpose(params.W23);
+	Matrix W23Transposed = matrix_transpose(params.W23);
 
 	// See d_back_propagation_output
 	// Already contains the learningRate.
-//	Matrix const& error = params.output3;
 	Matrix const& previousError = params.output3;
 	Matrix const& error = params.tmp2;
 
-//	// Backpropagate the error.
-//	d_mul(params.tmp2, W23, error);
-	calculateHiddenError<<<numBlocks, threadsPerBlock>>>(
-			W23, previousError, params.output2, error,
-			params.activationFunction3);
+	backpropagateOutputError<<<blocks, threads>>>(W23Transposed,
+			previousError, error, params.learningRate);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
-//	d_update_bias(params.bias2, params.tmp2);
+	updateBias<<<blocks, threads>>>(params.bias2, error);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
 
-//	// And then compute the weight update
-//	d_apply_activation_derivative(params.output2, params.activationFunction2);
-//	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
+	// Backpropagate the error.
+	finalizeHiddenError<<<blocks, threads>>>(
+			params.output2, error, params.activationFunction2);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
 
+	//fill_pattern<<<blocks, threads>>>(params.W12);
+	//fill<<<blocks, threads>>>(params.W12, 0.0f);
+	//fill<<<blocks, threads>>>(error, 1.0f);
+	//fill<<<blocks, threads>>>(params.images, 1.0f);
 
-	Matrix const images = matrix_transpose(params.images);
-//	d_mul_add(params.W12, params.tmp2, images);
-	updateWeightsAndBias<<<numBlocks, threadsPerBlock>>>(params.W12,
-			params.bias2, error, images);
+	Matrix const imagesTransposed = matrix_transpose(params.images);
+	updateWeights<<<blocks, threads>>>(params.W12,
+			params.bias2, error, imagesTransposed);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 }

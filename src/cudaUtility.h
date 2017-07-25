@@ -74,9 +74,11 @@ __device__ void d_fill(Matrix const&, float const);
 __device__ void d_fill_pattern(Matrix const&);
 
 /* Neural network stuff */
-__global__ void calculateOutputError(GPUTrainingParameters const params);
-__global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias, Matrix const errors, Matrix const transposedLayerInput);
-__global__ void calculateHiddenError(Matrix const transposedPreviousWeights, Matrix const previousErrors, Matrix const hiddenOutput, Matrix const outError, NeuralNetwork::ActFctType actFct);
+__global__ void calculateOutputError(Matrix const output, Matrix const labels, Matrix const outError, Matrix const tmp, float const learningRate, NeuralNetwork::ActFctType actFct);
+__global__ void backpropagateOutputError(Matrix const transposedPreviousWeights, Matrix const previousError, Matrix const outError, float const learningRate);
+__global__ void updateBias(Matrix const bias, Matrix const error);
+__global__ void finalizeHiddenError(Matrix const hiddenOutput, Matrix const outError, NeuralNetwork::ActFctType actFct);
+__global__ void updateWeights(Matrix const weights, Matrix const bias, Matrix const errors, Matrix const transposedLayerInput);
 __global__ void feedForwardLayer(Matrix const input, Matrix const weights, Matrix const bias, NeuralNetwork::ActFctType actFct, Matrix const output);
 
 __device__ void d_apply_activation(Matrix const&, NeuralNetwork::ActFctType);

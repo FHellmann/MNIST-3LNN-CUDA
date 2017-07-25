@@ -22,24 +22,58 @@ __global__ void feedForwardLayer(Matrix const input, Matrix const weights,
 }
 
 /** Saves the error in output3! */
-__global__ void calculateOutputError(GPUTrainingParameters const params) {
+__global__ void calculateOutputError(Matrix const output, Matrix const labels,
+		Matrix const outError, Matrix const tmp, float const learningRate,
+		NeuralNetwork::ActFctType actFct) {
 
 	/* No thread synchronization should be required in this method
 	 * because it only uses component wise operations. */
+//	if (blockIdx.x == 0 && blockIdx.y == 0) {
+//		if (threadIdx.x < output.cols && threadIdx.y < output.rows) {
+//			printf("output(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(output, threadIdx.y, threadIdx.x));
+//		}
+//	}
 
-	// Save the difference into the target output buffer
-	Matrix const& difference = params.tmp3;
-	d_cwise_sub(difference, params.labels, params.output3);
+	// Save the difference into tmp buffer
+	Matrix const& difference = tmp;
+	// l - o
+	d_cwise_sub(difference, labels, output);
+
+//	if (blockIdx.x == 0 && blockIdx.y == 0) {
+//		if (threadIdx.x < difference.cols && threadIdx.y < difference.rows) {
+//			printf("difference(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(difference, threadIdx.y, threadIdx.x));
+//		}
+//	}
 
 	// Reuse the output buffer for saving the error.
-	Matrix const& error = params.output3;
-	d_apply_activation_derivative(params.output3, params.activationFunction3);
-	d_cwise_mul(error, params.output3, difference);
-	d_cwise_mul(error, error, params.learningRate);
+	// s'(o)
+	d_apply_activation_derivative(output, actFct);
+	// s'(o)(l - o)
+	d_cwise_mul(outError, output, difference);
+	// n s'(o)(l - o)
+	d_cwise_mul(outError, outError, learningRate);
+
+//	if (blockIdx.x == 0 && blockIdx.y == 0) {
+//		if (threadIdx.x < outError.cols && threadIdx.y < outError.rows) {
+//			printf("outError(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(outError, threadIdx.y, threadIdx.x));
+//		}
+//	}
 }
 
-__global__ void calculateHiddenError(Matrix const transposedPreviousWeights,
-		Matrix const previousErrors, Matrix const hiddenOutput,
+__global__ void backpropagateOutputError(Matrix const transposedPreviousWeight,
+		Matrix const previousError, Matrix const outError, float const learningRate) {
+
+	// Backpropagate the error.
+	d_mul(outError, transposedPreviousWeight, previousError);
+	d_cwise_mul(outError, outError, learningRate);
+}
+
+__global__ void updateBias(Matrix const bias, Matrix const error) {
+
+	d_update_bias(bias, error);
+}
+
+__global__ void finalizeHiddenError(Matrix const hiddenOutput,
 		Matrix const outError, NeuralNetwork::ActFctType actFct) {
 
 	/* No thread synchronization should be required in this method
@@ -47,22 +81,26 @@ __global__ void calculateHiddenError(Matrix const transposedPreviousWeights,
 	 * operations are used which are independent of the matrix
 	 * multiplication's operands. */
 
-	// Backpropagate the error.
-	d_mul(outError, transposedPreviousWeights, previousErrors);
-
 	// And then compute the weight update
 	d_apply_activation_derivative(hiddenOutput, actFct);
 	d_cwise_mul(outError, outError, hiddenOutput);
+//	d_mul(outError, transposedPreviousWeights, previousErrors);
+
+//	if (blockIdx.x == 0 && blockIdx.y == 0) {
+//		if (threadIdx.x < outError.cols && threadIdx.y < outError.rows) {
+//			printf("backPropFinalError(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(outError, threadIdx.y, threadIdx.x));
+//		}
+//	}
 }
 
-__global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias,
+__global__ void updateWeights(Matrix const weights, Matrix const bias,
 		Matrix const errors, Matrix const transposedLayerInput) {
 
 	/* No thread synchronization should be required in this method
 	 * because the target matrices are different and the
 	 * operands are constant. */
 	d_mul_add(weights, errors, transposedLayerInput);
-	d_update_bias(bias, errors);
+//	d_update_bias(bias, errors);
 }
 
 __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {
