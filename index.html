@@ -1,12 +1,18 @@
-<html>
+<!doctype html>
+<html lang="de">
 	<head>
+		<meta charset="utf-8">
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/league.css">
+		<link rel="stylesheet" href="css/theme/serif.css">
+		<!--Add support for earlier versions of Internet Explorer -->
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section data-background-image="https://www.extremetech.com/wp-content/uploads/2013/09/340.jpg">
+				<section>
 					<h1>MNIST-3LNN-CUDA</h1>
 					<h3>3-Layer Neural Network for MNIST Handwriting Recognition with CUDA</h3>
 					by Stefan B&uuml;ttner and Fabio Hellmann
@@ -15,28 +21,31 @@
 				<section>
 					<h2>Agenda</h2>
 					<ul>
-						<li>Einf&uuml;hrung</li>
+						<li><a href="#/section-introduction">Einf&uuml;hrung</a></li>
 						<ul>
 							<li>Neuronales Netzwerk</li>
 							<li>Aufgabe</li>
 						</ul>
-						<li>Realisierung</li>
+						<li><a href="#/section-realisation">Realisierung</a></li>
 						<ul>
 							<li>Sequentiell</li>
 							<li>Parallel</li>
 							<li>CUDA</li>
 							<li>Verteilt</li>
 						</ul>
-						<li>Performance</li>
-						<li>Fazit</li>
+						<li><a href="#/section-performance">Performance</a></li>
+						<li><a href="#/section-fazit">Fazit</a></li>
 					</ul>
 				</section>
 				
 				<section>
-					<h2>Einf&uuml;hrung</h2>
+					<section id="section-introduction">
+						<h2>Einf&uuml;hrung</h2>
+					</section>
 				
 					<section>
 						<h3>Neuronales Netzwerk</h3>
+						<q>"Neuronale Netze beziehen sich auf das Neuronennetz des menschlichen Gehirns. Dieses dient als Analogie und Inspiration für in Computern simulierte künstliche neuronale Netze. Diese Analogie steht bei heutigen Arbeiten zu neuronalen Netzen jedoch häufig nicht mehr im Vordergrund." - Neuronale Netze<br>(Günter Daniel Rey / Karl F. Wender)</q>
 					</section>
 				
 					<section>
@@ -49,29 +58,43 @@
 								<li>Parallelisierung</li>
 								<li>CUDA</li>
 							</ul>
+							<img width="500" src="http://cs231n.github.io/assets/nn1/neural_net.jpeg"></img>
 						</ul>
 					</section>
 				</section>
 				
 				<section>
-					<h2>Realisierung</h2>
+					<section id="section-realisation">
+						<h2>Realisierung</h2>
+					</section>
 				
-					<section>
+					<section id="fragments">
 						<h3>Sequentiell</h3>
 						<p>
 						<u><i>Grundlage:</i></u> "Simple 3-Layer Neural Network for MNIST Handwriting Recognition" - Matt Lind
 						</p>
+						<ul>
+							<li class="fragment">MNIST Datensatz
+							<ul>
+								<li>60.000 Trainingsdaten</li>
+								<li>10.000 Testdaten</li>
+							</ul> 
+							</li>
+							<li class="fragment">C -> C++</li>
+							<li class="fragment">Sequentiell -> Sequentiell / Parallel / CUDA / Verteilt</li>
+							<li class="fragment">C Struktur -> Objektorientierte / Abstrakte Struktur</li>
+						</ul>
 					</section>
 				
-					<section>
+					<section id="fragments">
 						<h3>Parallel</h3>
 						
-						<h4>Parallelization Strategien</h4>
+						<h4>Strategien zur Parallelisierung</h4>
 						<ul>
-							<li>Session</li>
-							<li><b>Exemplar</b></li>
-							<li>Node</li>
-							<li>Weight</li>
+							<li class="fragment">Session - Unabhängige Netzwerke mit unterschiedlichen Startwerten</li>
+							<li class="fragment">Exemplar - Trainingsdaten aufgesplittet in mehreren Netzwerken abarbeiten und anschließend zusammenführen</li>
+							<li class="fragment">Node - Die Neuronen werden von Threads bearbeitet</li>
+							<li class="fragment">Weight - Die Kanten, die Neuronen verbinden, werden von Threads bearbeitet</li>
 						</ul>
 					</section>
 				
@@ -81,12 +104,40 @@
 				
 					<section>
 						<h3>Verteilt</h3>
+						<img class="fragment" width="500" src="https://camo.githubusercontent.com/b2ee57be732166050fadc435d056437ebaa4a74a/687474703a2f2f656e67696e656572696e672e736b796d696e642e696f2f68756266732f454e5f426c6f675f506f73745f496d616765732f44697374726962757465645f446565705f4c6561726e696e672c5f506172745f315f416e5f496e74726f64756374696f6e5f746f5f44697374726962757465645f547261696e696e675f6f665f4e657572616c5f4e6574776f726b732f4d6f64656c44617461506172616c6c656c69736d2e7376673f743d31343938373530333539303432"></img>
+						<img class="fragment" width="500" src="https://camo.githubusercontent.com/d3e1907c53c626f750fc8fc7a8ffa3c3f2a5857d/687474703a2f2f656e67696e656572696e672e736b796d696e642e696f2f68756266732f454e5f426c6f675f506f73745f496d616765732f44697374726962757465645f446565705f4c6561726e696e672c5f506172745f315f416e5f496e74726f64756374696f6e5f746f5f44697374726962757465645f547261696e696e675f6f665f4e657572616c5f4e6574776f726b732f4d6f64656c416e6444617461506172616c6c656c69736d2e7376673f743d31343938373530333539303432"></img>
 					</section>
 				</section>
 				
-				<section>
+				<section id="section-performance">
 					<h2>Performance</h2>
+				</section>
 				
+				<section>
+					<section id="section-fazit">
+						<h2>Fazit</h2>
+					</section>
+				
+					<section>
+						<h3>Schlecht</h3>
+						<ul>
+							<li>Schwer zu debuggen</li>
+							<li>...</li>
+						</ul>
+					</section>
+				
+					<section>
+						<h3>Gut</h3>
+						<ul>
+							<li>Aktuelles spannendes Thema</li>
+							<li>Basic Implementierung eines Neuronalen Netzes</li>
+							<li>Gesteigertes Verständnis für Neuronale Netze</li>
+							<li>Intensive Auseinandersetzung mit C++/CUDA</li>
+						</ul>
+					</section>
+				</section>
+				
+				<section data-background="https://j.gifs.com/j2kYr4.gif">
 				</section>
 			</div>
 		</div>
@@ -179,7 +230,7 @@
 				viewDistance: 3,
 			
 				// Parallax background image
-				parallaxBackgroundImage: '', // e.g. "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'"
+				parallaxBackgroundImage: '', // https://www.extremetech.com/wp-content/uploads/2013/09/340.jpg', // e.g. "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'
 			
 				// Parallax background size
 				parallaxBackgroundSize: '', // CSS syntax, e.g. "2100px 900px"
@@ -187,8 +238,8 @@
 				// Number of pixels to move the parallax background per slide
 				// - Calculated automatically unless specified
 				// - Set to 0 to disable movement along an axis
-				parallaxBackgroundHorizontal: null,
-				parallaxBackgroundVertical: null,
+				//parallaxBackgroundHorizontal: null,
+				//parallaxBackgroundVertical: null,
 			
 				// The display mode that will be used to show slides
 				display: 'block'
