@@ -825,17 +825,19 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 	// The block caches are row major.
 	__shared__ float blockCacheError[MATRIX_SIZE_DIVISOR][MATRIX_SIZE_DIVISOR];
 
-	// Compute the target coordinates.
-	size_t const x = blockIdx.x * MATRIX_SIZE_DIVISOR + threadIdx.x;
-	size_t const y = blockIdx.y * MATRIX_SIZE_DIVISOR + threadIdx.y;
+	size_t const blockX = blockIdx.x * MATRIX_SIZE_DIVISOR;
+	size_t const blockY = blockIdx.y * MATRIX_SIZE_DIVISOR;
 
-	// If this thread has nothing to do, because it would access invalid memory, exit
-	if (y >= bias.rows || x >= bias.cols) {
+	if (blockX >= bias.cols || blockY >= bias.rows) {
 		return;
 	}
 
+	// Compute the target coordinates.
+	size_t const x = blockX + threadIdx.x;
+	size_t const y = blockY + threadIdx.y;
+
 	float threadValue = 0.0f;
-	unsigned int const numSubBlocks = error.cols / MATRIX_SIZE_DIVISOR;
+	unsigned int const numSubBlocks = (error.cols - 1) / MATRIX_SIZE_DIVISOR + 1;
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
 		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
@@ -854,6 +856,11 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 		}
 
 		__syncthreads();
+	}
+
+	// If this thread has nothing to do, because it would access invalid memory, exit
+	if (y >= bias.rows || x >= bias.cols) {
+		return;
 	}
 
 	*d_matrix_pget(bias, y, x) += threadValue;
