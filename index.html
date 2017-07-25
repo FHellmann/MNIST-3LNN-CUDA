@@ -111,6 +111,55 @@
 				
 				<section id="section-performance">
 					<h2>Performance</h2>
+					<table>
+						<thead>
+							<tr>
+								<th>Ausführungsart</th>
+								<th>>93%</th>
+								<th>>94%</th>
+								<th>>95%</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Sequentiell</td>
+								<td>9.01534</td>
+								<td>15.7818</td>
+								<td>33.7251</td>
+							</tr>
+							<tr>
+								<td>Parallel</td>
+								<td>8.92147</td>
+								<td>15.8313</td>
+								<td>23.4899</td>
+							</tr>
+							<tr>
+								<td>CUDA</td>
+								<td>...</td>
+								<td>...</td>
+								<td>...</td>
+							</tr>
+							<tr>
+								<td>Sequentiell-Verteilt*</td>
+								<td>2.04115</td>
+								<td>2.66057</td>
+								<td>2.85507</td>
+							</tr>
+							<tr>
+								<td>Parallel-Verteilt*</td>
+								<td>8.04285</td>
+								<td>9.80803</td>
+								<td>12.9221</td>
+							</tr>
+							<tr>
+								<td>CUDA-Verteilt*</td>
+								<td>...</td>
+								<td>...</td>
+								<td>...</td>
+							</tr>
+						</tbody>
+					</table>
+					<i>* Verteilt auf 10 Prozesse (1 Master / 9 Slaves)</i>
 				</section>
 				
 				<section>
