@@ -17,6 +17,7 @@ public:
 	};
 
 	MNISTDataset(std::string const& file);
+	MNISTDataset(std::vector<T> const& data);
 	virtual ~MNISTDataset();
 
 	/**

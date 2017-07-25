@@ -1,0 +1,606 @@
+$ mpirun -np 10 --hostfile n3027_hostfile trainer-Release/trainLindNet --mnist MNIST/ --trainingError 0.07 -d
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+MASTER: Send init data to slaves...FINISHED! (Time=0.0118304s)
+MASTER: Send training set to slaves...FINISHED! (Time=0.491294s)
+MASTER: # Start Training-LOOP #
+MASTER: Error: 30.318032%
+MASTER: Error: 36.333633%
+MASTER: Error: 35.193519%
+MASTER: Error: 34.053405%
+MASTER: Error: 35.088509%
+MASTER: Error: 34.593459%
+MASTER: Error: 32.343234%
+MASTER: Error: 35.703570%
+MASTER: Error: 34.893489%
+MASTER: Error: 34.280095%
+MASTER: Error: 13.906391%
+MASTER: Error: 11.581158%
+MASTER: Error: 12.931293%
+MASTER: Error: 9.960996%
+MASTER: Error: 12.391239%
+MASTER: Error: 13.156316%
+MASTER: Error: 13.306331%
+MASTER: Error: 13.186319%
+MASTER: Error: 12.841284%
+MASTER: Error: 12.584592%
+MASTER: Error: 7.605761%
+MASTER: Error: 10.861086%
+MASTER: Error: 8.610861%
+MASTER: Error: 10.081008%
+MASTER: Error: 9.420942%
+MASTER: Error: 9.885989%
+MASTER: Error: 10.111011%
+MASTER: Error: 10.081008%
+MASTER: Error: 10.411041%
+MASTER: Error: 9.674301%
+MASTER: Error: 6.240624%
+MASTER: Error: 9.180918%
+MASTER: Error: 7.095710%
+MASTER: Error: 8.835884%
+MASTER: Error: 7.935794%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.205821%
+MASTER: Error: 8.295830%
+MASTER: Error: 8.760876%
+MASTER: Error: 8.130813%
+MASTER: Error: 5.115512%
+MASTER: Error: 7.965797%
+MASTER: Error: 5.955596%
+MASTER: Error: 7.650765%
+MASTER: Error: 6.660666%
+MASTER: Error: 7.170717%
+MASTER: Error: 6.930693%
+MASTER: Error: 7.170717%
+MASTER: Error: 7.425743%
+MASTER: Error: 6.894023%
+Taining done in 2.01773s
+Taining done in 2.01909s
+Taining done in 2.01908s
+Taining done in 2.02329s
+Taining done in 2.01919s
+Taining done in 2.0244s
+Taining done in 2.01726s
+Taining done in 2.0193s
+Taining done in 2.0189s
+Taining done in 2.04115s
+
+
+$ mpirun -np 10 --hostfile n3027_hostfile trainer-Release/trainLindNet --mnist MNIST/ --trainingError 0.06 -d
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+MASTER: Send init data to slaves...FINISHED! (Time=0.0114433s)
+MASTER: Send training set to slaves...FINISHED! (Time=0.483261s)
+MASTER: # Start Training-LOOP #
+MASTER: Error: 30.318032%
+MASTER: Error: 36.333633%
+MASTER: Error: 32.343234%
+MASTER: Error: 34.893489%
+MASTER: Error: 35.088509%
+MASTER: Error: 35.193519%
+MASTER: Error: 34.053405%
+MASTER: Error: 35.703570%
+MASTER: Error: 34.593459%
+MASTER: Error: 34.280095%
+MASTER: Error: 9.960996%
+MASTER: Error: 13.906391%
+MASTER: Error: 11.581158%
+MASTER: Error: 12.931293%
+MASTER: Error: 12.391239%
+MASTER: Error: 12.841284%
+MASTER: Error: 13.156316%
+MASTER: Error: 13.186319%
+MASTER: Error: 13.306331%
+MASTER: Error: 12.584592%
+MASTER: Error: 7.605761%
+MASTER: Error: 10.861086%
+MASTER: Error: 8.610861%
+MASTER: Error: 10.081008%
+MASTER: Error: 10.411041%
+MASTER: Error: 9.420942%
+MASTER: Error: 10.081008%
+MASTER: Error: 10.111011%
+MASTER: Error: 9.885989%
+MASTER: Error: 9.674301%
+MASTER: Error: 6.240624%
+MASTER: Error: 9.180918%
+MASTER: Error: 8.295830%
+MASTER: Error: 7.935794%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.205821%
+MASTER: Error: 7.095710%
+MASTER: Error: 8.835884%
+MASTER: Error: 8.760876%
+MASTER: Error: 8.130813%
+MASTER: Error: 5.115512%
+MASTER: Error: 5.955596%
+MASTER: Error: 7.650765%
+MASTER: Error: 6.660666%
+MASTER: Error: 7.170717%
+MASTER: Error: 7.170717%
+MASTER: Error: 7.425743%
+MASTER: Error: 6.930693%
+MASTER: Error: 7.965797%
+MASTER: Error: 6.894023%
+MASTER: Error: 4.680468%
+MASTER: Error: 6.945695%
+MASTER: Error: 5.310531%
+MASTER: Error: 6.840684%
+MASTER: Error: 5.760576%
+MASTER: Error: 6.270627%
+MASTER: Error: 6.225623%
+MASTER: Error: 6.540654%
+MASTER: Error: 6.165617%
+MASTER: Error: 6.082275%
+MASTER: Error: 4.020402%
+MASTER: Error: 6.270627%
+MASTER: Error: 4.830483%
+MASTER: Error: 6.105611%
+MASTER: Error: 5.235524%
+MASTER: Error: 5.475548%
+MASTER: Error: 5.490549%
+MASTER: Error: 5.865587%
+MASTER: Error: 5.430543%
+MASTER: Error: 5.413875%
+Taining done in 2.6377s
+Taining done in 2.63716s
+Taining done in 2.63817s
+Taining done in 2.63717s
+Taining done in 2.63366s
+Taining done in 2.63853s
+Taining done in 2.63684s
+Taining done in 2.63799s
+Taining done in 2.63249s
+Taining done in 2.66057s
+
+
+$ mpirun -np 10 --hostfile n3027_hostfile trainer-Release/trainLindNet --mnist MNIST/ --trainingError 0.05 -d
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+Neural Network - Sequentiell
+# !!! Distributed !!! #
+MASTER: Send init data to slaves...FINISHED! (Time=0.0112936s)
+MASTER: Send training set to slaves...FINISHED! (Time=0.478675s)
+MASTER: # Start Training-LOOP #
+MASTER: Error: 30.318032%
+MASTER: Error: 36.333633%
+MASTER: Error: 34.893489%
+MASTER: Error: 32.343234%
+MASTER: Error: 35.193519%
+MASTER: Error: 34.053405%
+MASTER: Error: 35.703570%
+MASTER: Error: 35.088509%
+MASTER: Error: 34.593459%
+MASTER: Error: 34.280095%
+MASTER: Error: 13.906391%
+MASTER: Error: 9.960996%
+MASTER: Error: 11.581158%
+MASTER: Error: 12.931293%
+MASTER: Error: 12.391239%
+MASTER: Error: 13.156316%
+MASTER: Error: 13.186319%
+MASTER: Error: 13.306331%
+MASTER: Error: 12.841284%
+MASTER: Error: 12.584592%
+MASTER: Error: 7.605761%
+MASTER: Error: 10.861086%
+MASTER: Error: 8.610861%
+MASTER: Error: 10.081008%
+MASTER: Error: 9.885989%
+MASTER: Error: 9.420942%
+MASTER: Error: 10.411041%
+MASTER: Error: 10.111011%
+MASTER: Error: 10.081008%
+MASTER: Error: 9.674301%
+MASTER: Error: 6.240624%
+MASTER: Error: 9.180918%
+MASTER: Error: 8.835884%
+MASTER: Error: 7.095710%
+MASTER: Error: 7.935794%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.760876%
+MASTER: Error: 8.205821%
+MASTER: Error: 8.295830%
+MASTER: Error: 8.130813%
+MASTER: Error: 5.115512%
+MASTER: Error: 7.965797%
+MASTER: Error: 7.650765%
+MASTER: Error: 7.425743%
+MASTER: Error: 6.930693%
+MASTER: Error: 7.170717%
+MASTER: Error: 7.170717%
+MASTER: Error: 5.955596%
+MASTER: Error: 6.660666%
+MASTER: Error: 6.894023%
+MASTER: Error: 4.680468%
+MASTER: Error: 6.945695%
+MASTER: Error: 6.840684%
+MASTER: Error: 5.760576%
+MASTER: Error: 6.225623%
+MASTER: Error: 6.540654%
+MASTER: Error: 6.165617%
+MASTER: Error: 6.270627%
+MASTER: Error: 5.310531%
+MASTER: Error: 6.082275%
+MASTER: Error: 4.020402%
+MASTER: Error: 6.105611%
+MASTER: Error: 4.830483%
+MASTER: Error: 5.235524%
+MASTER: Error: 5.490549%
+MASTER: Error: 5.865587%
+MASTER: Error: 6.270627%
+MASTER: Error: 5.430543%
+MASTER: Error: 5.475548%
+MASTER: Error: 5.413875%
+MASTER: Error: 3.855386%
+MASTER: Error: 5.745575%
+MASTER: Error: 5.505551%
+MASTER: Error: 4.410441%
+MASTER: Error: 4.755476%
+MASTER: Error: 5.100510%
+MASTER: Error: 5.250525%
+MASTER: Error: 5.055506%
+MASTER: Error: 5.055506%
+MASTER: Error: 4.970497%
+Taining done in 2.86565s
+Taining done in 2.8655s
+Taining done in 2.85525s
+Taining done in 2.86556s
+Taining done in 2.86583s
+Taining done in 2.85652s
+Taining done in 2.86384s
+Taining done in 2.8637s
+Taining done in 2.85507s
+Taining done in 2.8785s

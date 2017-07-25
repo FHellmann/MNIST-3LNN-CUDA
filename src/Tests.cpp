@@ -7,16 +7,15 @@
 #include "NeuralNetworkParallel.h"
 #include <iostream>
 
-bool ensureDeepCopy(NeuralNetworkParallel const& A, NeuralNetworkParallel const& B)
-{
+bool ensureDeepCopy(NeuralNetworkParallel const& A,
+		NeuralNetworkParallel const& B) {
 	if (A.learningRate != B.learningRate)
 		return false;
 
 	if (A.layers.size() != B.layers.size())
 		return false;
 
-	for (size_t i = 0; i < A.layers.size(); ++i)
-	{
+	for (size_t i = 0; i < A.layers.size(); ++i) {
 		NeuralNetworkParallel::Layer* layerA = A.layers[i];
 		NeuralNetworkParallel::Layer* layerB = B.layers[i];
 		if (layerA == layerB)
@@ -29,10 +28,8 @@ bool ensureDeepCopy(NeuralNetworkParallel const& A, NeuralNetworkParallel const&
 		if (layerA->previousLayer == layerB->previousLayer)
 			return false;
 
-		for (size_t j = 0; j < A.layers.size(); ++j)
-		{
-			if (A.layers[j] == layerA->previousLayer)
-			{
+		for (size_t j = 0; j < A.layers.size(); ++j) {
+			if (A.layers[j] == layerA->previousLayer) {
 				if (B.layers[j] != layerB->previousLayer)
 					return false;
 			}
@@ -41,8 +38,7 @@ bool ensureDeepCopy(NeuralNetworkParallel const& A, NeuralNetworkParallel const&
 		if (layerA->nodes.size() != layerB->nodes.size())
 			return false;
 
-		for (size_t j = 0; j < layerA->nodes.size(); ++j)
-		{
+		for (size_t j = 0; j < layerA->nodes.size(); ++j) {
 			NeuralNetworkParallel::Layer::Node* nodeA = layerA->nodes[j];
 			NeuralNetworkParallel::Layer::Node* nodeB = layerB->nodes[j];
 
@@ -55,8 +51,7 @@ bool ensureDeepCopy(NeuralNetworkParallel const& A, NeuralNetworkParallel const&
 			if (nodeA->weights.size() != nodeB->weights.size())
 				return false;
 
-			for (size_t k = 0; k < nodeA->weights.size(); ++k)
-			{
+			for (size_t k = 0; k < nodeA->weights.size(); ++k) {
 				if (nodeA->weights[k] != nodeB->weights[k])
 					return false;
 			}
@@ -66,16 +61,14 @@ bool ensureDeepCopy(NeuralNetworkParallel const& A, NeuralNetworkParallel const&
 	return true;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 	NeuralNetworkParallel A(4, 2, 17, 0.2);
 	NeuralNetworkParallel B(A);
 
-	if (ensureDeepCopy(A, B) == false)
-	{
+	if (ensureDeepCopy(A, B) == false) {
 		std::cerr << "B is not a deep copy of A!" << std::endl;
-		exit (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 
-	exit (EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }

@@ -1,0 +1,1416 @@
+$ mpirun -np 10 --hostfile n3027_hostfile trainer-Release/trainLindNet --mnist MNIST/ --networkType parallel --trainingError 0.07 -d
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+MASTER: Send init data to slaves...FINISHED! (Time=0.0114804s)
+MASTER: Send training set to slaves...FINISHED! (Time=0.484772s)
+MASTER: # Start Training-LOOP #
+MASTER: Error: 79.612961%
+MASTER: Error: 82.418242%
+MASTER: Error: 81.488149%
+MASTER: Error: 82.178218%
+MASTER: Error: 81.128113%
+MASTER: Error: 82.043204%
+MASTER: Error: 82.268227%
+MASTER: Error: 82.613261%
+MASTER: Error: 81.458146%
+MASTER: Error: 81.689836%
+MASTER: Error: 48.784878%
+MASTER: Error: 55.850585%
+MASTER: Error: 55.325533%
+MASTER: Error: 51.785179%
+MASTER: Error: 57.485749%
+MASTER: Error: 55.415542%
+MASTER: Error: 59.615962%
+MASTER: Error: 57.650765%
+MASTER: Error: 57.440744%
+MASTER: Error: 55.483882%
+MASTER: Error: 29.237924%
+MASTER: Error: 36.303630%
+MASTER: Error: 36.858686%
+MASTER: Error: 34.878488%
+MASTER: Error: 38.283828%
+MASTER: Error: 37.578758%
+MASTER: Error: 37.638764%
+MASTER: Error: 39.933993%
+MASTER: Error: 37.458746%
+MASTER: Error: 36.463646%
+MASTER: Error: 20.477048%
+MASTER: Error: 27.287729%
+MASTER: Error: 24.317432%
+MASTER: Error: 27.152715%
+MASTER: Error: 26.717672%
+MASTER: Error: 27.227723%
+MASTER: Error: 28.007801%
+MASTER: Error: 26.717672%
+MASTER: Error: 26.807681%
+MASTER: Error: 26.079275%
+MASTER: Error: 21.527153%
+MASTER: Error: 15.796580%
+MASTER: Error: 20.372037%
+MASTER: Error: 18.466847%
+MASTER: Error: 21.392139%
+MASTER: Error: 21.137114%
+MASTER: Error: 21.587159%
+MASTER: Error: 20.657066%
+MASTER: Error: 21.797180%
+MASTER: Error: 20.303697%
+MASTER: Error: 13.411341%
+MASTER: Error: 18.211821%
+MASTER: Error: 15.346535%
+MASTER: Error: 17.221722%
+MASTER: Error: 17.881788%
+MASTER: Error: 18.271827%
+MASTER: Error: 17.611761%
+MASTER: Error: 18.211821%
+MASTER: Error: 18.046805%
+MASTER: Error: 17.135047%
+MASTER: Error: 11.836184%
+MASTER: Error: 16.081608%
+MASTER: Error: 13.381338%
+MASTER: Error: 15.061506%
+MASTER: Error: 16.111611%
+MASTER: Error: 15.016502%
+MASTER: Error: 16.216622%
+MASTER: Error: 16.006601%
+MASTER: Error: 16.051605%
+MASTER: Error: 15.084842%
+MASTER: Error: 10.876088%
+MASTER: Error: 14.671467%
+MASTER: Error: 14.416442%
+MASTER: Error: 12.181218%
+MASTER: Error: 13.816382%
+MASTER: Error: 14.416442%
+MASTER: Error: 14.506451%
+MASTER: Error: 14.251425%
+MASTER: Error: 13.846385%
+MASTER: Error: 13.664700%
+MASTER: Error: 13.606361%
+MASTER: Error: 10.141014%
+MASTER: Error: 13.351335%
+MASTER: Error: 11.371137%
+MASTER: Error: 12.796280%
+MASTER: Error: 13.231323%
+MASTER: Error: 13.456346%
+MASTER: Error: 12.811281%
+MASTER: Error: 13.306331%
+MASTER: Error: 12.674601%
+MASTER: Error: 12.916292%
+MASTER: Error: 9.360936%
+MASTER: Error: 12.556256%
+MASTER: Error: 10.606061%
+MASTER: Error: 12.196220%
+MASTER: Error: 12.661266%
+MASTER: Error: 12.661266%
+MASTER: Error: 12.646265%
+MASTER: Error: 11.836184%
+MASTER: Error: 11.937860%
+MASTER: Error: 8.925893%
+MASTER: Error: 12.181218%
+MASTER: Error: 12.031203%
+MASTER: Error: 9.990999%
+MASTER: Error: 11.866187%
+MASTER: Error: 11.641164%
+MASTER: Error: 12.001200%
+MASTER: Error: 11.821182%
+MASTER: Error: 10.996100%
+MASTER: Error: 11.272794%
+MASTER: Error: 8.415842%
+MASTER: Error: 11.626163%
+MASTER: Error: 9.465947%
+MASTER: Error: 11.536154%
+MASTER: Error: 11.101110%
+MASTER: Error: 11.491149%
+MASTER: Error: 10.531053%
+MASTER: Error: 11.191119%
+MASTER: Error: 11.341134%
+MASTER: Error: 10.744408%
+MASTER: Error: 8.025803%
+MASTER: Error: 10.996100%
+MASTER: Error: 10.606061%
+MASTER: Error: 8.955896%
+MASTER: Error: 11.071107%
+MASTER: Error: 11.011101%
+MASTER: Error: 11.041104%
+MASTER: Error: 9.810981%
+MASTER: Error: 10.711071%
+MASTER: Error: 10.247691%
+MASTER: Error: 7.770777%
+MASTER: Error: 10.681068%
+MASTER: Error: 10.276028%
+MASTER: Error: 8.655866%
+MASTER: Error: 10.501050%
+MASTER: Error: 10.606061%
+MASTER: Error: 9.300930%
+MASTER: Error: 10.636064%
+MASTER: Error: 10.051005%
+MASTER: Error: 9.830983%
+MASTER: Error: 7.530753%
+MASTER: Error: 10.186019%
+MASTER: Error: 9.780978%
+MASTER: Error: 8.280828%
+MASTER: Error: 10.021002%
+MASTER: Error: 9.765977%
+MASTER: Error: 10.171017%
+MASTER: Error: 9.060906%
+MASTER: Error: 10.246025%
+MASTER: Error: 9.449278%
+MASTER: Error: 9.855986%
+MASTER: Error: 7.275728%
+MASTER: Error: 9.525953%
+MASTER: Error: 7.995800%
+MASTER: Error: 9.705971%
+MASTER: Error: 8.745875%
+MASTER: Error: 9.870987%
+MASTER: Error: 9.240924%
+MASTER: Error: 9.795980%
+MASTER: Error: 9.112578%
+MASTER: Error: 9.465947%
+MASTER: Error: 7.020702%
+MASTER: Error: 9.555956%
+MASTER: Error: 9.195920%
+MASTER: Error: 7.815782%
+MASTER: Error: 8.505851%
+MASTER: Error: 9.435944%
+MASTER: Error: 8.910891%
+MASTER: Error: 9.465947%
+MASTER: Error: 8.819215%
+MASTER: Error: 9.165917%
+MASTER: Error: 6.855686%
+MASTER: Error: 8.955896%
+MASTER: Error: 9.240924%
+MASTER: Error: 7.515752%
+MASTER: Error: 8.265827%
+MASTER: Error: 8.730873%
+MASTER: Error: 9.195920%
+MASTER: Error: 9.195920%
+MASTER: Error: 8.569190%
+MASTER: Error: 6.555656%
+MASTER: Error: 8.850885%
+MASTER: Error: 9.105911%
+MASTER: Error: 7.350735%
+MASTER: Error: 8.745875%
+MASTER: Error: 7.980798%
+MASTER: Error: 8.880888%
+MASTER: Error: 8.940894%
+MASTER: Error: 8.415842%
+MASTER: Error: 8.314165%
+MASTER: Error: 8.580858%
+MASTER: Error: 6.375638%
+MASTER: Error: 7.080708%
+MASTER: Error: 8.790879%
+MASTER: Error: 8.445845%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.235824%
+MASTER: Error: 7.815782%
+MASTER: Error: 8.064140%
+MASTER: Error: 6.105611%
+MASTER: Error: 8.370837%
+MASTER: Error: 6.855686%
+MASTER: Error: 8.160816%
+MASTER: Error: 8.610861%
+MASTER: Error: 7.980798%
+MASTER: Error: 8.415842%
+MASTER: Error: 8.295830%
+MASTER: Error: 7.680768%
+MASTER: Error: 7.830783%
+MASTER: Error: 8.130813%
+MASTER: Error: 5.925593%
+MASTER: Error: 6.645665%
+MASTER: Error: 8.535854%
+MASTER: Error: 8.025803%
+MASTER: Error: 7.815782%
+MASTER: Error: 8.055806%
+MASTER: Error: 7.335734%
+MASTER: Error: 7.815782%
+MASTER: Error: 7.587425%
+MASTER: Error: 7.875788%
+MASTER: Error: 5.880588%
+MASTER: Error: 8.400840%
+MASTER: Error: 6.585659%
+MASTER: Error: 7.485749%
+MASTER: Error: 7.710771%
+MASTER: Error: 7.155716%
+MASTER: Error: 7.575758%
+MASTER: Error: 7.800780%
+MASTER: Error: 7.385739%
+MASTER: Error: 5.700570%
+MASTER: Error: 7.725773%
+MASTER: Error: 8.115812%
+MASTER: Error: 7.320732%
+MASTER: Error: 6.375638%
+MASTER: Error: 7.590759%
+MASTER: Error: 7.365737%
+MASTER: Error: 7.530753%
+MASTER: Error: 6.930693%
+MASTER: Error: 7.184052%
+MASTER: Error: 5.565557%
+MASTER: Error: 7.590759%
+MASTER: Error: 7.920792%
+MASTER: Error: 7.155716%
+MASTER: Error: 6.240624%
+MASTER: Error: 6.705671%
+MASTER: Error: 7.290729%
+MASTER: Error: 7.380738%
+MASTER: Error: 7.230723%
+MASTER: Error: 7.009034%
+MASTER: Error: 5.415542%
+MASTER: Error: 7.455746%
+MASTER: Error: 6.090609%
+MASTER: Error: 7.785779%
+MASTER: Error: 7.035704%
+MASTER: Error: 7.125713%
+MASTER: Error: 6.615662%
+MASTER: Error: 7.215722%
+MASTER: Error: 7.050705%
+MASTER: Error: 6.865687%
+Taining done in 8.03164s
+Taining done in 8.03367s
+Taining done in 8.03941s
+Taining done in 8.04962s
+Taining done in 8.03167s
+Taining done in 8.04261s
+Taining done in 8.04177s
+Taining done in 8.05198s
+Taining done in 8.04285s
+Taining done in 8.06818s
+
+
+$ mpirun -np 10 --hostfile n3027_hostfile trainer-Release/trainLindNet --mnist MNIST/ --networkType parallel --trainingError 0.06 -d
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+MASTER: Send init data to slaves...FINISHED! (Time=0.012081s)
+MASTER: Send training set to slaves...FINISHED! (Time=0.53407s)
+MASTER: # Start Training-LOOP #
+MASTER: Error: 82.418242%
+MASTER: Error: 79.612961%
+MASTER: Error: 81.488149%
+MASTER: Error: 81.128113%
+MASTER: Error: 82.178218%
+MASTER: Error: 81.458146%
+MASTER: Error: 82.043204%
+MASTER: Error: 82.268227%
+MASTER: Error: 82.613261%
+MASTER: Error: 81.689836%
+MASTER: Error: 48.784878%
+MASTER: Error: 55.850585%
+MASTER: Error: 55.325533%
+MASTER: Error: 51.785179%
+MASTER: Error: 57.485749%
+MASTER: Error: 59.615962%
+MASTER: Error: 55.415542%
+MASTER: Error: 57.650765%
+MASTER: Error: 57.440744%
+MASTER: Error: 55.483882%
+MASTER: Error: 29.237924%
+MASTER: Error: 36.303630%
+MASTER: Error: 36.858686%
+MASTER: Error: 34.878488%
+MASTER: Error: 38.283828%
+MASTER: Error: 39.933993%
+MASTER: Error: 37.578758%
+MASTER: Error: 37.458746%
+MASTER: Error: 37.638764%
+MASTER: Error: 36.463646%
+MASTER: Error: 20.477048%
+MASTER: Error: 27.287729%
+MASTER: Error: 26.717672%
+MASTER: Error: 24.317432%
+MASTER: Error: 27.152715%
+MASTER: Error: 28.007801%
+MASTER: Error: 26.807681%
+MASTER: Error: 27.227723%
+MASTER: Error: 26.717672%
+MASTER: Error: 26.079275%
+MASTER: Error: 15.796580%
+MASTER: Error: 21.527153%
+MASTER: Error: 18.466847%
+MASTER: Error: 20.372037%
+MASTER: Error: 21.392139%
+MASTER: Error: 20.657066%
+MASTER: Error: 21.587159%
+MASTER: Error: 21.797180%
+MASTER: Error: 21.137114%
+MASTER: Error: 20.303697%
+MASTER: Error: 18.211821%
+MASTER: Error: 13.411341%
+MASTER: Error: 17.881788%
+MASTER: Error: 15.346535%
+MASTER: Error: 17.221722%
+MASTER: Error: 18.211821%
+MASTER: Error: 18.046805%
+MASTER: Error: 18.271827%
+MASTER: Error: 17.611761%
+MASTER: Error: 17.135047%
+MASTER: Error: 16.081608%
+MASTER: Error: 11.836184%
+MASTER: Error: 13.381338%
+MASTER: Error: 15.061506%
+MASTER: Error: 16.111611%
+MASTER: Error: 15.016502%
+MASTER: Error: 16.006601%
+MASTER: Error: 16.051605%
+MASTER: Error: 16.216622%
+MASTER: Error: 15.084842%
+MASTER: Error: 10.876088%
+MASTER: Error: 14.671467%
+MASTER: Error: 12.181218%
+MASTER: Error: 14.416442%
+MASTER: Error: 13.816382%
+MASTER: Error: 14.416442%
+MASTER: Error: 14.506451%
+MASTER: Error: 14.251425%
+MASTER: Error: 13.846385%
+MASTER: Error: 13.664700%
+MASTER: Error: 10.141014%
+MASTER: Error: 13.606361%
+MASTER: Error: 12.796280%
+MASTER: Error: 11.371137%
+MASTER: Error: 13.351335%
+MASTER: Error: 13.306331%
+MASTER: Error: 13.456346%
+MASTER: Error: 12.811281%
+MASTER: Error: 13.231323%
+MASTER: Error: 12.674601%
+MASTER: Error: 9.360936%
+MASTER: Error: 12.916292%
+MASTER: Error: 10.606061%
+MASTER: Error: 12.196220%
+MASTER: Error: 12.646265%
+MASTER: Error: 12.556256%
+MASTER: Error: 12.661266%
+MASTER: Error: 12.661266%
+MASTER: Error: 11.836184%
+MASTER: Error: 11.937860%
+MASTER: Error: 8.925893%
+MASTER: Error: 12.181218%
+MASTER: Error: 12.031203%
+MASTER: Error: 9.990999%
+MASTER: Error: 11.641164%
+MASTER: Error: 11.866187%
+MASTER: Error: 12.001200%
+MASTER: Error: 11.821182%
+MASTER: Error: 10.996100%
+MASTER: Error: 11.272794%
+MASTER: Error: 8.415842%
+MASTER: Error: 11.626163%
+MASTER: Error: 11.536154%
+MASTER: Error: 9.465947%
+MASTER: Error: 11.101110%
+MASTER: Error: 11.341134%
+MASTER: Error: 11.491149%
+MASTER: Error: 10.531053%
+MASTER: Error: 11.191119%
+MASTER: Error: 10.744408%
+MASTER: Error: 10.996100%
+MASTER: Error: 8.025803%
+MASTER: Error: 8.955896%
+MASTER: Error: 11.071107%
+MASTER: Error: 10.606061%
+MASTER: Error: 10.711071%
+MASTER: Error: 11.041104%
+MASTER: Error: 9.810981%
+MASTER: Error: 11.011101%
+MASTER: Error: 10.247691%
+MASTER: Error: 10.681068%
+MASTER: Error: 7.770777%
+MASTER: Error: 10.501050%
+MASTER: Error: 10.276028%
+MASTER: Error: 8.655866%
+MASTER: Error: 9.300930%
+MASTER: Error: 10.636064%
+MASTER: Error: 10.606061%
+MASTER: Error: 10.051005%
+MASTER: Error: 9.830983%
+MASTER: Error: 7.530753%
+MASTER: Error: 10.186019%
+MASTER: Error: 10.021002%
+MASTER: Error: 8.280828%
+MASTER: Error: 9.780978%
+MASTER: Error: 9.765977%
+MASTER: Error: 9.060906%
+MASTER: Error: 10.246025%
+MASTER: Error: 10.171017%
+MASTER: Error: 9.449278%
+MASTER: Error: 9.855986%
+MASTER: Error: 7.275728%
+MASTER: Error: 7.995800%
+MASTER: Error: 9.705971%
+MASTER: Error: 9.525953%
+MASTER: Error: 9.870987%
+MASTER: Error: 8.745875%
+MASTER: Error: 9.240924%
+MASTER: Error: 9.795980%
+MASTER: Error: 9.112578%
+MASTER: Error: 7.020702%
+MASTER: Error: 9.465947%
+MASTER: Error: 9.555956%
+MASTER: Error: 9.195920%
+MASTER: Error: 7.815782%
+MASTER: Error: 8.505851%
+MASTER: Error: 9.465947%
+MASTER: Error: 9.435944%
+MASTER: Error: 8.910891%
+MASTER: Error: 8.819215%
+MASTER: Error: 6.855686%
+MASTER: Error: 9.165917%
+MASTER: Error: 9.240924%
+MASTER: Error: 8.955896%
+MASTER: Error: 7.515752%
+MASTER: Error: 9.195920%
+MASTER: Error: 9.195920%
+MASTER: Error: 8.730873%
+MASTER: Error: 8.265827%
+MASTER: Error: 8.569190%
+MASTER: Error: 6.555656%
+MASTER: Error: 8.850885%
+MASTER: Error: 9.105911%
+MASTER: Error: 7.350735%
+MASTER: Error: 8.745875%
+MASTER: Error: 8.880888%
+MASTER: Error: 8.940894%
+MASTER: Error: 7.980798%
+MASTER: Error: 8.415842%
+MASTER: Error: 8.314165%
+MASTER: Error: 6.375638%
+MASTER: Error: 8.580858%
+MASTER: Error: 8.790879%
+MASTER: Error: 7.080708%
+MASTER: Error: 8.445845%
+MASTER: Error: 7.815782%
+MASTER: Error: 8.235824%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.064140%
+MASTER: Error: 6.105611%
+MASTER: Error: 8.370837%
+MASTER: Error: 8.610861%
+MASTER: Error: 8.160816%
+MASTER: Error: 6.855686%
+MASTER: Error: 8.295830%
+MASTER: Error: 8.415842%
+MASTER: Error: 7.980798%
+MASTER: Error: 7.680768%
+MASTER: Error: 7.830783%
+MASTER: Error: 5.925593%
+MASTER: Error: 8.130813%
+MASTER: Error: 6.645665%
+MASTER: Error: 8.535854%
+MASTER: Error: 7.815782%
+MASTER: Error: 7.335734%
+MASTER: Error: 8.025803%
+MASTER: Error: 8.055806%
+MASTER: Error: 7.815782%
+MASTER: Error: 7.587425%
+MASTER: Error: 5.880588%
+MASTER: Error: 7.875788%
+MASTER: Error: 7.485749%
+MASTER: Error: 8.400840%
+MASTER: Error: 6.585659%
+MASTER: Error: 7.710771%
+MASTER: Error: 7.155716%
+MASTER: Error: 7.575758%
+MASTER: Error: 7.800780%
+MASTER: Error: 7.385739%
+MASTER: Error: 7.725773%
+MASTER: Error: 5.700570%
+MASTER: Error: 7.320732%
+MASTER: Error: 6.375638%
+MASTER: Error: 8.115812%
+MASTER: Error: 7.590759%
+MASTER: Error: 7.530753%
+MASTER: Error: 7.365737%
+MASTER: Error: 6.930693%
+MASTER: Error: 7.184052%
+MASTER: Error: 5.565557%
+MASTER: Error: 7.590759%
+MASTER: Error: 7.920792%
+MASTER: Error: 6.240624%
+MASTER: Error: 7.155716%
+MASTER: Error: 7.290729%
+MASTER: Error: 6.705671%
+MASTER: Error: 7.230723%
+MASTER: Error: 7.380738%
+MASTER: Error: 7.009034%
+MASTER: Error: 5.415542%
+MASTER: Error: 7.455746%
+MASTER: Error: 7.785779%
+MASTER: Error: 6.090609%
+MASTER: Error: 7.035704%
+MASTER: Error: 7.050705%
+MASTER: Error: 7.215722%
+MASTER: Error: 6.615662%
+MASTER: Error: 7.125713%
+MASTER: Error: 6.865687%
+MASTER: Error: 7.260726%
+MASTER: Error: 5.325533%
+MASTER: Error: 5.925593%
+MASTER: Error: 7.635764%
+MASTER: Error: 6.885689%
+MASTER: Error: 6.885689%
+MASTER: Error: 6.450645%
+MASTER: Error: 6.960696%
+MASTER: Error: 7.035704%
+MASTER: Error: 6.707337%
+MASTER: Error: 5.250525%
+MASTER: Error: 7.050705%
+MASTER: Error: 6.675668%
+MASTER: Error: 7.410741%
+MASTER: Error: 5.700570%
+MASTER: Error: 6.765677%
+MASTER: Error: 6.150615%
+MASTER: Error: 6.885689%
+MASTER: Error: 6.750675%
+MASTER: Error: 6.515652%
+MASTER: Error: 5.070507%
+MASTER: Error: 6.930693%
+MASTER: Error: 7.290729%
+MASTER: Error: 5.670567%
+MASTER: Error: 6.390639%
+MASTER: Error: 6.795680%
+MASTER: Error: 6.675668%
+MASTER: Error: 6.630663%
+MASTER: Error: 5.970597%
+MASTER: Error: 6.380638%
+MASTER: Error: 5.025503%
+MASTER: Error: 6.735674%
+MASTER: Error: 5.490549%
+MASTER: Error: 6.285629%
+MASTER: Error: 7.170717%
+MASTER: Error: 5.820582%
+MASTER: Error: 6.495650%
+MASTER: Error: 6.510651%
+MASTER: Error: 6.660666%
+MASTER: Error: 6.243958%
+MASTER: Error: 6.525653%
+MASTER: Error: 4.830483%
+MASTER: Error: 6.960696%
+MASTER: Error: 5.310531%
+MASTER: Error: 6.165617%
+MASTER: Error: 6.390639%
+MASTER: Error: 5.790579%
+MASTER: Error: 6.465647%
+MASTER: Error: 6.360636%
+MASTER: Error: 6.088942%
+MASTER: Error: 6.435644%
+MASTER: Error: 4.785479%
+MASTER: Error: 5.220522%
+MASTER: Error: 6.840684%
+MASTER: Error: 5.700570%
+MASTER: Error: 6.015602%
+MASTER: Error: 6.255626%
+MASTER: Error: 6.345635%
+MASTER: Error: 6.225623%
+MASTER: Error: 5.980598%
+Taining done in 9.80098s
+Taining done in 9.79831s
+Taining done in 9.7981s
+Taining done in 9.79646s
+Taining done in 9.80157s
+Taining done in 9.80195s
+Taining done in 9.80803s
+Taining done in 9.8071s
+Taining done in 9.80201s
+Taining done in 9.82549s
+
+
+$ mpirun -np 10 --hostfile n3027_hostfile trainer-Release/trainLindNet --mnist MNIST/ --networkType parallel --trainingError 0.05 -d
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+Neural Network - Parallel
+# !!! Distributed !!! #
+MASTER: Send init data to slaves...FINISHED! (Time=0.0119082s)
+MASTER: Send training set to slaves...FINISHED! (Time=0.534614s)
+MASTER: # Start Training-LOOP #
+MASTER: Error: 79.612961%
+MASTER: Error: 82.418242%
+MASTER: Error: 81.488149%
+MASTER: Error: 81.128113%
+MASTER: Error: 81.458146%
+MASTER: Error: 82.178218%
+MASTER: Error: 82.043204%
+MASTER: Error: 82.268227%
+MASTER: Error: 82.613261%
+MASTER: Error: 81.689836%
+MASTER: Error: 48.784878%
+MASTER: Error: 55.850585%
+MASTER: Error: 55.325533%
+MASTER: Error: 51.785179%
+MASTER: Error: 57.485749%
+MASTER: Error: 57.650765%
+MASTER: Error: 59.615962%
+MASTER: Error: 55.415542%
+MASTER: Error: 57.440744%
+MASTER: Error: 55.483882%
+MASTER: Error: 29.237924%
+MASTER: Error: 36.303630%
+MASTER: Error: 38.283828%
+MASTER: Error: 34.878488%
+MASTER: Error: 36.858686%
+MASTER: Error: 37.458746%
+MASTER: Error: 37.578758%
+MASTER: Error: 37.638764%
+MASTER: Error: 39.933993%
+MASTER: Error: 36.463646%
+MASTER: Error: 27.287729%
+MASTER: Error: 20.477048%
+MASTER: Error: 24.317432%
+MASTER: Error: 26.717672%
+MASTER: Error: 27.152715%
+MASTER: Error: 26.717672%
+MASTER: Error: 27.227723%
+MASTER: Error: 28.007801%
+MASTER: Error: 26.807681%
+MASTER: Error: 26.079275%
+MASTER: Error: 21.527153%
+MASTER: Error: 15.796580%
+MASTER: Error: 18.466847%
+MASTER: Error: 20.372037%
+MASTER: Error: 21.392139%
+MASTER: Error: 21.587159%
+MASTER: Error: 21.137114%
+MASTER: Error: 20.657066%
+MASTER: Error: 21.797180%
+MASTER: Error: 20.303697%
+MASTER: Error: 13.411341%
+MASTER: Error: 18.211821%
+MASTER: Error: 15.346535%
+MASTER: Error: 17.221722%
+MASTER: Error: 17.881788%
+MASTER: Error: 18.211821%
+MASTER: Error: 17.611761%
+MASTER: Error: 18.046805%
+MASTER: Error: 18.271827%
+MASTER: Error: 17.135047%
+MASTER: Error: 11.836184%
+MASTER: Error: 16.081608%
+MASTER: Error: 15.061506%
+MASTER: Error: 13.381338%
+MASTER: Error: 16.111611%
+MASTER: Error: 16.051605%
+MASTER: Error: 16.216622%
+MASTER: Error: 15.016502%
+MASTER: Error: 16.006601%
+MASTER: Error: 15.084842%
+MASTER: Error: 10.876088%
+MASTER: Error: 14.671467%
+MASTER: Error: 14.416442%
+MASTER: Error: 13.816382%
+MASTER: Error: 12.181218%
+MASTER: Error: 13.846385%
+MASTER: Error: 14.416442%
+MASTER: Error: 14.251425%
+MASTER: Error: 14.506451%
+MASTER: Error: 13.664700%
+MASTER: Error: 10.141014%
+MASTER: Error: 13.606361%
+MASTER: Error: 13.351335%
+MASTER: Error: 11.371137%
+MASTER: Error: 12.796280%
+MASTER: Error: 12.811281%
+MASTER: Error: 13.306331%
+MASTER: Error: 13.231323%
+MASTER: Error: 13.456346%
+MASTER: Error: 12.674601%
+MASTER: Error: 12.916292%
+MASTER: Error: 9.360936%
+MASTER: Error: 12.556256%
+MASTER: Error: 12.196220%
+MASTER: Error: 10.606061%
+MASTER: Error: 11.836184%
+MASTER: Error: 12.646265%
+MASTER: Error: 12.661266%
+MASTER: Error: 12.661266%
+MASTER: Error: 11.937860%
+MASTER: Error: 8.925893%
+MASTER: Error: 12.181218%
+MASTER: Error: 11.641164%
+MASTER: Error: 12.031203%
+MASTER: Error: 9.990999%
+MASTER: Error: 10.996100%
+MASTER: Error: 12.001200%
+MASTER: Error: 11.866187%
+MASTER: Error: 11.821182%
+MASTER: Error: 11.272794%
+MASTER: Error: 8.415842%
+MASTER: Error: 11.626163%
+MASTER: Error: 11.101110%
+MASTER: Error: 9.465947%
+MASTER: Error: 11.536154%
+MASTER: Error: 11.191119%
+MASTER: Error: 10.531053%
+MASTER: Error: 11.341134%
+MASTER: Error: 11.491149%
+MASTER: Error: 10.744408%
+MASTER: Error: 8.025803%
+MASTER: Error: 10.996100%
+MASTER: Error: 11.071107%
+MASTER: Error: 10.606061%
+MASTER: Error: 8.955896%
+MASTER: Error: 10.711071%
+MASTER: Error: 11.011101%
+MASTER: Error: 9.810981%
+MASTER: Error: 11.041104%
+MASTER: Error: 10.247691%
+MASTER: Error: 7.770777%
+MASTER: Error: 10.681068%
+MASTER: Error: 10.501050%
+MASTER: Error: 8.655866%
+MASTER: Error: 10.276028%
+MASTER: Error: 10.636064%
+MASTER: Error: 9.300930%
+MASTER: Error: 10.606061%
+MASTER: Error: 10.051005%
+MASTER: Error: 9.830983%
+MASTER: Error: 10.186019%
+MASTER: Error: 7.530753%
+MASTER: Error: 10.021002%
+MASTER: Error: 9.780978%
+MASTER: Error: 8.280828%
+MASTER: Error: 9.765977%
+MASTER: Error: 10.171017%
+MASTER: Error: 10.246025%
+MASTER: Error: 9.060906%
+MASTER: Error: 9.449278%
+MASTER: Error: 7.275728%
+MASTER: Error: 9.855986%
+MASTER: Error: 7.995800%
+MASTER: Error: 9.705971%
+MASTER: Error: 9.525953%
+MASTER: Error: 9.240924%
+MASTER: Error: 8.745875%
+MASTER: Error: 9.870987%
+MASTER: Error: 9.795980%
+MASTER: Error: 9.112578%
+MASTER: Error: 9.465947%
+MASTER: Error: 7.020702%
+MASTER: Error: 9.195920%
+MASTER: Error: 9.555956%
+MASTER: Error: 7.815782%
+MASTER: Error: 9.435944%
+MASTER: Error: 9.465947%
+MASTER: Error: 8.910891%
+MASTER: Error: 8.505851%
+MASTER: Error: 8.819215%
+MASTER: Error: 9.165917%
+MASTER: Error: 6.855686%
+MASTER: Error: 8.955896%
+MASTER: Error: 7.515752%
+MASTER: Error: 8.730873%
+MASTER: Error: 9.240924%
+MASTER: Error: 8.265827%
+MASTER: Error: 9.195920%
+MASTER: Error: 9.195920%
+MASTER: Error: 8.569190%
+MASTER: Error: 6.555656%
+MASTER: Error: 8.850885%
+MASTER: Error: 9.105911%
+MASTER: Error: 7.350735%
+MASTER: Error: 8.880888%
+MASTER: Error: 8.745875%
+MASTER: Error: 7.980798%
+MASTER: Error: 8.940894%
+MASTER: Error: 8.415842%
+MASTER: Error: 8.314165%
+MASTER: Error: 6.375638%
+MASTER: Error: 8.580858%
+MASTER: Error: 8.790879%
+MASTER: Error: 8.445845%
+MASTER: Error: 7.080708%
+MASTER: Error: 8.625863%
+MASTER: Error: 7.815782%
+MASTER: Error: 8.625863%
+MASTER: Error: 8.235824%
+MASTER: Error: 8.064140%
+MASTER: Error: 6.105611%
+MASTER: Error: 8.370837%
+MASTER: Error: 8.610861%
+MASTER: Error: 8.160816%
+MASTER: Error: 6.855686%
+MASTER: Error: 7.980798%
+MASTER: Error: 7.680768%
+MASTER: Error: 8.295830%
+MASTER: Error: 8.415842%
+MASTER: Error: 7.830783%
+MASTER: Error: 5.925593%
+MASTER: Error: 8.130813%
+MASTER: Error: 8.535854%
+MASTER: Error: 6.645665%
+MASTER: Error: 7.815782%
+MASTER: Error: 8.025803%
+MASTER: Error: 7.335734%
+MASTER: Error: 8.055806%
+MASTER: Error: 7.815782%
+MASTER: Error: 7.587425%
+MASTER: Error: 5.880588%
+MASTER: Error: 7.875788%
+MASTER: Error: 8.400840%
+MASTER: Error: 6.585659%
+MASTER: Error: 7.485749%
+MASTER: Error: 7.710771%
+MASTER: Error: 7.155716%
+MASTER: Error: 7.800780%
+MASTER: Error: 7.575758%
+MASTER: Error: 7.385739%
+MASTER: Error: 5.700570%
+MASTER: Error: 7.725773%
+MASTER: Error: 7.320732%
+MASTER: Error: 8.115812%
+MASTER: Error: 6.375638%
+MASTER: Error: 7.590759%
+MASTER: Error: 7.530753%
+MASTER: Error: 6.930693%
+MASTER: Error: 7.365737%
+MASTER: Error: 7.184052%
+MASTER: Error: 5.565557%
+MASTER: Error: 7.590759%
+MASTER: Error: 6.240624%
+MASTER: Error: 7.155716%
+MASTER: Error: 7.920792%
+MASTER: Error: 7.380738%
+MASTER: Error: 7.290729%
+MASTER: Error: 6.705671%
+MASTER: Error: 7.230723%
+MASTER: Error: 7.009034%
+MASTER: Error: 5.415542%
+MASTER: Error: 7.455746%
+MASTER: Error: 6.090609%
+MASTER: Error: 7.785779%
+MASTER: Error: 7.035704%
+MASTER: Error: 6.615662%
+MASTER: Error: 7.125713%
+MASTER: Error: 7.050705%
+MASTER: Error: 7.215722%
+MASTER: Error: 6.865687%
+MASTER: Error: 7.260726%
+MASTER: Error: 5.325533%
+MASTER: Error: 5.925593%
+MASTER: Error: 6.885689%
+MASTER: Error: 7.635764%
+MASTER: Error: 6.885689%
+MASTER: Error: 7.035704%
+MASTER: Error: 6.960696%
+MASTER: Error: 6.450645%
+MASTER: Error: 6.707337%
+MASTER: Error: 5.250525%
+MASTER: Error: 7.050705%
+MASTER: Error: 7.410741%
+MASTER: Error: 5.700570%
+MASTER: Error: 6.675668%
+MASTER: Error: 6.765677%
+MASTER: Error: 6.885689%
+MASTER: Error: 6.750675%
+MASTER: Error: 6.150615%
+MASTER: Error: 6.515652%
+MASTER: Error: 6.930693%
+MASTER: Error: 5.070507%
+MASTER: Error: 7.290729%
+MASTER: Error: 5.670567%
+MASTER: Error: 6.390639%
+MASTER: Error: 5.970597%
+MASTER: Error: 6.675668%
+MASTER: Error: 6.630663%
+MASTER: Error: 6.795680%
+MASTER: Error: 6.380638%
+MASTER: Error: 5.025503%
+MASTER: Error: 6.735674%
+MASTER: Error: 5.490549%
+MASTER: Error: 7.170717%
+MASTER: Error: 6.285629%
+MASTER: Error: 6.660666%
+MASTER: Error: 6.495650%
+MASTER: Error: 6.510651%
+MASTER: Error: 5.820582%
+MASTER: Error: 6.243958%
+MASTER: Error: 6.525653%
+MASTER: Error: 4.830483%
+MASTER: Error: 5.310531%
+MASTER: Error: 6.960696%
+MASTER: Error: 6.165617%
+MASTER: Error: 6.360636%
+MASTER: Error: 6.390639%
+MASTER: Error: 5.790579%
+MASTER: Error: 6.465647%
+MASTER: Error: 6.088942%
+MASTER: Error: 4.785479%
+MASTER: Error: 6.435644%
+MASTER: Error: 6.840684%
+MASTER: Error: 6.015602%
+MASTER: Error: 5.220522%
+MASTER: Error: 6.225623%
+MASTER: Error: 5.700570%
+MASTER: Error: 6.255626%
+MASTER: Error: 6.345635%
+MASTER: Error: 5.980598%
+MASTER: Error: 4.620462%
+MASTER: Error: 6.300630%
+MASTER: Error: 6.720672%
+MASTER: Error: 5.100510%
+MASTER: Error: 5.895590%
+MASTER: Error: 6.165617%
+MASTER: Error: 6.135614%
+MASTER: Error: 5.685569%
+MASTER: Error: 6.180618%
+MASTER: Error: 5.867253%
+MASTER: Error: 4.575458%
+MASTER: Error: 6.180618%
+MASTER: Error: 4.995500%
+MASTER: Error: 6.540654%
+MASTER: Error: 5.760576%
+MASTER: Error: 6.045605%
+MASTER: Error: 5.580558%
+MASTER: Error: 6.075608%
+MASTER: Error: 6.015602%
+MASTER: Error: 5.752242%
+MASTER: Error: 4.515452%
+MASTER: Error: 6.045605%
+MASTER: Error: 6.450645%
+MASTER: Error: 4.920492%
+MASTER: Error: 5.910591%
+MASTER: Error: 5.655566%
+MASTER: Error: 5.850585%
+MASTER: Error: 5.505551%
+MASTER: Error: 5.925593%
+MASTER: Error: 5.642231%
+MASTER: Error: 4.455446%
+MASTER: Error: 5.985599%
+MASTER: Error: 4.815482%
+MASTER: Error: 5.580558%
+MASTER: Error: 6.270627%
+MASTER: Error: 5.850585%
+MASTER: Error: 5.805581%
+MASTER: Error: 5.745575%
+MASTER: Error: 5.445545%
+MASTER: Error: 5.550555%
+MASTER: Error: 4.410441%
+MASTER: Error: 5.895590%
+MASTER: Error: 4.725473%
+MASTER: Error: 6.165617%
+MASTER: Error: 5.490549%
+MASTER: Error: 5.730573%
+MASTER: Error: 5.670567%
+MASTER: Error: 5.325533%
+MASTER: Error: 5.625563%
+MASTER: Error: 5.448878%
+MASTER: Error: 4.305431%
+MASTER: Error: 5.775578%
+MASTER: Error: 6.060606%
+MASTER: Error: 4.665467%
+MASTER: Error: 5.310531%
+MASTER: Error: 5.250525%
+MASTER: Error: 5.460546%
+MASTER: Error: 5.610561%
+MASTER: Error: 5.625563%
+MASTER: Error: 5.340534%
+MASTER: Error: 4.215422%
+MASTER: Error: 5.730573%
+MASTER: Error: 5.940594%
+MASTER: Error: 4.590459%
+MASTER: Error: 5.280528%
+MASTER: Error: 5.130513%
+MASTER: Error: 5.535554%
+MASTER: Error: 5.490549%
+MASTER: Error: 5.400540%
+MASTER: Error: 5.257192%
+MASTER: Error: 5.640564%
+MASTER: Error: 4.080408%
+MASTER: Error: 4.530453%
+MASTER: Error: 5.205521%
+MASTER: Error: 5.895590%
+MASTER: Error: 5.325533%
+MASTER: Error: 5.085509%
+MASTER: Error: 5.355536%
+MASTER: Error: 5.400540%
+MASTER: Error: 5.168850%
+MASTER: Error: 4.050405%
+MASTER: Error: 5.595560%
+MASTER: Error: 4.425443%
+MASTER: Error: 5.160516%
+MASTER: Error: 5.850585%
+MASTER: Error: 5.205521%
+MASTER: Error: 5.325533%
+MASTER: Error: 5.280528%
+MASTER: Error: 5.025503%
+MASTER: Error: 5.102177%
+MASTER: Error: 4.035404%
+MASTER: Error: 5.385539%
+MASTER: Error: 4.290429%
+MASTER: Error: 5.745575%
+MASTER: Error: 5.100510%
+MASTER: Error: 5.070507%
+MASTER: Error: 5.220522%
+MASTER: Error: 5.205521%
+MASTER: Error: 4.965497%
+MASTER: Error: 5.002167%
+MASTER: Error: 3.945395%
+MASTER: Error: 5.280528%
+MASTER: Error: 5.670567%
+MASTER: Error: 4.230423%
+MASTER: Error: 5.055506%
+MASTER: Error: 5.085509%
+MASTER: Error: 5.145515%
+MASTER: Error: 4.920492%
+MASTER: Error: 4.995500%
+MASTER: Error: 4.925493%
+Taining done in 12.9251s
+Taining done in 12.9159s
+Taining done in 12.9164s
+Taining done in 12.9175s
+Taining done in 12.9221s
+Taining done in 12.925s
+Taining done in 12.9223s
+Taining done in 12.9178s
+Taining done in 12.9225s
+Taining done in 12.9402s

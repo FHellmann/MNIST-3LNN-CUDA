@@ -1,0 +1,70 @@
+$ trainer-Release/trainLindNet --mnist MNIST/ --trainingError 0.07
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+MASTER: Error: 13.280000%
+MASTER: Error: 8.485000%
+MASTER: Error: 7.521667%
+MASTER: Error: 6.970000%
+Taining done in 9.01534s
+
+
+$ trainer-Release/trainLindNet --mnist MNIST/ --trainingError 0.06
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+MASTER: Error: 13.280000%
+MASTER: Error: 8.485000%
+MASTER: Error: 7.521667%
+MASTER: Error: 6.970000%
+MASTER: Error: 6.523333%
+MASTER: Error: 6.300000%
+MASTER: Error: 5.960000%
+Taining done in 15.7818s
+
+
+$ trainer-Release/trainLindNet --mnist MNIST/ --trainingError 0.05
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Sequentiell
+MASTER: Error: 13.280000%
+MASTER: Error: 8.485000%
+MASTER: Error: 7.521667%
+MASTER: Error: 6.970000%
+MASTER: Error: 6.523333%
+MASTER: Error: 6.300000%
+MASTER: Error: 5.960000%
+MASTER: Error: 5.750000%
+MASTER: Error: 5.660000%
+MASTER: Error: 5.436667%
+MASTER: Error: 5.348333%
+MASTER: Error: 5.215000%
+MASTER: Error: 5.153333%
+MASTER: Error: 5.010000%
+MASTER: Error: 4.956667%
+Taining done in 33.7251s
+

@@ -48,14 +48,17 @@ int main(int argc, char* argv[]) {
 		}
 
 		if ((i % every_ten_percent) == 0)
-			cout << "x"; cout.flush();
+			cout << "x";
+		cout.flush();
 	}
 	cout << endl;
 
-	double const classificationRate = static_cast<double>(correct) / static_cast<double>(testingImages.size());
+	double const classificationRate = static_cast<double>(correct)
+			/ static_cast<double>(testingImages.size());
 
 	cout << "Test finished." << endl;
-	cout << "Correct classifications: " << classificationRate * 100.0 << "%" << endl;
+	cout << "Correct classifications: " << classificationRate * 100.0 << "%"
+			<< endl;
 
 	exit(EXIT_SUCCESS);
 }

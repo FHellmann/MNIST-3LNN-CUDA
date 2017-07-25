@@ -10,6 +10,7 @@
 #include <yaml-cpp/yaml.h>
 #include <opencv2/core/core.hpp>
 #include "MNISTDataset.h"
+#include "utils/Log.hpp"
 
 class NeuralNetwork {
 public:
@@ -72,10 +73,9 @@ public:
 	 * @param training_error_threshold The maximum error which should be reached.
 	 * @param max_derivation The maximum error after the increases again.
 	 */
-	virtual void train(MNISTImageDataset const& images,
+	virtual double train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
-			double const training_error_threshold,
-			double const max_derivation);
+			double const training_error_threshold, double const max_derivation);
 
 	/**
 	 * Get the network's classification using the ID of the node with
@@ -88,7 +88,7 @@ public:
 	/**
 	 * Saves the network to a YAML file given by path.
 	 */
-	bool saveYAML(std::string const& path);
+	virtual bool saveYAML(std::string const& path);
 
 	/**
 	 * Feeds input layer values forward to hidden to output layer

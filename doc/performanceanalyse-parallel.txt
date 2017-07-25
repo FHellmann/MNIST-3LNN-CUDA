@@ -1,0 +1,131 @@
+$ trainer-Release/trainLindNet --mnist MNIST/ --networkType parallel --trainingError 0.07
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+MASTER: Error: 32.333333%
+MASTER: Error: 13.025000%
+MASTER: Error: 11.093333%
+MASTER: Error: 10.066667%
+MASTER: Error: 9.555000%
+MASTER: Error: 9.091667%
+MASTER: Error: 8.750000%
+MASTER: Error: 8.363333%
+MASTER: Error: 8.083333%
+MASTER: Error: 7.890000%
+MASTER: Error: 7.675000%
+MASTER: Error: 7.521667%
+MASTER: Error: 7.305000%
+MASTER: Error: 7.191667%
+MASTER: Error: 7.040000%
+MASTER: Error: 6.938333%
+Taining done in 8.92147s
+
+
+$ trainer-Release/trainLindNet --mnist MNIST/ --networkType parallel --trainingError 0.06
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+MASTER: Error: 32.333333%
+MASTER: Error: 13.025000%
+MASTER: Error: 11.093333%
+MASTER: Error: 10.066667%
+MASTER: Error: 9.555000%
+MASTER: Error: 9.091667%
+MASTER: Error: 8.750000%
+MASTER: Error: 8.363333%
+MASTER: Error: 8.083333%
+MASTER: Error: 7.890000%
+MASTER: Error: 7.675000%
+MASTER: Error: 7.521667%
+MASTER: Error: 7.305000%
+MASTER: Error: 7.191667%
+MASTER: Error: 7.040000%
+MASTER: Error: 6.938333%
+MASTER: Error: 6.820000%
+MASTER: Error: 6.743333%
+MASTER: Error: 6.688333%
+MASTER: Error: 6.610000%
+MASTER: Error: 6.500000%
+MASTER: Error: 6.431667%
+MASTER: Error: 6.348333%
+MASTER: Error: 6.321667%
+MASTER: Error: 6.205000%
+MASTER: Error: 6.158333%
+MASTER: Error: 6.083333%
+MASTER: Error: 6.048333%
+MASTER: Error: 5.968333%
+Taining done in 15.8313s
+
+
+$ trainer-Release/trainLindNet --mnist MNIST/ --networkType parallel --trainingError 0.05
+Header size: 4
+Magic Number: 803
+Datatype: 8
+Dimensions: 3
+Reading 60000 images of size (28,28)
+Header size: 4
+Magic Number: 801
+Datatype: 8
+Dimensions: 1
+Reading 60000 labels.
+Neural Network - Parallel
+MASTER: Error: 32.333333%
+MASTER: Error: 13.025000%
+MASTER: Error: 11.093333%
+MASTER: Error: 10.066667%
+MASTER: Error: 9.555000%
+MASTER: Error: 9.091667%
+MASTER: Error: 8.750000%
+MASTER: Error: 8.363333%
+MASTER: Error: 8.083333%
+MASTER: Error: 7.890000%
+MASTER: Error: 7.675000%
+MASTER: Error: 7.521667%
+MASTER: Error: 7.305000%
+MASTER: Error: 7.191667%
+MASTER: Error: 7.040000%
+MASTER: Error: 6.938333%
+MASTER: Error: 6.820000%
+MASTER: Error: 6.743333%
+MASTER: Error: 6.688333%
+MASTER: Error: 6.610000%
+MASTER: Error: 6.500000%
+MASTER: Error: 6.431667%
+MASTER: Error: 6.348333%
+MASTER: Error: 6.321667%
+MASTER: Error: 6.205000%
+MASTER: Error: 6.158333%
+MASTER: Error: 6.083333%
+MASTER: Error: 6.048333%
+MASTER: Error: 5.968333%
+MASTER: Error: 5.900000%
+MASTER: Error: 5.815000%
+MASTER: Error: 5.798333%
+MASTER: Error: 5.748333%
+MASTER: Error: 5.721667%
+MASTER: Error: 5.643333%
+MASTER: Error: 5.628333%
+MASTER: Error: 5.613333%
+MASTER: Error: 5.591667%
+MASTER: Error: 5.533333%
+MASTER: Error: 5.508333%
+MASTER: Error: 5.400000%
+MASTER: Error: 5.405000%
+MASTER: Error: 10.761667%
+Taining done in 23.4899s

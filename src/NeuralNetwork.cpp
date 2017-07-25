@@ -24,7 +24,7 @@ NeuralNetwork::NeuralNetwork(NeuralNetwork const& net) :
 				break;
 			}
 		}
-		layers[i]->previousLayer = net.layers[prevLayerIdx];
+		layers[i]->previousLayer = layers[prevLayerIdx];
 	}
 }
 
@@ -44,12 +44,12 @@ NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 
 			for (int j = 0; j < node->weights.size(); j++) {
 				node->weights[j] = 0.7 * (rand() / (double) (RAND_MAX));
-				if(j % 2)
+				if (j % 2)
 					node->weights[j] = -node->weights[j]; // make half of the weights negative
 			}
 
 			node->bias = rand() / (double) (RAND_MAX);
-			if(i % 2)
+			if (i % 2)
 				node->bias = -node->bias; // make half of the bias weights negative
 		}
 	}
@@ -78,9 +78,8 @@ void NeuralNetwork::feedInput(cv::Mat const& image) {
 	}
 }
 
-void NeuralNetwork::train(MNISTImageDataset const& images,
-		MNISTLableDataset const& labels,
-		double const training_error_threshold,
+double NeuralNetwork::train(MNISTImageDataset const& images,
+		MNISTLableDataset const& labels, double const training_error_threshold,
 		double const max_derivation) {
 	bool needsFurtherTraining = true;
 	double error = std::numeric_limits<double>::max();
@@ -106,11 +105,12 @@ void NeuralNetwork::train(MNISTImageDataset const& images,
 				errCount++;
 
 			// Display progress during training
-			if ((imgCount % every_ten_percent) == 0)
-				cout << "x"; cout.flush();
+			//if ((imgCount % every_ten_percent) == 0)
+			//	log(to_string(imgCount / every_ten_percent * 10.0) + "%");
 		}
 
-		double newError = static_cast<double>(errCount) / static_cast<double>(images.size());
+		double newError = static_cast<double>(errCount)
+				/ static_cast<double>(images.size());
 		if (newError < error) {
 			error = newError;
 		} else if (newError > error + max_derivation) {
@@ -122,10 +122,10 @@ void NeuralNetwork::train(MNISTImageDataset const& images,
 			needsFurtherTraining = false;
 		}
 
-		cout << " Error: " << error * 100.0 << "%" << endl;
+		log("Error: " + to_string(newError * 100.0) + "%");
 	}
 
-	cout << endl;
+	return error;
 }
 
 void NeuralNetwork::feedForward() {
@@ -174,7 +174,8 @@ void NeuralNetwork::backPropagateOutputLayer(const int targetClassification) {
 		int const targetOutput = (i == targetClassification) ? 1 : 0;
 
 		double const errorDelta = targetOutput - node->output;
-		double const errorSignal = errorDelta * layer->getActFctDerivative(node->output);
+		double const errorSignal = errorDelta
+				* layer->getActFctDerivative(node->output);
 
 		updateNodeWeights(OUTPUT, i, errorSignal);
 	}
@@ -196,12 +197,14 @@ void NeuralNetwork::backPropagateHiddenLayer(const int targetClassification) {
 			int const targetOutput = (o == targetClassification) ? 1 : 0;
 
 			double const errorDelta = targetOutput - on->output;
-			double const errorSignal = errorDelta * ol->getActFctDerivative(on->output);
+			double const errorSignal = errorDelta
+					* ol->getActFctDerivative(on->output);
 
 			outputcellerrorsum += errorSignal * on->weights[h];
 		}
 
-		double const hiddenErrorSignal = outputcellerrorsum * layer_hidden->getActFctDerivative(hn->output);
+		double const hiddenErrorSignal = outputcellerrorsum
+				* layer_hidden->getActFctDerivative(hn->output);
 
 		updateNodeWeights(HIDDEN, h, hiddenErrorSignal);
 	}
@@ -234,9 +237,8 @@ NeuralNetwork::Layer::Layer(const LayerType layerType,
 }
 
 NeuralNetwork::Layer::Layer(Layer const& layer) :
-	layerType(layer.layerType),
-	actFctType(layer.actFctType),
-	previousLayer(layer.previousLayer) {
+		layerType(layer.layerType), actFctType(layer.actFctType), previousLayer(
+				layer.previousLayer) {
 
 	nodes.reserve(layer.nodes.size());
 	for (Layer::Node* node : layer.nodes) {

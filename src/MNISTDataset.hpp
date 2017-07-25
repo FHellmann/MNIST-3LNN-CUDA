@@ -11,6 +11,11 @@ MNISTDataset<T>::MNISTDataset(std::string const& fileName) :
 }
 
 template<typename T>
+MNISTDataset<T>::MNISTDataset(std::vector<T> const& data) :
+		m_FileName(""), m_Count(data.size()), m_Datatype(UBYTE), m_Images(data) {
+}
+
+template<typename T>
 MNISTDataset<T>::~MNISTDataset() {
 }
 
