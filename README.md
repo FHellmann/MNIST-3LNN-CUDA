@@ -89,24 +89,33 @@ Where:
 To run the trainer in distributed mode (-d or --distributed) it is mendetory to start the program 
 with [mpirun](https://www.open-mpi.org/doc/v1.8/man1/mpirun.1.php).
 
+## Realisiation
+The Realisiation is based on the blog [Simple 3-Layer Neural Network for MNIST Handwriting Recognition](https://mmlind.github.io/Simple_3-Layer_Neural_Network_for_MNIST_Handwriting_Recognition/) of Matt Lind.
+### Parallel
+There are different Parallelization Strategies\[4\] how to implement a parallel Neural Network.
+- Session Parallelism - Run independent neural network with different initial weights to find in one instance the best solution.
+- Exemplar Parallelism - Split the training data into subsets and train each network with a subset. After each training finished, merge the results.
+- Node Parallelism - The neurons of the Neural Network were handled by several workers/threads.
+- Weight Parallelism - The synapse input is calculated parallel for each node.
+
+We decided to use the Exemplar Parallelism due to the low I/O which is needed to communicate between all threads. The implementation is based on the Parallel Static Gradient Descent Algorithm\[3\] (Algorithm 2).
+### CUDA
+
+### Distributed
+Distribution in Neural Networks can be effort with Model Parallelism or Data Parallelism or a combination of both \[2\].
+![Model Paralellism and Data Parallelism](http://engineering.skymind.io/hubfs/EN_Blog_Post_Images/Distributed_Deep_Learning,_Part_1_An_Introduction_to_Distributed_Training_of_Neural_Networks/ModelDataParallelism.svg?t=1498750359042)
+![Combination of Model and Data Parallelism](http://engineering.skymind.io/hubfs/EN_Blog_Post_Images/Distributed_Deep_Learning,_Part_1_An_Introduction_to_Distributed_Training_of_Neural_Networks/ModelAndDataParallelism.svg?t=1498750359042)
+
+Due to the low network I/O we decided to use the Data Parallelism. The machines are most of the time independend from each other. To synchronize the parameters every weight of each node of each machine has to be merged. Therefor a Parameter Averaging or the Asynchronous Stochastic Gradient Descent algorithm can be used. The Parameter Averaging is not as exact as the Stochastic Gradient Descent algorithm. However, this leads us to use the Stochastic Gradient Descent algorithm.
+
 ## Performance-Analysis
 To evaluate the performance of the Neural Network it was trained with the MNIST-Dataset (60000 Images). 
 Every network was trained with 784 Input-Nodes, 20 Hidden-Nodes, 10 Output-Nodes and a learning rate of 0.2. 
 The training needs to reach a error lower then 4% (=> >96% correct recognition) or it should cancel if 
 a error derivation of 0.005 occures.
 
-### Sequentiell
-
-### Parallel
-
-### CUDA
-
-### Parallel - Distributed
-
-### CUDA - Distributed
-
 ## Literature
-- [High Performance Parallel Stochastic Gradient Descent in Shared Memory](http://www.ece.ubc.ca/~matei/papers/ipdps16.pdf)
-- [Distributed Deep Learning, Part 1: An Introduction to Distributed Training of Neural Networks](http://engineering.skymind.io/distributed-deep-learning-part-1-an-introduction-to-distributed-training-of-neural-networks)
-- [Parallelized Stochastic Gradient Descent](http://martin.zinkevich.org/publications/nips2010.pdf)
-- [Parallelization of a Backpropagation Neural Network on a Cluster Computer](http://www.cs.otago.ac.nz/staffpriv/hzy/papers/pdcs03.pdf)
+1. [High Performance Parallel Stochastic Gradient Descent in Shared Memory](http://www.ece.ubc.ca/~matei/papers/ipdps16.pdf)
+2. [Distributed Deep Learning, Part 1: An Introduction to Distributed Training of Neural Networks](http://engineering.skymind.io/distributed-deep-learning-part-1-an-introduction-to-distributed-training-of-neural-networks)
+3. [Parallelized Stochastic Gradient Descent](http://martin.zinkevich.org/publications/nips2010.pdf)
+4. [Parallelization of a Backpropagation Neural Network on a Cluster Computer](http://www.cs.otago.ac.nz/staffpriv/hzy/papers/pdcs03.pdf)
