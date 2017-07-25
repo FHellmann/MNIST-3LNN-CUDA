@@ -585,19 +585,21 @@ __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType fu
 	PRINTF("d_activate_layer\n");
 
 	// Target index for this thread.
-	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
+	size_t const x = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t const y = blockIdx.y * blockDim.y + threadIdx.y;
 
 	// If the target index would handle an element outside of the data buffer, terminate.
-	if (idx >= A.cols * A.rows) {
+	if (x >= A.cols || y >= A.rows) {
 		return;
 	}
 
+	float* const dst = d_matrix_pget(A, y, x);
 	switch (functionType) {
 	case NeuralNetwork::SIGMOID:
-		A.data[idx] = 1.0f / (1.0f + exp(-A.data[idx]));
+		*dst = 1.0f / (1.0f + exp(-(*dst)));
 		break;
 	case NeuralNetwork::TANH:
-		A.data[idx] = tanh(A.data[idx]);
+		*dst = tanh(*dst);
 		break;
 	}
 }
@@ -607,20 +609,22 @@ __device__ void d_apply_activation_derivative(Matrix const& A, NeuralNetwork::Ac
 	PRINTF("d_apply_activation_derivative\n");
 
 	// Target index for this thread.
-	size_t const idx = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y + blockIdx.y * blockDim.x * blockDim.y * gridDim.x;
+	size_t const x = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t const y = blockIdx.y * blockDim.y + threadIdx.y;
 
 	// If the target index would handle an element outside of the data buffer, terminate.
-	if (idx >= A.rows * A.cols) {
+	if (x >= A.cols || y >= A.rows) {
 		return;
 	}
 
+	float* const dst = d_matrix_pget(A, y, x);
 	switch (functionType) {
 	case NeuralNetwork::SIGMOID:
-		A.data[idx] = A.data[idx] * (1.0f - A.data[idx]);
+		*dst = *dst * (1.0f - *dst);
 		break;
 	case NeuralNetwork::TANH:
-		float t = tanh(A.data[idx]);
-		A.data[idx] = 1.0f - t * t;
+		float t = tanh(*dst);
+		*dst = 1.0f - t * t;
 		break;
 	}
 }
