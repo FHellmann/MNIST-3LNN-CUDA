@@ -721,14 +721,14 @@ __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, vo
 	for (size_t k = 0; k < numSubBlocks; ++k)
 	{
 		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
-		if (xA < A.cols) {
+		if (xA < A.cols && y < A.rows) {
 			blockCacheA[threadIdx.y][threadIdx.x] = d_matrix_get(A, y, xA);
 		} else {
 			blockCacheA[threadIdx.y][threadIdx.x] = 0.0f;
 		}
 
 		size_t const yB = k * MATRIX_SIZE_DIVISOR + threadIdx.y;
-		if (yB < B.rows) {
+		if (yB < B.rows && x < B.cols) {
 			blockCacheB[threadIdx.y][threadIdx.x] = d_matrix_get(B, yB, x);
 		} else {
 			blockCacheB[threadIdx.y][threadIdx.x] = 0.0f;
@@ -841,7 +841,7 @@ __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
 	for (int k = 0; k < numSubBlocks; ++k)
 	{
 		size_t const xA = k * MATRIX_SIZE_DIVISOR + threadIdx.x;
-		if (xA < error.cols) {
+		if (xA < error.cols && y < error.rows) {
 			blockCacheError[threadIdx.y][threadIdx.x] = d_matrix_get(error, y, xA);
 		} else {
 			blockCacheError[threadIdx.y][threadIdx.x] = 0.0f;
