@@ -16,9 +16,9 @@ __host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
 __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 }
 
-#define MATRIX_SIZE_DIVISOR 7
+#define MATRIX_SIZE_DIVISOR 2
 #define NUM_DIGITS 10
-#define BATCH_SIZE 600
+#define BATCH_SIZE 60
 
 struct Matrix {
 	enum Layout {
@@ -497,6 +497,10 @@ __global__ void calculateOutputError(GPUTrainingParameters const params) {
 __global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias,
 		Matrix const errors, Matrix const transposedLayerInput) {
 
+	d_fill(weights, 0.5f);
+	d_fill(errors, 2.0f);
+	d_fill(transposedLayerInput, 1.0f);
+	d_fill(bias, 0.75f);
 	d_mul_add(weights, errors, transposedLayerInput);
 	d_update_bias(bias, errors);
 }
@@ -572,7 +576,7 @@ void backPropagateHidden(GPUTrainingParameters const& params) {
 //	d_cwise_mul(params.tmp2, params.output2, params.tmp2);
 
 
-	Matrix images = matrix_transpose(params.images);
+	Matrix const images = matrix_transpose(params.images);
 //	d_mul_add(params.W12, params.tmp2, images);
 	updateWeightsAndBias<<<numBlocks, threadsPerBlock>>>(params.W12,
 			params.bias2, error, images);
@@ -811,7 +815,7 @@ __device__ void d_fill(Matrix const& A, float const v) {
 		return;
 	}
 
-	d_matrix_set(A, targetY, targetX, v);
+	d_matrix_set(A, targetY, targetX, targetY);
 }
 
 __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
