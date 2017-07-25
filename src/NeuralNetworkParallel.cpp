@@ -146,10 +146,11 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 				if (newError < error) {
 					error = newError;
 					newError = 0;
+				} else if(newError > error + max_derivation) {
+					needsFurtherTraining = false;
 				}
 
-				if (newError > error + max_derivation
-						|| newError < training_error_threshold) {
+				if (error < training_error_threshold) {
 					// The error increases again. This is not good.
 					/*
 					log(
