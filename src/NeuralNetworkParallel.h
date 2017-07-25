@@ -24,18 +24,9 @@ public:
 	 */
 	NeuralNetworkParallel(NeuralNetworkParallel const&);
 
-	/*
 	double train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
 			double const training_error_threshold, double const max_derivation);
-			*/
-
-	void backPropagateOutputLayer(const int targetClassification);
-
-	void backPropagateHiddenLayer(const int targetClassification);
-
-	void updateNodeWeights(const LayerType layertype, const int id,
-				double error);
 
 	class LayerParallel: public Layer {
 	public:
@@ -44,10 +35,6 @@ public:
 				Layer* previous);
 
 		LayerParallel(LayerParallel const&);
-
-		void calcLayer();
-
-		//void calcNodeOutput(Node* node);
 	};
 };
 

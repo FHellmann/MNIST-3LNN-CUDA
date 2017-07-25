@@ -5,7 +5,11 @@
 #include <chrono>
 
 #define LOG_MASTER 1
+#ifdef _DEBUG
+#define LOG_SLAVE 1
+#else
 #define LOG_SLAVE 0
+#endif
 
 /**
  * A simple logging method to print something out.

@@ -49,7 +49,8 @@ void updateWeights(NeuralNetwork &nn, NeuralNetwork::LayerType type,
 		for (int w = 0; w < n->weights.size(); w++) {
 			for (int itr = 1; itr < iterCount; itr++) {
 				n->weights.at(w) += deltaWeights[itr * workerWeightCount
-						+ i * n->weights.size() + w];
+						+ i * n->weights.size() + w]
+						/ (iterCount > 1 ? iterCount - 1 : iterCount);
 			}
 		}
 	}
@@ -267,7 +268,7 @@ double NeuralNetworkDistributed::train(MNISTImageDataset const& images,
 
 	MPI_Finalize();
 
-	if(curr_rank == 0) {
+	if (curr_rank == 0) {
 		saveYAML(netDefinitionPath);
 	}
 }

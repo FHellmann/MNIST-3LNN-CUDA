@@ -2,7 +2,6 @@
 #define NEURAL_NETWORK_DISTRIBUTED_
 
 #include "NeuralNetwork.h"
-#include "NeuralNetworkParallel.h"
 #include "utils/Log.hpp"
 #include <mpi.h>
 #include <math.h>
