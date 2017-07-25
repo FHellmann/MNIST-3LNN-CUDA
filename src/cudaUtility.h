@@ -18,10 +18,10 @@ struct Matrix {
 		COLUMN_MAJOR
 	};
 
-	size_t rows;
-	size_t cols;
+	size_t rows = 0;
+	size_t cols = 0;
 	Layout layout = ROW_MAJOR;
-	float* data;
+	float* data = nullptr;
 };
 
 struct GPUTrainingParameters {
@@ -63,8 +63,11 @@ struct GPUTrainingParameters {
 
 /* Utility functions */
 __global__ void mul(Matrix const C, Matrix const A, Matrix const B);
+__global__ void mul_add(Matrix const C, Matrix const A, Matrix const B);
 __global__ void fill(Matrix const, float const);
+__global__ void fill_pattern(Matrix const);
 __device__ void d_fill(Matrix const&, float const);
+__device__ void d_fill_pattern(Matrix const&);
 
 /* Neural network stuff */
 __global__ void calculateOutputError(GPUTrainingParameters const params);

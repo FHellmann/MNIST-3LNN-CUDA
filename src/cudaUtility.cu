@@ -281,6 +281,11 @@ __global__ void fill(Matrix const A, float const v) {
 	d_fill(A, v);
 }
 
+__global__ void fill_pattern(Matrix const A) {
+
+	d_fill_pattern(A);
+}
+
 __device__ void d_fill(Matrix const& A, float const v) {
 
 	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
@@ -290,9 +295,12 @@ __device__ void d_fill(Matrix const& A, float const v) {
 		return;
 	}
 
-	//d_matrix_set(A, targetY, targetX, threadIdx.y);
-	//d_matrix_set(A, targetY, targetX, targetY);
 	d_matrix_set(A, targetY, targetX, v);
+}
+
+__device__ void d_fill_pattern(Matrix const& A) {
+
+	d_fill(A, threadIdx.y + blockIdx.y * blockDim.y);
 }
 
 __device__ void d_update_bias(Matrix const& bias, Matrix const& error) {
@@ -369,6 +377,10 @@ __device__ size_t d_matrix_size(Matrix const& A) {
 
 __global__ void mul(Matrix const C, Matrix const A, Matrix const B) {
 	d_mul(C, A, B);
+}
+
+__global__ void mul_add(Matrix const C, Matrix const A, Matrix const B) {
+	d_mul_add(C, A, B);
 }
 
 size_t matrix_size(Matrix const& A) {
