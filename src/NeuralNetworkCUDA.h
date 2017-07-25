@@ -22,6 +22,8 @@ public:
 	virtual void train(MNISTImageDataset const& images,
 			MNISTLableDataset const& labels,
 			double const training_error_threshold, double const max_derivation);
+
+	virtual void feedForward();
 };
 
 #endif /* NEURALNETWORKCUDA_H_ */

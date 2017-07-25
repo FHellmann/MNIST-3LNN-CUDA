@@ -36,6 +36,60 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net,
 		size_t const imageSize, float* const d_labels, size_t const labelSize);
 __host__ void freeTrainingParams(GPUTrainingParameters& params);
 
+__host__ void NeuralNetworkCUDA::feedForward() {
+
+	Layer* inputLayer = getLayer(INPUT);
+	size_t const singleImgPixCount = inputLayer->nodes.size();
+
+	//
+	// Convert the image data and labels into a float array.
+	//
+	float* fImgData = new float[singleImgPixCount];
+	float* dst = fImgData;
+	for (Layer::Node* node : inputLayer->nodes) {
+		*dst = node->output;
+		++dst;
+	}
+
+	cudaError_t err;
+
+	float* d_images = nullptr;
+
+	err = cudaMalloc((void**) &d_images, singleImgPixCount * sizeof(float));
+	assert(err == cudaSuccess);
+	err = cudaMemcpy(d_images, fImgData, singleImgPixCount * sizeof(float), cudaMemcpyHostToDevice);
+	assert(err == cudaSuccess);
+
+	delete[] fImgData;
+	fImgData = nullptr;
+
+	GPUTrainingParameters trainingParams = initTrainingParams(*this, 1, 0, d_images, singleImgPixCount, nullptr, NUM_DIGITS);
+	// Configure Grid, i.e. setup Blocks and Threads
+	dim3 numBlocks(
+			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1,
+			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1);
+	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+
+	trainingParams.images.data = d_images;
+	trainingParams.labels.data = nullptr;
+
+	// Call graphics card functions
+	feedForwardBatch(trainingParams);
+
+	float* classification = new float[NUM_DIGITS];
+	err = cudaMemcpy(classification, trainingParams.output3.data, NUM_DIGITS * sizeof(float), cudaMemcpyDeviceToHost);
+	assert(err == cudaSuccess);
+
+	Layer* outputLayer = getLayer(OUTPUT);
+	for (size_t i = 0; i < outputLayer->nodes.size(); ++i) {
+		outputLayer->nodes[i]->output = classification[i];
+	}
+
+	delete[] classification;
+	cudaFree(d_images);
+	freeTrainingParams(trainingParams);
+}
+
 __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
 		double const max_derivation) {
