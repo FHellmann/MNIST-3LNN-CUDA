@@ -102,7 +102,7 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 			NeuralNetworkParallel nnp_local(*this);
 			NeuralNetworkParallel nnp_diff(nnp_local);
 
-			time = logStart("Start image processing...", omp_get_thread_num());
+			//time = logStart("Start image processing...", omp_get_thread_num());
 			size_t localErrCount = 0;
 #pragma omp for
 			for (size_t imgCount = 0; imgCount < images.size(); imgCount++) {
@@ -125,7 +125,7 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 				//	log(to_string(imgCount / every_ten_percent * 10.0) + "%", omp_get_thread_num());
 				//}
 			}
-			logEnd(time, omp_get_thread_num());
+			//logEnd(time, omp_get_thread_num());
 
 #pragma omp atomic
 			newError += static_cast<double>(localErrCount)
@@ -133,10 +133,10 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 
 #pragma omp barrier
 
-			time = logStart("Merge delta weights into tmp storage...", omp_get_thread_num());
+			//time = logStart("Merge delta weights into tmp storage...", omp_get_thread_num());
 #pragma omp critical
 			mergeNeuralNetworks(nnp_local, *this, &nnp_diff);
-			logEnd(time, omp_get_thread_num());
+			//logEnd(time, omp_get_thread_num());
 
 #pragma omp master
 			{
@@ -151,12 +151,14 @@ double NeuralNetworkParallel::train(MNISTImageDataset const& images,
 				if (newError > error + max_derivation
 						|| newError < training_error_threshold) {
 					// The error increases again. This is not good.
+					/*
 					log(
 							"Quit Training (newError=" + to_string(newError)
 									+ ", error=" + to_string(error)
 									+ ", training_error_threshold="
 									+ to_string(training_error_threshold) + ")",
 							omp_get_thread_num());
+							*/
 					needsFurtherTraining = false;
 				}
 			}
