@@ -104,11 +104,13 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	cout << "Threads per block: (" << threadsPerBlock.x << ", "
 			<< threadsPerBlock.y << ")" << endl;
 
-	//for (int batchId = 0; batchId < images.size() / trainingParams.batchSize; ++batchId)
+	int batchId = 0;
+	//for (; batchId < images.size() / trainingParams.batchSize; ++batchId)
+	for (; batchId < 50; ++batchId)
 	{
-		//cout << "Processing batch " << batchId << endl;
-		trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize;
-		trainingParams.labels.data = d_labels + trainingParams.batchSize;
+		cout << "Processing batch " << batchId << endl;
+		trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize * batchId;
+		trainingParams.labels.data = d_labels + trainingParams.batchSize * batchId;
 		// Call graphics card functions
 		feedForwardBatch(trainingParams);
 		backPropagateBatch(trainingParams);
