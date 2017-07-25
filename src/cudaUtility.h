@@ -62,6 +62,8 @@ struct GPUTrainingParameters {
 };
 
 /* Utility functions */
+__global__ void mul(Matrix const C, Matrix const A, Matrix const B);
+__global__ void fill(Matrix const, float const);
 __device__ void d_fill(Matrix const&, float const);
 
 /* Neural network stuff */
@@ -75,7 +77,6 @@ __device__ void d_apply_activation_derivative(Matrix const&, NeuralNetwork::ActF
 __device__ void d_set_bias(Matrix const& output, Matrix const& bias);
 __device__ void d_update_bias(Matrix const& bias, Matrix const& error);
 
-
 /* Matrix manipulation operations. */
 __device__ void d_mul_base(Matrix const& C, Matrix const& A, Matrix const& B, void(*op)(float*, float const, float const));
 __device__ void d_mul(Matrix const& C, Matrix const& A, Matrix const& B);
@@ -86,6 +87,10 @@ __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, Matrix const& B);
 __device__ void d_cwise_mul(Matrix const& C, Matrix const& A, float const v);
 __device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B);
 
+/* Matrix access */
+
+__host__ size_t matrix_size(Matrix const& A);
+__host__ Matrix matrix_transpose(Matrix const& A);
 __device__ float* d_matrix_pget(Matrix const& M, size_t const y, size_t const x);
 __device__ float  d_matrix_get(Matrix const& M, size_t const y, size_t const x);
 __device__ void   d_matrix_set(Matrix const& M, size_t const y, size_t const x, float const value);

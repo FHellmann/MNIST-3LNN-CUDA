@@ -277,6 +277,10 @@ __device__ void d_cwise_op(Matrix const& C, Matrix const& A, float const v, void
 	op(d_matrix_pget(C, y, x), d_matrix_get(A, y, x), v);
 }
 
+__global__ void fill(Matrix const A, float const v) {
+	d_fill(A, v);
+}
+
 __device__ void d_fill(Matrix const& A, float const v) {
 
 	size_t const targetX = threadIdx.x + blockIdx.x * blockDim.x;
@@ -361,5 +365,25 @@ __device__ void d_matrix_set(Matrix const& M, size_t const y, size_t const x, fl
 
 __device__ size_t d_matrix_size(Matrix const& A) {
 	return A.rows * A.cols;
+}
+
+__global__ void mul(Matrix const C, Matrix const A, Matrix const B) {
+	d_mul(C, A, B);
+}
+
+size_t matrix_size(Matrix const& A) {
+	return A.rows * A.cols;
+}
+
+Matrix matrix_transpose(Matrix const& A) {
+	Matrix T;
+	T.rows = A.cols;
+	T.cols = A.rows;
+	T.layout = Matrix::ROW_MAJOR;
+	T.data = A.data;
+	if (A.layout == Matrix::ROW_MAJOR) {
+		T.layout = Matrix::COLUMN_MAJOR;
+	}
+	return T;
 }
 

@@ -17,21 +17,6 @@ __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 #define NUM_DIGITS 10
 #define BATCH_SIZE 60
 
-size_t matrix_size(Matrix const& A) {
-	return A.rows * A.cols;
-}
-
-Matrix matrix_transpose(Matrix const& A) {
-	Matrix T;
-	T.rows = A.cols;
-	T.cols = A.rows;
-	T.layout = Matrix::ROW_MAJOR;
-	T.data = A.data;
-	if (A.layout == Matrix::ROW_MAJOR) {
-		T.layout = Matrix::COLUMN_MAJOR;
-	}
-	return T;
-}
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
