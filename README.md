@@ -104,3 +104,10 @@ a error derivation of 0.005 occures.
 ### Parallel - Distributed
 
 ### CUDA - Distributed
+
+## Literature
+[High Performance Parallel Stochastic Gradient Descent in Shared Memory](http://engineering.skymind.io/distributed-deep-learning-part-1-an-introduction-to-distributed-training-of-neural-networks
+http://www.ece.ubc.ca/~matei/papers/ipdps16.pdf)
+[Distributed Deep Learning, Part 1: An Introduction to Distributed Training of Neural Networks](http://engineering.skymind.io/distributed-deep-learning-part-1-an-introduction-to-distributed-training-of-neural-networks)
+[Parallelized Stochastic Gradient Descent](http://martin.zinkevich.org/publications/nips2010.pdf)
+[Parallelization of a Backpropagation Neural Network on a Cluster Computer](http://www.cs.otago.ac.nz/staffpriv/hzy/papers/pdcs03.pdf)
