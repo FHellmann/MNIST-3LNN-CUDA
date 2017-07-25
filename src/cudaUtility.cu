@@ -84,7 +84,6 @@ __global__ void finalizeHiddenError(Matrix const hiddenOutput,
 	// And then compute the weight update
 	d_apply_activation_derivative(hiddenOutput, actFct);
 	d_cwise_mul(outError, outError, hiddenOutput);
-//	d_mul(outError, transposedPreviousWeights, previousErrors);
 
 //	if (blockIdx.x == 0 && blockIdx.y == 0) {
 //		if (threadIdx.x < outError.cols && threadIdx.y < outError.rows) {
@@ -100,7 +99,6 @@ __global__ void updateWeights(Matrix const weights, Matrix const bias,
 	 * because the target matrices are different and the
 	 * operands are constant. */
 	d_mul_add(weights, errors, transposedLayerInput);
-//	d_update_bias(bias, errors);
 }
 
 __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {

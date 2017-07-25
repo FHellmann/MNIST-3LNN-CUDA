@@ -390,6 +390,10 @@ void backPropagateOutput(GPUTrainingParameters const& params) {
 	//fill<<<blocks, threads>>>(params.output3, 2.0f);
 	//fill<<<blocks, threads>>>(params.output2, 1.0f);
 
+	updateBias<<<blocks, threads>>>(params.bias3, error);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+
 	Matrix const output2Transposed = matrix_transpose(params.output2);
 	updateWeights<<<blocks, threads>>>(params.W23, params.bias3, error, output2Transposed);
 	gpuErrchk( cudaPeekAtLastError() );
