@@ -10,7 +10,7 @@
 
 #include "NeuralNetworkCUDA.h"
 
-#define MATRIX_SIZE_DIVISOR 4
+#define MATRIX_SIZE_DIVISOR 28
 
 struct Matrix {
 	enum Layout {

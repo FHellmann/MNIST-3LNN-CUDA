@@ -15,7 +15,7 @@ __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 }
 
 #define NUM_DIGITS 10
-#define BATCH_SIZE 60
+#define BATCH_SIZE 1
 
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
