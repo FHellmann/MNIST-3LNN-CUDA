@@ -26,10 +26,6 @@ __global__ void calculateOutputError(GPUTrainingParameters const params) {
 __global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias,
 		Matrix const errors, Matrix const transposedLayerInput) {
 
-	d_fill(weights, 1.0f);
-	d_fill(errors, 1.0f);
-	d_fill(transposedLayerInput, 1.0f);
-	d_fill(bias, 2.0f);
 	d_mul_add(weights, errors, transposedLayerInput);
 	d_update_bias(bias, errors);
 }

@@ -66,6 +66,10 @@ __global__ void mul(Matrix const C, Matrix const A, Matrix const B);
 __global__ void mul_add(Matrix const C, Matrix const A, Matrix const B);
 __global__ void fill(Matrix const, float const);
 __global__ void fill_pattern(Matrix const);
+
+/* THESE FUNCTIONS ARE EVIL!!
+ * ONLY USE THEM IF YOU KNOW THAT YOU DON'T HAVE TO SYNCHRONIZE YOUR GRID
+ * FOR THE FOLLOWING OPERATIONS! */
 __device__ void d_fill(Matrix const&, float const);
 __device__ void d_fill_pattern(Matrix const&);
 
