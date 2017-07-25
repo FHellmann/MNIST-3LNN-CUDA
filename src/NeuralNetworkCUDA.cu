@@ -338,10 +338,6 @@ void freeTrainingParams(GPUTrainingParameters& trainingParams) {
 	trainingParams.tmp2.data = nullptr;
 }
 
-/* Neural network operations. */
-void backPropagateOutput(GPUTrainingParameters const&);
-void backPropagateHidden(GPUTrainingParameters const&);
-
 void feedForwardBatch(GPUTrainingParameters const& params) {
 
 	cout << "feedForwardBatch" << endl;
@@ -359,6 +355,10 @@ void feedForwardBatch(GPUTrainingParameters const& params) {
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 }
+
+/* Neural network operations. */
+void backPropagateOutput(GPUTrainingParameters const&);
+void backPropagateHidden(GPUTrainingParameters const&);
 
 void backPropagateBatch(GPUTrainingParameters const& params) {
 

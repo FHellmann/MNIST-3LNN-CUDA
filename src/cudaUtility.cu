@@ -9,30 +9,42 @@
 #define PRINTF(...) {if (threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0) { printf( __VA_ARGS__ ); }}
 //#define PRINTF(...)
 
+__global__ void feedForwardLayer(Matrix const input, Matrix const weights,
+		Matrix const bias, NeuralNetwork::ActFctType actFct,
+		Matrix const output) {
+
+	d_set_bias(output, bias);
+	__syncthreads();
+	d_mul_add(output, weights, input);
+	__syncthreads();
+	d_apply_activation(output, actFct);
+}
+
 /** Saves the error in output3! */
 __global__ void calculateOutputError(GPUTrainingParameters const params) {
+
+	/* No thread synchronization should be required in this method
+	 * because it only uses component wise operations. */
 
 	// Save the difference into the target output buffer
 	Matrix const& difference = params.tmp3;
 	d_cwise_sub(difference, params.labels, params.output3);
 
-	// Reuse the output buffer for saving the error, for now. Perhaps this is a problem later on.
+	// Reuse the output buffer for saving the error.
 	Matrix const& error = params.output3;
 	d_apply_activation_derivative(params.output3, params.activationFunction3);
 	d_cwise_mul(error, params.output3, difference);
 	d_cwise_mul(error, error, params.learningRate);
 }
 
-__global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias,
-		Matrix const errors, Matrix const transposedLayerInput) {
-
-	d_mul_add(weights, errors, transposedLayerInput);
-	d_update_bias(bias, errors);
-}
-
 __global__ void calculateHiddenError(Matrix const transposedPreviousWeights,
 		Matrix const previousErrors, Matrix const hiddenOutput,
 		Matrix const outError, NeuralNetwork::ActFctType actFct) {
+
+	/* No thread synchronization should be required in this method
+	 * because after the multiplication only component wise
+	 * operations are used which are independent of the matrix
+	 * multiplication's operands. */
 
 	// Backpropagate the error.
 	d_mul(outError, transposedPreviousWeights, previousErrors);
@@ -42,13 +54,14 @@ __global__ void calculateHiddenError(Matrix const transposedPreviousWeights,
 	d_cwise_mul(outError, outError, hiddenOutput);
 }
 
-__global__ void feedForwardLayer(Matrix const input, Matrix const weights,
-		Matrix const bias, NeuralNetwork::ActFctType actFct,
-		Matrix const output) {
+__global__ void updateWeightsAndBias(Matrix const weights, Matrix const bias,
+		Matrix const errors, Matrix const transposedLayerInput) {
 
-	d_set_bias(output, bias);
-	d_mul_add(output, weights, input);
-	d_apply_activation(output, actFct);
+	/* No thread synchronization should be required in this method
+	 * because the target matrices are different and the
+	 * operands are constant. */
+	d_mul_add(weights, errors, transposedLayerInput);
+	d_update_bias(bias, errors);
 }
 
 __device__ void d_apply_activation(Matrix const& A, NeuralNetwork::ActFctType functionType) {
