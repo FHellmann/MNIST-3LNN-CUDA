@@ -73,13 +73,13 @@ bool ensureDeepCopy(NeuralNetworkParallel const& A, NeuralNetworkParallel const&
 bool testCUDAMatrixMul() {
 
 	Matrix d_A;
-	d_A.rows = 16;
-	d_A.cols = 16;
+	d_A.rows = 3;
+	d_A.cols = 17;
 	cudaMalloc((void**)&d_A.data, matrix_size(d_A) * sizeof(float));
 
 	Matrix d_B;
 	d_B.rows = d_A.cols;
-	d_B.cols = 16;
+	d_B.cols = 11;
 	cudaMalloc((void**)&d_B.data, matrix_size(d_B) * sizeof(float));
 
 	Matrix d_C;
@@ -99,17 +99,20 @@ bool testCUDAMatrixMul() {
 	mul<<<blocks, threads>>>(d_C, d_A, d_B);
 
 	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajorBit> EigenMatrix;
-	EigenMatrix A(d_A.cols, d_A.rows);
-	EigenMatrix B(d_B.cols, d_B.rows);
-	EigenMatrix C(d_C.cols, d_C.rows);
+	EigenMatrix A(d_A.rows, d_A.cols);
+	EigenMatrix B(d_B.rows, d_B.cols);
+	EigenMatrix C(d_C.rows, d_C.cols);
 
 	cudaMemcpy((void**)A.data(), d_A.data, matrix_size(d_A) * sizeof(float), cudaMemcpyDeviceToHost);
 	cudaMemcpy((void**)B.data(), d_B.data, matrix_size(d_B) * sizeof(float), cudaMemcpyDeviceToHost);
 	cudaMemcpy((void**)C.data(), d_C.data, matrix_size(d_C) * sizeof(float), cudaMemcpyDeviceToHost);
 
-	cout << "A: " << endl << A << endl << endl;
-	cout << "B: " << endl << B << endl << endl;
-	cout << "C: " << endl << C << endl << endl;
+	printf("A(%lu, %lu)\n", A.rows(), A.cols());
+	cout << A << endl << endl;
+	printf("B(%lu, %lu)\n", B.rows(), B.cols());
+	cout << B << endl << endl;
+	printf("C(%lu, %lu)\n", C.rows(), C.cols());
+	cout << C << endl << endl;
 
 	cudaFree(d_A.data);
 	cudaFree(d_B.data);
