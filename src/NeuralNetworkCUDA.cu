@@ -12,6 +12,8 @@ __host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
 }
 
 __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
+
+	releaseFeedForwardCUDAMemory();
 }
 
 #define NUM_DIGITS 10
@@ -34,6 +36,7 @@ void backPropagateBatch(GPUTrainingParameters const&);
 __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net,
 		size_t const batchSize, size_t const batchOffset, float* const d_images,
 		size_t const imageSize, float* const d_labels, size_t const labelSize);
+__host__ void copyWeightsAndBiasToGPU(NeuralNetwork& net, GPUTrainingParameters& trainingParams);
 __host__ void freeTrainingParams(GPUTrainingParameters& params);
 
 __host__ void NeuralNetworkCUDA::feedForward() {
@@ -41,11 +44,13 @@ __host__ void NeuralNetworkCUDA::feedForward() {
 	Layer* inputLayer = getLayer(INPUT);
 	size_t const singleImgPixCount = inputLayer->nodes.size();
 
+	initializeFeedForwardCUDAMemory();
+	copyWeightsAndBiasToGPU(*this, *feedForwardParams);
+
 	//
 	// Convert the image data and labels into a float array.
 	//
-	float* fImgData = new float[singleImgPixCount];
-	float* dst = fImgData;
+	float* dst = feedForwardImage;
 	for (Layer::Node* node : inputLayer->nodes) {
 		*dst = node->output;
 		++dst;
@@ -53,31 +58,20 @@ __host__ void NeuralNetworkCUDA::feedForward() {
 
 	cudaError_t err;
 
-	float* d_images = nullptr;
-
-	err = cudaMalloc((void**) &d_images, singleImgPixCount * sizeof(float));
-	assert(err == cudaSuccess);
-	err = cudaMemcpy(d_images, fImgData, singleImgPixCount * sizeof(float), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(d_feedForwardImage, feedForwardImage, singleImgPixCount * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
 
-	delete[] fImgData;
-	fImgData = nullptr;
-
-	GPUTrainingParameters trainingParams = initTrainingParams(*this, 1, 0, d_images, singleImgPixCount, nullptr, NUM_DIGITS);
 	// Configure Grid, i.e. setup Blocks and Threads
 	dim3 numBlocks(
 			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1,
 			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1);
 	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 
-	trainingParams.images.data = d_images;
-	trainingParams.labels.data = nullptr;
-
 	// Call graphics card functions
-	feedForwardBatch(trainingParams);
+	feedForwardBatch(*feedForwardParams);
 
 	float* classification = new float[NUM_DIGITS];
-	err = cudaMemcpy(classification, trainingParams.output3.data, NUM_DIGITS * sizeof(float), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(classification, feedForwardParams->output3.data, NUM_DIGITS * sizeof(float), cudaMemcpyDeviceToHost);
 	assert(err == cudaSuccess);
 
 	Layer* outputLayer = getLayer(OUTPUT);
@@ -86,8 +80,6 @@ __host__ void NeuralNetworkCUDA::feedForward() {
 	}
 
 	delete[] classification;
-	cudaFree(d_images);
-	freeTrainingParams(trainingParams);
 }
 
 __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
@@ -254,6 +246,8 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 	//trainingParams.maxDerivation = max_derivation;
 	trainingParams.batchSize = batchSize;
 	trainingParams.learningRate = net.learningRate;
+	trainingParams.activationFunction2 = hiddenLayer->actFctType;
+	trainingParams.activationFunction3 = outputLayer->actFctType;
 
 	// Set the image and labels matrices
 	trainingParams.images.rows = imageSize;
@@ -324,6 +318,14 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 	err = cudaMalloc((void**) &trainingParams.tmp2.data, matrix_size(trainingParams.tmp2) * sizeof(float));
 	assert(err == cudaSuccess);
 
+	return trainingParams;
+}
+
+void copyWeightsAndBiasToGPU(NeuralNetwork& net, GPUTrainingParameters& trainingParams) {
+
+	NeuralNetwork::Layer* hiddenLayer = net.getLayer(NeuralNetwork::HIDDEN);
+	NeuralNetwork::Layer* outputLayer = net.getLayer(NeuralNetwork::OUTPUT);
+
 	float* W12 = new float[matrix_size(trainingParams.W12)];
 	float* W23 = new float[matrix_size(trainingParams.W23)];
 	float* bias2 = new float[matrix_size(trainingParams.bias2)];
@@ -332,7 +334,6 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 	//
 	// Collect the initial weights and biases in buffers for submission to the GPU.
 	//
-	trainingParams.activationFunction2 = hiddenLayer->actFctType;
 	{
 		size_t k = 0;
 		for (size_t j = 0; j < hiddenLayer->nodes.size(); ++j) {
@@ -344,7 +345,6 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 		}
 	}
 
-	trainingParams.activationFunction3 = outputLayer->actFctType;
 	{
 		size_t k = 0;
 		for (size_t j = 0; j < outputLayer->nodes.size(); ++j) {
@@ -359,6 +359,7 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 	//
 	// Copy data to graphics card
 	//
+	cudaError_t err;
 	err = cudaMemcpy(trainingParams.W12.data, W12, matrix_size(trainingParams.W12) * sizeof(float), cudaMemcpyHostToDevice);
 	assert(err == cudaSuccess);
 	err = cudaMemcpy(trainingParams.bias2.data, bias2, matrix_size(trainingParams.bias2) * sizeof(float), cudaMemcpyHostToDevice);
@@ -372,8 +373,6 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 	delete[] W23;
 	delete[] bias2;
 	delete[] bias3;
-
-	return trainingParams;
 }
 
 void freeTrainingParams(GPUTrainingParameters& trainingParams) {
@@ -499,4 +498,44 @@ void backPropagateHidden(GPUTrainingParameters const& params) {
 			params.bias2, error, imagesTransposed);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
+}
+
+void NeuralNetworkCUDA::initializeFeedForwardCUDAMemory() {
+
+	if (d_feedForwardImage != nullptr && feedForwardImage != nullptr && feedForwardParams != nullptr) {
+		return;
+	}
+	cout << "initFFCUDAMem" << endl;
+
+	size_t const imageSize = getLayer(INPUT)->nodes.size();
+
+	if (d_feedForwardImage == nullptr) {
+		cudaMalloc((void**) &d_feedForwardImage, imageSize * sizeof(float));
+	}
+
+	if (feedForwardImage == nullptr) {
+		feedForwardImage = new float[imageSize];
+	}
+
+	if (feedForwardParams == nullptr) {
+		feedForwardParams = new GPUTrainingParameters(initTrainingParams(*this, 1, 0, d_feedForwardImage, imageSize, nullptr, 0));
+	}
+}
+
+void NeuralNetworkCUDA::releaseFeedForwardCUDAMemory() {
+
+	if (d_feedForwardImage != nullptr) {
+		cudaFree(d_feedForwardImage);
+		d_feedForwardImage = nullptr;
+	}
+
+	if (feedForwardImage != nullptr) {
+		delete[] feedForwardImage;
+		feedForwardImage = nullptr;
+	}
+
+	if (feedForwardParams != nullptr) {
+		freeTrainingParams(*feedForwardParams);
+		feedForwardParams = nullptr;
+	}
 }
