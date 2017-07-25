@@ -57,7 +57,8 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	float* dst = fImgData;
 	for (cv::Mat const& img : images) {
 		for (uint8_t* src = img.datastart; src != img.dataend; ++src, ++dst) {
-			*dst = static_cast<float>(*src);
+			// Binarize the image to {0.0, 1.0}
+			*dst = (*src > 128) ? 1.0f : 0.0f;
 		}
 	}
 
