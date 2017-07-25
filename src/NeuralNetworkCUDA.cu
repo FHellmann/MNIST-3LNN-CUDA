@@ -340,7 +340,7 @@ void freeTrainingParams(GPUTrainingParameters& trainingParams) {
 
 void feedForwardBatch(GPUTrainingParameters const& params) {
 
-	cout << "feedForwardBatch" << endl;
+	PRINTF("feedForwardBatch\n");
 	size_t const largestMatDim = params.images.rows;
 	dim3 numBlocks(
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
@@ -362,14 +362,14 @@ void backPropagateHidden(GPUTrainingParameters const&);
 
 void backPropagateBatch(GPUTrainingParameters const& params) {
 
-	cout << "backPropagateBatch" << endl;
+	PRINTF("backPropagateBatch\n");
 	backPropagateOutput(params);
 	backPropagateHidden(params);
 }
 
 void backPropagateOutput(GPUTrainingParameters const& params) {
 
-	cout << "backPropagateOutput" << endl;
+	PRINTF("backPropagateOutput\n");
 	size_t const largestMatDim = params.images.rows;
 	dim3 numBlocks(
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
@@ -390,7 +390,7 @@ void backPropagateOutput(GPUTrainingParameters const& params) {
 
 void backPropagateHidden(GPUTrainingParameters const& params) {
 
-	cout << "backPropagateHidden" << endl;
+	PRINTF("backPropagateHidden");
 	size_t const largestMatDim = params.images.rows;
 	dim3 numBlocks(
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,

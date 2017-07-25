@@ -6,8 +6,9 @@
  */
 #include "cudaUtility.h"
 
-#define PRINTF(...) {if (threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0) { printf( __VA_ARGS__ ); }}
-//#define PRINTF(...)
+#undef PRINTF
+//#define PRINTF(...) {if (threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0) { printf( __VA_ARGS__ ); }}
+#define PRINTF(...)
 
 __global__ void feedForwardLayer(Matrix const input, Matrix const weights,
 		Matrix const bias, NeuralNetwork::ActFctType actFct,
@@ -141,12 +142,10 @@ __device__ void d_assign(float* c, float const a, float const b) {
 
 __device__ void d_add(float* c, float const a, float const b) {
 	*c = a + b;
-	//printf("d_add(%f, %f, %f\n)", *a, b, c);
 }
 
 __device__ void d_sub(float* c, float const a, float const b) {
 	*c = a - b;
-	//printf("d_add(%f, %f, %f)\n", *c, a, b);
 }
 
 __device__ void d_mul(float* c, float const a, float const b) {

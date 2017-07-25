@@ -10,6 +10,9 @@
 
 #include "NeuralNetwork.h"
 
+//#define PRINTF(...) {printf(__VA_ARGS__);}
+#define PRINTF(...)
+
 class NeuralNetworkCUDA: public NeuralNetwork {
 public:
 	NeuralNetworkCUDA(const int inpCount, const int hidCount,
