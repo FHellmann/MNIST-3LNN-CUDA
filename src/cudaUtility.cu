@@ -443,6 +443,10 @@ __global__ void mul_add(Matrix const C, Matrix const A, Matrix const B) {
 	d_mul_add(C, A, B);
 }
 
+__global__ void cwise_sub(Matrix const C, Matrix const A, Matrix const B) {
+	d_cwise_sub(C, A, B);
+}
+
 __global__ void cwise_mul_act_deriv(Matrix const C, Matrix const A, Matrix const B, NeuralNetwork::ActFctType const actFct) {
 	d_cwise_mul_act_deriv(C, A, B, actFct);
 }
