@@ -132,9 +132,12 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	copyWeightsAndBiasToGPU(*this, trainingParams);
 	cout << "Batch size: " << trainingParams.batchSize << endl;
 	// Configure Grid, i.e. setup Blocks and Threads
+	size_t largestMatDim = 0;
+	largestMatDim = max(largestMatDim, trainingParams.images.rows);
+	largestMatDim = max(largestMatDim, trainingParams.batchSize);
 	dim3 numBlocks(
-			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1,
-			(singleImgPixCount - 1) / MATRIX_SIZE_DIVISOR + 1);
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
+			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
 	dim3 threadsPerBlock(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
 	cout << "Blocks:            (" << numBlocks.x << ", " << numBlocks.y << ")"
 			<< endl;
@@ -369,7 +372,9 @@ void freeTrainingParams(GPUTrainingParameters& trainingParams) {
 void feedForwardBatch(GPUTrainingParameters const& params) {
 
 	PRINTF("feedForwardBatch\n");
-	size_t const largestMatDim = params.images.rows;
+	size_t largestMatDim = 0;
+	largestMatDim = max(largestMatDim, params.images.rows);
+	largestMatDim = max(largestMatDim, params.batchSize);
 	dim3 numBlocks(
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
@@ -393,7 +398,9 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 	PRINTF("backPropagateBatch\n");
 //	backPropagateOutput(params);
 //	backPropagateHidden(params);
-	size_t const largestMatDim = params.images.rows;
+	size_t largestMatDim = 0;
+	largestMatDim = max(largestMatDim, params.images.rows);
+	largestMatDim = max(largestMatDim, params.batchSize);
 	dim3 blocks(
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
 			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
