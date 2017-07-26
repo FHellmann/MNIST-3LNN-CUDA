@@ -125,7 +125,6 @@ __device__ void d_cwise_mul_act_deriv(Matrix const& C, Matrix const& A, Matrix c
 __device__ void d_cwise_sub(Matrix const& C, Matrix const& A, Matrix const& B);
 
 /* Matrix access */
-
 __host__ size_t matrix_size(Matrix const& A);
 __host__ Matrix matrix_transpose(Matrix const& A);
 __device__ float* d_matrix_pget(Matrix const& M, size_t const y, size_t const x);

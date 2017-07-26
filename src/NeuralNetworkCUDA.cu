@@ -150,16 +150,19 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	cout << "Threads per block: (" << threadsPerBlock.x << ", "
 			<< threadsPerBlock.y << ")" << endl;
 
-	int batchId = 0;
-	//for (; batchId < images.size() / trainingParams.batchSize; ++batchId)
-	for (; batchId < 1; ++batchId)
+	//for (int i = 0; i < 6; ++i)
 	{
-		cout << "Processing batch " << batchId << endl;
-		trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize * batchId;
-		trainingParams.labels.data = d_labels + trainingParams.batchSize * batchId;
-		// Call graphics card functions
-		feedForwardBatch(trainingParams);
-		backPropagateBatch(trainingParams);
+		int batchId = 0;
+		for (; batchId < images.size() / trainingParams.batchSize; ++batchId)
+		//for (; batchId < 2; ++batchId)
+		{
+			//cout << "Processing batch " << batchId << endl;
+			trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize * batchId;
+			trainingParams.labels.data = d_labels + trainingParams.batchSize * batchId;
+			// Call graphics card functions
+			feedForwardBatch(trainingParams);
+			backPropagateBatch(trainingParams);
+		}
 	}
 
 	//
@@ -182,28 +185,24 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	Layer* const inputLayer  = getLayer(INPUT);
 	Layer* const hiddenLayer = getLayer(HIDDEN);
 	Layer* const outputLayer = getLayer(OUTPUT);
-	trainingParams.activationFunction2 = hiddenLayer->actFctType;
 	{
 		size_t k = 0;
 		for (size_t j = 0; j < hiddenLayer->nodes.size(); ++j) {
 			Layer::Node* node = hiddenLayer->nodes[j];
 			node->bias = bias2[j];
-			for (size_t i = 0; i < node->weights.size(); ++i) {
+			for (size_t i = 0; i < node->weights.size(); ++i, ++k) {
 				node->weights[i] = W12[k];
-				++k;
 			}
 		}
 	}
 
-	trainingParams.activationFunction3 = outputLayer->actFctType;
 	{
 		size_t k = 0;
 		for (size_t j = 0; j < outputLayer->nodes.size(); ++j) {
 			Layer::Node* node = outputLayer->nodes[j];
 			node->bias = bias3[j];
-			for (size_t i = 0; i < node->weights.size(); ++i) {
+			for (size_t i = 0; i < node->weights.size(); ++i, ++k) {
 				node->weights[i] = W23[k];
-				++k;
 			}
 		}
 	}
