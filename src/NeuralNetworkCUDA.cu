@@ -30,12 +30,15 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
+TrainingParameters gDebugParams;
+
 void feedForwardBatch(GPUTrainingParameters const&);
 void backPropagateBatch(GPUTrainingParameters const&);
 
-__host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net,
+__host__ GPUTrainingParameters createTrainingParamsGPU(NeuralNetwork& net,
 		size_t const batchSize, size_t const batchOffset, float* const d_images,
 		size_t const imageSize, float* const d_labels, size_t const labelSize);
+__host__ TrainingParameters createTrainingParamsHost(NeuralNetwork& net, size_t const batchSize);
 __host__ void copyWeightsAndBiasToGPU(NeuralNetwork& net, GPUTrainingParameters& trainingParams);
 __host__ void freeTrainingParams(GPUTrainingParameters& params);
 
@@ -128,9 +131,12 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	flabels = nullptr;
 
 
-	GPUTrainingParameters trainingParams = initTrainingParams(*this, BATCH_SIZE, 0, d_images, singleImgPixCount, d_labels, NUM_DIGITS);
+	GPUTrainingParameters trainingParams = createTrainingParamsGPU(*this, BATCH_SIZE, 0, d_images, singleImgPixCount, d_labels, NUM_DIGITS);
 	copyWeightsAndBiasToGPU(*this, trainingParams);
 	cout << "Batch size: " << trainingParams.batchSize << endl;
+
+	gDebugParams = createTrainingParamsHost(*this, BATCH_SIZE);
+
 	// Configure Grid, i.e. setup Blocks and Threads
 	size_t largestMatDim = 0;
 	largestMatDim = max(largestMatDim, trainingParams.images.rows);
@@ -221,7 +227,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	d_labels = nullptr;
 }
 
-__host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t const batchSize,
+__host__ GPUTrainingParameters createTrainingParamsGPU(NeuralNetwork& net, size_t const batchSize,
 		size_t const batchOffset, float* const d_images,
 		size_t const imageSize, float* const d_labels,
 		size_t const labelSize) {
@@ -301,6 +307,63 @@ __host__ GPUTrainingParameters initTrainingParams(NeuralNetwork& net, size_t con
 	return trainingParams;
 }
 
+__host__ TrainingParameters createTrainingParamsHost(NeuralNetwork& net, size_t const batchSize) {
+
+	NeuralNetwork::Layer* const inputLayer  = net.getLayer(NeuralNetwork::INPUT);
+	NeuralNetwork::Layer* const hiddenLayer = net.getLayer(NeuralNetwork::HIDDEN);
+	NeuralNetwork::Layer* const outputLayer = net.getLayer(NeuralNetwork::OUTPUT);
+
+	TrainingParameters trainingParams;
+	trainingParams.numHiddenNodes = hiddenLayer->nodes.size();
+	//trainingParams.errorThreshold = training_error_threshold;
+	//trainingParams.maxDerivation = max_derivation;
+	trainingParams.batchSize = batchSize;
+//	trainingParams.learningRate = net.learningRate;
+//	trainingParams.activationFunction2 = hiddenLayer->actFctType;
+//	trainingParams.activationFunction3 = outputLayer->actFctType;
+
+	// Set the image and labels matrices
+	trainingParams.images.resize(inputLayer->nodes.size(), batchSize);
+	//trainingParams.images.data = images + imageSize * batchOffset;
+
+	trainingParams.labels.resize(NUM_DIGITS, batchSize);
+	//trainingParams.labels.data = labels + labelSize * batchOffset;
+
+	// Storage for the first weight matrix
+	trainingParams.W12.resize(hiddenLayer->nodes.size(), inputLayer->nodes.size());
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.W12.data, matrix_size(trainingParams.W12) * sizeof(float)));
+
+	// Storage for the hidden layer bias vector
+	trainingParams.bias2.resize(hiddenLayer->nodes.size(), 1);
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.bias2.data, matrix_size(trainingParams.bias2) * sizeof(float)));
+
+	// Storage for the second weight matrix
+	trainingParams.W23.resize(outputLayer->nodes.size(), hiddenLayer->nodes.size());
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.W23.data, matrix_size(trainingParams.W23) * sizeof(float)));
+
+	// Storage for the output layer bias vector
+	trainingParams.bias3.resize(outputLayer->nodes.size(), 1);
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.bias3.data, matrix_size(trainingParams.bias3) * sizeof(float)));
+
+	// Storage for the output layer output vectors
+	trainingParams.output2.resize(trainingParams.numHiddenNodes, trainingParams.batchSize);
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.output2.data, matrix_size(trainingParams.output2) * sizeof(float)));
+
+	// Storage for the output layer output vectors
+	trainingParams.output3.resize(outputLayer->nodes.size(), trainingParams.batchSize);
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.output3.data, matrix_size(trainingParams.output3) * sizeof(float)));
+
+	// Temporary storage of the size of the output layer output vectors
+	trainingParams.error3.resize(outputLayer->nodes.size(), trainingParams.batchSize);
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.error3.data, matrix_size(trainingParams.error3) * sizeof(float)));
+
+	// Temporary storage of the size of the hidden layer output vectors
+	trainingParams.error2.resize(hiddenLayer->nodes.size(), trainingParams.batchSize);
+	//gpuErrchk(cudaMalloc((void**) &trainingParams.error2.data, matrix_size(trainingParams.error2) * sizeof(float)));
+
+	return trainingParams;
+}
+
 void copyWeightsAndBiasToGPU(NeuralNetwork& net, GPUTrainingParameters& trainingParams) {
 
 	NeuralNetwork::Layer* hiddenLayer = net.getLayer(NeuralNetwork::HIDDEN);
@@ -348,6 +411,24 @@ void copyWeightsAndBiasToGPU(NeuralNetwork& net, GPUTrainingParameters& training
 	delete[] W23;
 	delete[] bias2;
 	delete[] bias3;
+}
+
+void getTrainingParametersFromGPU(TrainingParameters& params, GPUTrainingParameters const& gpuParams) {
+
+	gpuErrchk(cudaMemcpy(params.images.data(), gpuParams.images.data, matrix_size(gpuParams.images) * sizeof(float), cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(params.labels.data(), gpuParams.labels.data, matrix_size(gpuParams.labels) * sizeof(float), cudaMemcpyDeviceToHost));
+
+	gpuErrchk(cudaMemcpy(params.W12.data(), gpuParams.W12.data, matrix_size(gpuParams.W12) * sizeof(float), cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(params.W23.data(), gpuParams.W23.data, matrix_size(gpuParams.W23) * sizeof(float), cudaMemcpyDeviceToHost));
+
+	gpuErrchk(cudaMemcpy(params.bias2.data(), gpuParams.bias2.data, matrix_size(gpuParams.bias2) * sizeof(float), cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(params.bias3.data(), gpuParams.bias3.data, matrix_size(gpuParams.bias3) * sizeof(float), cudaMemcpyDeviceToHost));
+
+	gpuErrchk(cudaMemcpy(params.output2.data(), gpuParams.output2.data, matrix_size(gpuParams.output2) * sizeof(float), cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(params.output3.data(), gpuParams.output3.data, matrix_size(gpuParams.output3) * sizeof(float), cudaMemcpyDeviceToHost));
+
+	gpuErrchk(cudaMemcpy(params.error2.data(), gpuParams.error2.data, matrix_size(gpuParams.error2) * sizeof(float), cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(params.error3.data(), gpuParams.error3.data, matrix_size(gpuParams.error3) * sizeof(float), cudaMemcpyDeviceToHost));
 }
 
 void freeTrainingParams(GPUTrainingParameters& trainingParams) {
@@ -410,6 +491,10 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
+//	cout << "############################################################################################" << endl;
+//	getTrainingParametersFromGPU(gDebugParams, params);
+//	cout << gDebugParams << endl;
+
 	// The weight updates are computed by
 	// W23^T * e3 * ∇σ * input^T
 	Matrix W23Transposed = matrix_transpose(params.W23);
@@ -418,15 +503,27 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
+//	cout << "############################################################################################" << endl;
+//	getTrainingParametersFromGPU(gDebugParams, params);
+//	cout << gDebugParams << endl;
+
 	Matrix const output2Transposed = matrix_transpose(params.output2);
 	updateWeightsAndBias<<<blocks, threads>>>(params.W23, params.bias3, params.error3, output2Transposed, params.learningRate);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
+//	cout << "############################################################################################" << endl;
+//	getTrainingParametersFromGPU(gDebugParams, params);
+//	cout << gDebugParams << endl;
+
 	Matrix const imagesTransposed = matrix_transpose(params.images);
 	updateWeightsAndBias<<<blocks, threads>>>(params.W12, params.bias2, params.error2, imagesTransposed, params.learningRate);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
+
+//	cout << "############################################################################################" << endl;
+//	getTrainingParametersFromGPU(gDebugParams, params);
+//	cout << gDebugParams << endl;
 
 }
 
@@ -525,7 +622,7 @@ void NeuralNetworkCUDA::initializeFeedForwardCUDAMemory() {
 	}
 
 	if (feedForwardParams == nullptr) {
-		feedForwardParams = new GPUTrainingParameters(initTrainingParams(*this, 1, 0, d_feedForwardImage, imageSize, nullptr, 0));
+		feedForwardParams = new GPUTrainingParameters(createTrainingParamsGPU(*this, 1, 0, d_feedForwardImage, imageSize, nullptr, 0));
 	}
 }
 

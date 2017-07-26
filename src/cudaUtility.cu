@@ -6,6 +6,9 @@
  */
 #include "cudaUtility.h"
 
+#include <ostream>
+using namespace std;
+
 #undef PRINTF
 //#define PRINTF(...) {if (threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0) { printf( __VA_ARGS__ ); }}
 #define PRINTF(...)
@@ -476,4 +479,34 @@ Matrix matrix_transpose(Matrix const& A) {
 		T.layout = Matrix::COLUMN_MAJOR;
 	}
 	return T;
+}
+
+ostream& operator<<(ostream& out, TrainingParameters const& params) {
+
+//	out << "images: " << endl;
+//	out << params.images << endl << endl;
+//	out << "labels: " << endl;
+//	out << params.labels << endl << endl;
+
+	out << "bias2: " << endl;
+	out << params.bias2 << endl << endl;
+	out << "W12: " << endl;
+	out << params.W12 << endl << endl;
+	out << "output2: " << endl;
+	out << params.output2 << endl << endl;
+	out << "error2: " << endl;
+	out << params.error2 << endl << endl;
+
+	out << "bias3: " << endl;
+	out << params.bias3 << endl << endl;
+	out << "W23: " << endl;
+	out << params.W23 << endl << endl;
+	out << "output3: " << endl;
+	out << params.output3 << endl << endl;
+	out << "error3: " << endl;
+	out << params.error3 << endl << endl;
+
+	return out;
+
+
 }

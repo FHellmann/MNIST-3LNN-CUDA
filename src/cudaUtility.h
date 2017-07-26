@@ -9,6 +9,7 @@
 #define CUDAUTILITY_H_
 
 #include "NeuralNetworkCUDA.h"
+#include <eigen3/Eigen/Eigen>
 
 #define MATRIX_SIZE_DIVISOR 7
 
@@ -60,6 +61,31 @@ struct GPUTrainingParameters {
 	Matrix error3;
 	Matrix error2;
 };
+
+typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> EigenMatrixRowMajor;
+typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> EigenMatrixColumnMajor;
+
+struct TrainingParameters {
+	EigenMatrixColumnMajor images;
+	EigenMatrixColumnMajor labels;
+
+	size_t numHiddenNodes;
+	size_t batchSize;
+
+	EigenMatrixRowMajor W12;
+	EigenMatrixRowMajor W23;
+
+	EigenMatrixRowMajor bias2;
+	EigenMatrixRowMajor bias3;
+
+	EigenMatrixRowMajor output2;
+	EigenMatrixRowMajor output3;
+
+	EigenMatrixRowMajor error2;
+	EigenMatrixRowMajor error3;
+};
+
+std::ostream& operator<<(std::ostream&, TrainingParameters const&);
 
 /* Utility functions */
 __global__ void mul(Matrix const C, Matrix const A, Matrix const B);
