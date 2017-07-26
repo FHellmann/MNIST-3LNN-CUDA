@@ -70,7 +70,7 @@ bool ensureDeepCopy(NeuralNetworkParallel const& A, NeuralNetworkParallel const&
 	return true;
 }
 
-bool testCUDAMatrixMul() {
+bool testCUDAMatrixMulRect() {
 
 	Matrix d_A;
 	d_A.rows = 3;
@@ -180,20 +180,98 @@ bool testCUDAMatrixMulTranspose() {
 	return (A*B).isApprox(C);
 }
 
+bool testCUDAMatrixMul() {
+	if (!testCUDAMatrixMulRect()) {
+		return false;
+	}
+
+	if (!testCUDAMatrixMulTranspose()) {
+		return false;
+	}
+
+	return true;
+}
+
+bool testCUDA_cwise_mul_act_deriv() {
+	Matrix d_A;
+	d_A.rows = 10;
+	d_A.cols = 10;
+	cudaMalloc((void**)&d_A.data, matrix_size(d_A) * sizeof(float));
+
+	Matrix d_B;
+	d_B.rows = d_A.rows;
+	d_B.cols = d_A.cols;
+	cudaMalloc((void**)&d_B.data, matrix_size(d_B) * sizeof(float));
+
+	size_t largestMatDim = 0;
+	largestMatDim = max(largestMatDim, d_A.rows);
+	largestMatDim = max(largestMatDim, d_A.cols);
+	largestMatDim = max(largestMatDim, d_B.rows);
+	largestMatDim = max(largestMatDim, d_B.cols);
+	dim3 blocks((largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1, (largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
+	dim3 threads(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
+
+	printf("blocks(%u, %u), threads(%u, %u)\n", blocks.x, blocks.y, threads.x, threads.y);
+
+	fill_pattern<<<blocks, threads>>>(d_A);
+	fill_pattern<<<blocks, threads>>>(d_B);
+
+	Matrix d_C;
+	d_C.rows = d_A.rows;
+	d_C.cols = d_B.cols;
+	cudaMalloc((void**)&d_C.data, matrix_size(d_C) * sizeof(float));
+	cwise_mul_act_deriv<<<blocks, threads>>>(d_C, d_A, d_B, NeuralNetwork::SIGMOID);
+
+	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> EigenMatrixRowMajor;
+	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> EigenMatrixColumnMajor;
+	EigenMatrixRowMajor A(d_A.rows, d_A.cols);
+	EigenMatrixRowMajor B(d_B.rows, d_B.cols);
+	EigenMatrixRowMajor C(d_C.rows, d_C.cols);
+
+	cudaMemcpy((void**)A.data(), d_A.data, matrix_size(d_A) * sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy((void**)B.data(), d_B.data, matrix_size(d_B) * sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy((void**)C.data(), d_C.data, matrix_size(d_C) * sizeof(float), cudaMemcpyDeviceToHost);
+
+	printf("A(%lu, %lu)\n", A.rows(), A.cols());
+	cout << A << endl << endl;
+	printf("B(%lu, %lu)\n", B.rows(), B.cols());
+	cout << B << endl << endl;
+	printf("C(%lu, %lu)\n", C.rows(), C.cols());
+	cout << C << endl << endl;
+
+	cudaFree(d_A.data);
+	cudaFree(d_B.data);
+	cudaFree(d_C.data);
+
+	B = B.cwiseProduct(EigenMatrixRowMajor::Ones(B.rows(), B.cols()) - B);
+
+	cout << "Desired:" << endl;
+	cout << A.cwiseProduct(B) << endl << endl;
+	cout << "C:" << endl;
+	cout << C << endl << endl;
+
+	return (A.cwiseProduct(B)).isApprox(C);
+}
+
 
 int main(int argc, char* argv[])
 {
 	NeuralNetworkParallel A(4, 2, 17, 0.2);
 	NeuralNetworkParallel B(A);
 
-	if (ensureDeepCopy(A, B) == false)
-	{
-		cerr << "B is not a deep copy of A!" << endl;
-		exit (EXIT_FAILURE);
-	}
+//	if (ensureDeepCopy(A, B) == false)
+//	{
+//		cerr << "B is not a deep copy of A!" << endl;
+//		exit (EXIT_FAILURE);
+//	}
+//
+//	if (!testCUDAMatrixMul()) {
+//		cerr << "Matrix multiplication errornous." << endl;
+//		exit (EXIT_FAILURE);
+//	}
 
-	if (!testCUDAMatrixMulTranspose()) {
-		cerr << "Matrix multiplication errornous." << endl;
+	if (!testCUDA_cwise_mul_act_deriv()) {
+		cerr << "cwise_mul_act_deriv is errornous." << endl;
 		exit (EXIT_FAILURE);
 	}
 

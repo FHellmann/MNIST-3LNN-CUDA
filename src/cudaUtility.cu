@@ -16,33 +16,11 @@ using namespace std;
 __global__ void feedForwardLayer(Matrix const input, Matrix const weights,
 		Matrix const bias, NeuralNetwork::ActFctType actFct,
 		Matrix const output) {
-	if (blockIdx.x == 0 && blockIdx.y == 0) {
-		if (threadIdx.x < input.cols && threadIdx.y < input.rows) {
-			printf("input_%p(%u, %u): %f\n", input.data, threadIdx.y, threadIdx.x, d_matrix_get(input, threadIdx.y, threadIdx.x));
-		}
-	}
-
-	if (blockIdx.x == 0 && blockIdx.y == 0) {
-		if (threadIdx.x < bias.cols && threadIdx.y < bias.rows) {
-			printf("bias_%p(%u, %u): %f\n", bias.data, threadIdx.y, threadIdx.x, d_matrix_get(bias, threadIdx.y, threadIdx.x));
-		}
-	}
-
-	if (blockIdx.x == 0 && blockIdx.y == 0) {
-		if (threadIdx.x < weights.cols && threadIdx.y < weights.rows) {
-			printf("weights_%p(%u, %u): %f\n", weights.data, threadIdx.y, threadIdx.x, d_matrix_get(weights, threadIdx.y, threadIdx.x));
-		}
-	}
 
 	d_set_bias(output, bias);
 	__syncthreads();
 	d_mul_add(output, weights, input);
 	__syncthreads();
-	if (blockIdx.x == 0 && blockIdx.y == 0) {
-		if (threadIdx.x < output.cols && threadIdx.y < output.rows) {
-			printf("output_%p(%u, %u): %f\n", output.data, threadIdx.y, threadIdx.x, d_matrix_get(output, threadIdx.y, threadIdx.x));
-		}
-	}
 	d_apply_activation(output, actFct);
 
 }
@@ -465,6 +443,10 @@ __global__ void mul_add(Matrix const C, Matrix const A, Matrix const B) {
 	d_mul_add(C, A, B);
 }
 
+__global__ void cwise_mul_act_deriv(Matrix const C, Matrix const A, Matrix const B, NeuralNetwork::ActFctType const actFct) {
+	d_cwise_mul_act_deriv(C, A, B, actFct);
+}
+
 size_t matrix_size(Matrix const& A) {
 	return A.rows * A.cols;
 }
@@ -507,6 +489,4 @@ ostream& operator<<(ostream& out, TrainingParameters const& params) {
 	out << params.error3 << endl << endl;
 
 	return out;
-
-
 }

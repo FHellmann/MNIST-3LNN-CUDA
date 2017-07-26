@@ -90,6 +90,7 @@ std::ostream& operator<<(std::ostream&, TrainingParameters const&);
 /* Utility functions */
 __global__ void mul(Matrix const C, Matrix const A, Matrix const B);
 __global__ void mul_add(Matrix const C, Matrix const A, Matrix const B);
+__global__ void cwise_mul_act_deriv(Matrix const C, Matrix const A, Matrix const B, NeuralNetwork::ActFctType const actFct);
 __global__ void fill(Matrix const, float const);
 __global__ void fill_pattern(Matrix const);
 
