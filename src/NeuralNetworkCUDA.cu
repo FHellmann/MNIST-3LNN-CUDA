@@ -499,7 +499,7 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 	// W23^T * e3 * ∇σ * input^T
 	Matrix W23Transposed = matrix_transpose(params.W23);
 
-	calculateHiddenError<<<blocks, threads>>>(params.error2, W23Transposed, params.output3, params.output2, params.activationFunction2);
+	calculateHiddenError<<<blocks, threads>>>(params.error2, W23Transposed, params.error3, params.output2, params.activationFunction2);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
