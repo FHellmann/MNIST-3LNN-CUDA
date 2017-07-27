@@ -12,6 +12,7 @@
 #include "MNISTDataset.h"
 
 #define NUM_DIGITS 10
+#define BATCH_SIZE 1
 
 class NeuralNetwork {
 public:

@@ -16,8 +16,6 @@ __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
 	releaseFeedForwardCUDAMemory();
 }
 
-#define BATCH_SIZE 60
-
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
@@ -157,7 +155,7 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 		{
 			//cout << "Processing batch " << batchId << endl;
 			trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize * batchId;
-			trainingParams.labels.data = d_labels + trainingParams.batchSize * batchId;
+			trainingParams.labels.data = d_labels + NUM_DIGITS * trainingParams.batchSize * batchId;
 			// Call graphics card functions
 			feedForwardBatch(trainingParams);
 			backPropagateBatch(trainingParams);
