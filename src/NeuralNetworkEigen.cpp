@@ -50,9 +50,6 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 		}
 	}
 
-//	cout << W23 << endl << endl;
-//	cout << bias3 << endl << endl;
-
 	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixColMajor;
 	MatrixColMajor imageBatch(images.front().total(), batchSize);
 	MatrixColMajor labelBatch(NUM_DIGITS, batchSize);
@@ -84,9 +81,6 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 				++img;
 				++lbl;
 			}
-
-//			cout << imageBatch << endl << endl;
-//			cout << labelBatch << endl << endl;
 
 			// feed forward
 			output2 = bias2 * Eigen::MatrixXf::Ones(1, batchSize);

@@ -313,51 +313,35 @@ __host__ TrainingParameters createTrainingParamsHost(NeuralNetwork& net, size_t 
 
 	TrainingParameters trainingParams;
 	trainingParams.numHiddenNodes = hiddenLayer->nodes.size();
-	//trainingParams.errorThreshold = training_error_threshold;
-	//trainingParams.maxDerivation = max_derivation;
 	trainingParams.batchSize = batchSize;
-//	trainingParams.learningRate = net.learningRate;
-//	trainingParams.activationFunction2 = hiddenLayer->actFctType;
-//	trainingParams.activationFunction3 = outputLayer->actFctType;
 
 	// Set the image and labels matrices
 	trainingParams.images.resize(inputLayer->nodes.size(), batchSize);
-	//trainingParams.images.data = images + imageSize * batchOffset;
-
 	trainingParams.labels.resize(NUM_DIGITS, batchSize);
-	//trainingParams.labels.data = labels + labelSize * batchOffset;
 
 	// Storage for the first weight matrix
 	trainingParams.W12.resize(hiddenLayer->nodes.size(), inputLayer->nodes.size());
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.W12.data, matrix_size(trainingParams.W12) * sizeof(float)));
 
 	// Storage for the hidden layer bias vector
 	trainingParams.bias2.resize(hiddenLayer->nodes.size(), 1);
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.bias2.data, matrix_size(trainingParams.bias2) * sizeof(float)));
 
 	// Storage for the second weight matrix
 	trainingParams.W23.resize(outputLayer->nodes.size(), hiddenLayer->nodes.size());
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.W23.data, matrix_size(trainingParams.W23) * sizeof(float)));
 
 	// Storage for the output layer bias vector
 	trainingParams.bias3.resize(outputLayer->nodes.size(), 1);
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.bias3.data, matrix_size(trainingParams.bias3) * sizeof(float)));
 
 	// Storage for the output layer output vectors
 	trainingParams.output2.resize(trainingParams.numHiddenNodes, trainingParams.batchSize);
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.output2.data, matrix_size(trainingParams.output2) * sizeof(float)));
 
 	// Storage for the output layer output vectors
 	trainingParams.output3.resize(outputLayer->nodes.size(), trainingParams.batchSize);
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.output3.data, matrix_size(trainingParams.output3) * sizeof(float)));
 
 	// Temporary storage of the size of the output layer output vectors
 	trainingParams.error3.resize(outputLayer->nodes.size(), trainingParams.batchSize);
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.error3.data, matrix_size(trainingParams.error3) * sizeof(float)));
 
 	// Temporary storage of the size of the hidden layer output vectors
 	trainingParams.error2.resize(hiddenLayer->nodes.size(), trainingParams.batchSize);
-	//gpuErrchk(cudaMalloc((void**) &trainingParams.error2.data, matrix_size(trainingParams.error2) * sizeof(float)));
 
 	return trainingParams;
 }
@@ -468,15 +452,9 @@ void feedForwardBatch(GPUTrainingParameters const& params) {
 	gpuErrchk( cudaDeviceSynchronize() );
 }
 
-/* Neural network operations. */
-void backPropagateOutput(GPUTrainingParameters const&);
-void backPropagateHidden(GPUTrainingParameters const&);
-
 void backPropagateBatch(GPUTrainingParameters const& params) {
 
 	PRINTF("backPropagateBatch\n");
-//	backPropagateOutput(params);
-//	backPropagateHidden(params);
 	size_t largestMatDim = 0;
 	largestMatDim = max(largestMatDim, params.images.rows);
 	largestMatDim = max(largestMatDim, params.batchSize);
@@ -489,10 +467,6 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
-//	cout << "############################################################################################" << endl;
-//	getTrainingParametersFromGPU(gDebugParams, params);
-//	cout << gDebugParams << endl;
-
 	// The weight updates are computed by
 	// W23^T * e3 * ∇σ * input^T
 	Matrix W23Transposed = matrix_transpose(params.W23);
@@ -501,106 +475,16 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
-//	cout << "############################################################################################" << endl;
-//	getTrainingParametersFromGPU(gDebugParams, params);
-//	cout << gDebugParams << endl;
-
 	Matrix const imagesTransposed = matrix_transpose(params.images);
 	updateWeightsAndBias<<<blocks, threads>>>(params.W12, params.bias2, params.error2, imagesTransposed, params.learningRate / params.batchSize);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
-//	cout << "############################################################################################" << endl;
-//	getTrainingParametersFromGPU(gDebugParams, params);
-//	cout << gDebugParams << endl;
-
 	Matrix const output2Transposed = matrix_transpose(params.output2);
 	updateWeightsAndBias<<<blocks, threads>>>(params.W23, params.bias3, params.error3, output2Transposed, params.learningRate / params.batchSize);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
-
-//	cout << "############################################################################################" << endl;
-//	getTrainingParametersFromGPU(gDebugParams, params);
-//	cout << gDebugParams << endl;
-
 }
-
-//void backPropagateOutput(GPUTrainingParameters const& params) {
-//
-//	PRINTF("backPropagateOutput\n");
-//	size_t const largestMatDim = params.images.rows;
-//	dim3 blocks(
-//			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
-//			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
-//	dim3 threads(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
-//
-//	// output3 contains the errors.
-//	Matrix const& error = params.output3;
-//
-//	calculateOutputError<<<blocks, threads>>>(params.output3,
-//			params.labels, error, params.tmp3, params.learningRate,
-//			params.activationFunction3);
-//	gpuErrchk( cudaPeekAtLastError() );
-//	gpuErrchk( cudaDeviceSynchronize() );
-//
-//	//fill<<<blocks, threads>>>(params.W23, 0.0f);
-//	//fill<<<blocks, threads>>>(params.output3, 2.0f);
-//	//fill<<<blocks, threads>>>(params.output2, 1.0f);
-//
-//	updateBias<<<blocks, threads>>>(params.bias3, error);
-//	gpuErrchk( cudaPeekAtLastError() );
-//	gpuErrchk( cudaDeviceSynchronize() );
-//
-//	Matrix const output2Transposed = matrix_transpose(params.output2);
-//	updateWeights<<<blocks, threads>>>(params.W23, params.bias3, error, output2Transposed);
-//	gpuErrchk( cudaPeekAtLastError() );
-//	gpuErrchk( cudaDeviceSynchronize() );
-//}
-//
-//void backPropagateHidden(GPUTrainingParameters const& params) {
-//
-//	PRINTF("backPropagateHidden");
-//	size_t const largestMatDim = params.images.rows;
-//	dim3 blocks(
-//			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1,
-//			(largestMatDim - 1) / MATRIX_SIZE_DIVISOR + 1);
-//	dim3 threads(MATRIX_SIZE_DIVISOR, MATRIX_SIZE_DIVISOR);
-//
-//	// The weight updates are computed by
-//	// W23^T * e3 * ∇σ * input^T
-//	Matrix W23Transposed = matrix_transpose(params.W23);
-//
-//	// See d_back_propagation_output
-//	// Already contains the learningRate.
-//	Matrix const& previousError = params.output3;
-//	Matrix const& error = params.tmp2;
-//
-//	calculateHiddenError<<<blocks, threads>>>(W23Transposed,
-//			previousError, error, params.learningRate);
-//	gpuErrchk( cudaPeekAtLastError() );
-//	gpuErrchk( cudaDeviceSynchronize() );
-//
-//	updateBias<<<blocks, threads>>>(params.bias2, error);
-//	gpuErrchk( cudaPeekAtLastError() );
-//	gpuErrchk( cudaDeviceSynchronize() );
-//
-//	// Backpropagate the error.
-//	finalizeHiddenError<<<blocks, threads>>>(
-//			params.output2, error, params.activationFunction2);
-//	gpuErrchk( cudaPeekAtLastError() );
-//	gpuErrchk( cudaDeviceSynchronize() );
-//
-//	//fill_pattern<<<blocks, threads>>>(params.W12);
-//	//fill<<<blocks, threads>>>(params.W12, 0.0f);
-//	//fill<<<blocks, threads>>>(error, 1.0f);
-//	//fill<<<blocks, threads>>>(params.images, 1.0f);
-//
-//	Matrix const imagesTransposed = matrix_transpose(params.images);
-//	updateWeights<<<blocks, threads>>>(params.W12,
-//			params.bias2, error, imagesTransposed);
-//	gpuErrchk( cudaPeekAtLastError() );
-//	gpuErrchk( cudaDeviceSynchronize() );
-//}
 
 void NeuralNetworkCUDA::initializeFeedForwardCUDAMemory() {
 
