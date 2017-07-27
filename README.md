@@ -63,7 +63,7 @@ Due to the low network I/O we decided to use the Data Parallelism. The machines 
 To evaluate the performance of the Neural Network it was trained with the MNIST-Dataset (60000 Images). 
 Every network was trained with 784 Input-Nodes, 20 Hidden-Nodes, 10 Output-Nodes and a learning rate of 0.2. 
 The training needs to reach a error lower then n% (=> >(100 - n)% correct recognition) or it should cancel if 
-a error derivation of 0.005 occures.
+a error derivation of 0.005 occures. It was distributed on 10 machines with 1 master and 9 slaves.
 
 | Distributed | Type        | >93% *  | >94% *  | >95% *  | 
 | :---------: | :---------- | :-----: | :-----: | :-----: |
