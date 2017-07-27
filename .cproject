@@ -74,8 +74,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.878689367" name="Tests.cu" rcbsApplicability="disable" resourcePath="src/Tests.cu" toolsToInvoke="nvcc.compiler.base.795485735.765695190">
+						<tool id="nvcc.compiler.base.795485735.765695190" name="NVCC Compiler" superClass="nvcc.compiler.base.795485735"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/Tests.cu|src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -161,8 +164,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.on_path.configuration.release.1554113613.81146008" name="Tests.cu" rcbsApplicability="disable" resourcePath="src/Tests.cu" toolsToInvoke="nvcc.compiler.base.428191841.1324560701">
+						<tool id="nvcc.compiler.base.428191841.1324560701" name="NVCC Compiler" superClass="nvcc.compiler.base.428191841"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/Tests.cu|src/Tests.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -202,7 +208,7 @@
 									<listOptionValue builtIn="false" value="/usr//lib"/>
 									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/openmpi/lib"/>
 								</option>
-								<option id="gnu.c.link.option.libs.672766095" superClass="gnu.c.link.option.libs" valueType="libs">
+								<option id="gnu.c.link.option.libs.672766095" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="mpi"/>
 									<listOptionValue builtIn="false" value="mpi_cxx"/>
 									<listOptionValue builtIn="false" value="opencv_core"/>
@@ -261,8 +267,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1464267090.1756121514" name="Tests.cu" rcbsApplicability="disable" resourcePath="src/Tests.cu" toolsToInvoke="nvcc.compiler.base.473892696.152880091">
+						<tool id="nvcc.compiler.base.473892696.152880091" name="NVCC Compiler" superClass="nvcc.compiler.base.473892696"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/Tests.cu|src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -350,8 +359,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.on_path.configuration.release.1554113613.1219068610.186934296" name="Tests.cu" rcbsApplicability="disable" resourcePath="src/Tests.cu" toolsToInvoke="nvcc.compiler.base.309069518.1654771065">
+						<tool id="nvcc.compiler.base.309069518.1654771065" name="NVCC Compiler" superClass="nvcc.compiler.base.309069518"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/Tests.cu|src/Tests.cpp|src/trainLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -438,6 +450,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.on_path.configuration.debug.1666335649.1456217060.1909728552" name="Tests.cu" rcbsApplicability="disable" resourcePath="src/Tests.cu" toolsToInvoke="nvcc.compiler.base.1972192866.1550151423">
+						<tool id="nvcc.compiler.base.1972192866.1550151423" name="NVCC Compiler" superClass="nvcc.compiler.base.1972192866"/>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="src/trainLindNet.cpp|src/queryLindNet.cpp|yaml-cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
