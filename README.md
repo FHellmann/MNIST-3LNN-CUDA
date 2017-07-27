@@ -113,8 +113,20 @@ Due to the low network I/O we decided to use the Data Parallelism. The machines 
 ## Performance-Analysis
 To evaluate the performance of the Neural Network it was trained with the MNIST-Dataset (60000 Images). 
 Every network was trained with 784 Input-Nodes, 20 Hidden-Nodes, 10 Output-Nodes and a learning rate of 0.2. 
-The training needs to reach a error lower then 4% (=> >96% correct recognition) or it should cancel if 
+The training needs to reach a error lower then n% (=> >(100 - n)% correct recognition) or it should cancel if 
 a error derivation of 0.005 occures.
+
+| Distributed | Type        | >93% *  | >94% *  | >95% *  | 
+| :---------: | :---------- | :-----: | :-----: | :-----: |
+|             | Sequentiell | 9.01534 | 15.7818 | 33.7251 |
+|             | Parallel    | 8.92147 | 15.8313 | 23.4899 |
+|             | CUDA        |         |         |         |
+| X           | Sequentiell | 2.04115 | 2.66057 | 2.85507 |
+| X           | Parallel    | 8.04285 | 9.80803 | 12.9221 |
+| X           | CUDA        |         |         |         |
+
+\* Correct classification on training dataset.
+
 
 ## Literature
 1. [High Performance Parallel Stochastic Gradient Descent in Shared Memory](http://www.ece.ubc.ca/~matei/papers/ipdps16.pdf)
