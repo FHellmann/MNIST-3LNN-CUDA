@@ -11,6 +11,8 @@
 #include <opencv2/core/core.hpp>
 #include "MNISTDataset.h"
 
+#define NUM_DIGITS 10
+
 class NeuralNetwork {
 public:
 	enum ActFctType {

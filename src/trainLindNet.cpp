@@ -12,6 +12,7 @@
 #include "NeuralNetwork.h"
 #include "NeuralNetworkParallel.h"
 #include "NeuralNetworkCUDA.h"
+#include "NeuralNetworkEigen.h"
 
 using namespace std;
 using namespace TCLAP;
@@ -30,7 +31,7 @@ int main(int argc, char* argv[]) {
 			"path", parser);
 
 	ValueArg<string> networkType("t", "networkType",
-			"The neural network type (sequentiell, parallel, cuda).", false, "sequentiell", "type", parser);
+			"The neural network type (sequentiell, parallel, cuda, eigen).", false, "sequentiell", "type", parser);
 
 	try {
 		parser.parse(argc, argv);
@@ -71,6 +72,9 @@ int main(int argc, char* argv[]) {
 	} else if (networkTypeSelection.compare("cuda") == 0) {
 		lindNet = new NeuralNetworkCUDA(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
 		cout << "Neural Network - CUDA" << endl;
+	} else if (networkTypeSelection.compare("eigen") == 0) {
+		lindNet = new NeuralNetworkEigen(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+		cout << "Neural Network - Eigen" << endl;
 	} else {
 		lindNet = new NeuralNetwork(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
 		cout << "Neural Network - Sequentiell" << endl;
