@@ -7,8 +7,9 @@
 using namespace std;
 
 __host__ NeuralNetworkCUDA::NeuralNetworkCUDA(const int inpCount,
-		const int hidCount, const int outCount, const double learningRate) :
-		NeuralNetwork(inpCount, hidCount, outCount, learningRate) {
+		const int hidCount, const int outCount, const double learningRate, size_t const n) :
+		NeuralNetwork(inpCount, hidCount, outCount, learningRate),
+		numIterations(n) {
 }
 
 __host__ NeuralNetworkCUDA::~NeuralNetworkCUDA() {
@@ -147,15 +148,16 @@ __host__ void NeuralNetworkCUDA::train(MNISTImageDataset const& images,
 	cout << "Threads per block: (" << threadsPerBlock.x << ", "
 			<< threadsPerBlock.y << ")" << endl;
 
-	//for (int i = 0; i < 6; ++i)
+	for (size_t it = 0; it < numIterations; ++it)
 	{
-		int batchId = 0;
-		for (; batchId < images.size() / trainingParams.batchSize; ++batchId)
-		//for (; batchId < 2; ++batchId)
+		cout << "Iteration " << it << endl;
+
+		for (size_t batchId = 0; batchId < images.size() / trainingParams.batchSize; ++batchId)
 		{
-			//cout << "Processing batch " << batchId << endl;
+			// Setup batch
 			trainingParams.images.data = d_images + singleImgPixCount * trainingParams.batchSize * batchId;
 			trainingParams.labels.data = d_labels + NUM_DIGITS * trainingParams.batchSize * batchId;
+
 			// Call graphics card functions
 			feedForwardBatch(trainingParams);
 			backPropagateBatch(trainingParams);

@@ -14,7 +14,7 @@
 class NeuralNetworkEigen: public NeuralNetwork {
 public:
 	NeuralNetworkEigen(const int inpCount, const int hidCount, const int outCount,
-			const double learningRate);
+			const double learningRate, size_t const iterations = 1);
 	virtual ~NeuralNetworkEigen();
 
 	virtual void train(MNISTImageDataset const& images,
@@ -34,7 +34,9 @@ private:
 	Eigen::MatrixXf output3;
 	Eigen::MatrixXf error3;
 
-	void initMatrices(size_t const batchSize);
+	void resizeMatrices(size_t const batchSize);
+
+	size_t numIterations;
 };
 
 #endif /* NEURALNETWORKEIGEN_H_ */

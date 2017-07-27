@@ -11,8 +11,9 @@
 using namespace std;
 
 NeuralNetworkEigen::NeuralNetworkEigen(const int inpCount, const int hidCount,
-		const int outCount, const double learningRate) :
-		NeuralNetwork(inpCount, hidCount, outCount, learningRate) {
+		const int outCount, const double learningRate, size_t iterations) :
+		NeuralNetwork(inpCount, hidCount, outCount, learningRate),
+		numIterations(iterations) {
 
 }
 
@@ -25,7 +26,7 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 
 	size_t const batchSize = BATCH_SIZE;
 
-	initMatrices(batchSize);
+	resizeMatrices(batchSize);
 
 	//
 	// Initialize the weights
@@ -58,8 +59,7 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 	Eigen::MatrixXf const ones2 = Eigen::MatrixXf::Ones(output2.rows(), output2.cols());
 	Eigen::MatrixXf const ones3 = Eigen::MatrixXf::Ones(output3.rows(), output3.cols());
 
-	int it = 0;
-	for (; it < 6; ++it)
+	for (size_t it = 0; it < numIterations; ++it)
 	{
 		cout << "Iteration " << it << endl;
 
@@ -132,7 +132,7 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 	}
 }
 
-void NeuralNetworkEigen::initMatrices(size_t const batchSize) {
+void NeuralNetworkEigen::resizeMatrices(size_t const batchSize) {
 
 	size_t const inputSize = getLayer(INPUT)->nodes.size();
 	size_t const hiddenSize = getLayer(HIDDEN)->nodes.size();

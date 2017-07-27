@@ -18,7 +18,7 @@ struct GPUTrainingParameters;
 class NeuralNetworkCUDA: public NeuralNetwork {
 public:
 	NeuralNetworkCUDA(const int inpCount, const int hidCount,
-			const int outCount, const double learningRate);
+			const int outCount, const double learningRate, size_t const numIterations = 1);
 	virtual ~NeuralNetworkCUDA();
 
 	virtual void train(MNISTImageDataset const& images,
@@ -34,10 +34,13 @@ private:
 
 	/**
 	 * Allocates memory for the public interface feedForward call on the GPU and the host.
-	 * If memory is already allocated, does nothing.
+	 * If memory is already allocated, nothing is done.
 	 */
 	void initializeFeedForwardCUDAMemory();
 	void releaseFeedForwardCUDAMemory();
+
+	/** Number of iterations over the dataset. */
+	size_t numIterations;
 };
 
 #endif /* NEURALNETWORKCUDA_H_ */

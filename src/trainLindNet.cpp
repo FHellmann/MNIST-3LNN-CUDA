@@ -33,6 +33,10 @@ int main(int argc, char* argv[]) {
 	ValueArg<string> networkType("t", "networkType",
 			"The neural network type (sequentiell, parallel, cuda, eigen).", false, "sequentiell", "type", parser);
 
+	ValueArg<size_t> iterations("", "iterations",
+			"Maximum number of iterations over the whole data set. Currenlty only supported for the cuda and eigen versions.",
+			false, 1, "positive integer", parser);
+
 	try {
 		parser.parse(argc, argv);
 	} catch (ArgParseException const& e) {
@@ -70,10 +74,10 @@ int main(int argc, char* argv[]) {
 		lindNet = new NeuralNetworkParallel(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
 		cout << "Neural Network - Parallel" << endl;
 	} else if (networkTypeSelection.compare("cuda") == 0) {
-		lindNet = new NeuralNetworkCUDA(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+		lindNet = new NeuralNetworkCUDA(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate, iterations.getValue());
 		cout << "Neural Network - CUDA" << endl;
 	} else if (networkTypeSelection.compare("eigen") == 0) {
-		lindNet = new NeuralNetworkEigen(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
+		lindNet = new NeuralNetworkEigen(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate, iterations.getValue());
 		cout << "Neural Network - Eigen" << endl;
 	} else {
 		lindNet = new NeuralNetwork(inputLayerNodes, hiddenLayerNodes, outputLayerNodes, learningRate);
