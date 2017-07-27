@@ -1,0 +1,122 @@
+<svg width="1199" height="769" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+ <defs>
+  <filter id="svg_11_blur">
+   <feGaussianBlur stdDeviation="0" in="SourceGraphic"/>
+  </filter>
+ </defs>
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="771" width="1201" y="-1" x="-1"/>
+  <g display="none" overflow="visible" y="0" x="0" height="100%" width="100%" id="canvasGrid">
+   <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%"/>
+  </g>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_1" y="208.5" x="37.25" stroke-width="0" stroke="#000" fill="#000000">Input</text>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_2" y2="186.077427" x2="57" y1="58.5" x1="57" stroke-width="1.5" stroke="#000" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_3" y2="146.335541" x2="158" y1="98" x1="158" stroke-width="1.5" stroke="#000" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_4" y2="128.149563" x2="260" y1="116.42786" x1="260" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_5" y="43.5" x="37.25" stroke-width="0" stroke="#000" fill="#000000">784</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_7" y="208.5" x="129" stroke-width="0" stroke="#000" fill="#000000">Hidden</text>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_8" y="208.5" x="234" stroke-width="0" stroke="#000" fill="#000000">Output</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_9" y="43.5" x="153" stroke-width="0" stroke="#000" fill="#000000">n</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_10" y="43.5" x="251" stroke-width="0" stroke="#000" fill="#000000">10</text>
+  <rect filter="url(#svg_11_blur)" id="svg_11" height="49" width="1" y="84.5" x="436" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_12" height="49" width="40" y="145.5" x="436" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_13" height="49" width="91" y="145.5" x="526" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_14" height="49" width="40" y="145.5" x="626" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_15" height="91" width="40" y="44.5" x="626" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_16" y="211.5" x="435.25" stroke-width="0" stroke="#000" fill="#000000">output2</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_17" y="79.5" x="435.25" stroke-width="0" stroke="#000" fill="#000000">bias2</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_18" y="211.5" x="562" stroke-width="0" stroke="#000" fill="#000000">W12</text>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_19" y="211.5" x="622" stroke-width="0" stroke="#000" fill="#000000">output2+=</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_20" y="37.5" x="628" stroke-width="0" stroke="#000" fill="#000000">images</text>
+  <rect filter="url(#svg_11_blur)" id="svg_27" height="49" width="40" y="145.5" x="716" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_28" y="211.5" x="710" stroke-width="0" stroke="#000" fill="#000000">σ(output2)</text>
+  <rect filter="url(#svg_11_blur)" id="svg_29" height="13" width="1" y="154.5" x="806" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_30" height="13" width="40" y="181.5" x="806" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_31" y="211.5" x="808" stroke-width="0" stroke="#000" fill="#000000">output3</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_32" y="149.5" x="808" stroke-width="0" stroke="#000" fill="#000000">bias3</text>
+  <rect filter="url(#svg_11_blur)" id="svg_33" height="13" width="49" y="181.5" x="891" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_34" height="13" width="40" y="181.5" x="948" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_36" y="211.5" x="905" stroke-width="0" stroke="#000" fill="#000000">W23</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_37" y="211.5" x="944" stroke-width="0" stroke="#000" fill="#000000">output3+=</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_38" y="117.5" x="943" stroke-width="0" stroke="#000" fill="#000000">σ(output2)</text>
+  <rect filter="url(#svg_11_blur)" id="svg_39" height="49" width="40" y="124.5" x="948" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_40" height="13" width="40" y="181.5" x="1048" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_41" y="211.5" x="1044" stroke-width="0" stroke="#000" fill="#000000">σ(output3)</text>
+  <rect filter="url(#svg_11_blur)" id="svg_66" height="13" width="40" y="371.5" x="38" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_67" y="383.5" x="84" stroke-width="0" stroke="#000" fill="#000000">labels</text>
+  <rect filter="url(#svg_11_blur)" id="svg_68" height="13" width="40" y="401.5" x="38" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_69" y="413.5" x="84" stroke-width="0" stroke="#000" fill="#000000">output3</text>
+  <rect filter="url(#svg_11_blur)" id="svg_70" height="13" width="40" y="431.5" x="38" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_71" y="443.5" x="84" stroke-width="0" stroke="#000" fill="#000000">error3</text>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_72" y="397.5" x="56" stroke-width="0" stroke="#000" fill="#000000">-</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_73" y="427.5" x="56" stroke-width="0" stroke="#000" fill="#000000">=</text>
+  <rect filter="url(#svg_11_blur)" id="svg_76" height="13" width="40" y="371.5" x="268" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_77" y="383.5" x="314" stroke-width="0" stroke="#000" fill="#000000">σ'(output3)</text>
+  <rect filter="url(#svg_11_blur)" id="svg_78" height="13" width="40" y="401.5" x="268" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_79" y="413.5" x="314" stroke-width="0" stroke="#000" fill="#000000">error3</text>
+  <rect filter="url(#svg_11_blur)" id="svg_80" height="13" width="40" y="431.5" x="268" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_81" y="443.5" x="314" stroke-width="0" stroke="#000" fill="#000000">error3</text>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_82" y="397.5" x="286" stroke-width="0" stroke="#000" fill="#000000">-</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_83" y="427.5" x="286" stroke-width="0" stroke="#000" fill="#000000">=</text>
+  <rect filter="url(#svg_11_blur)" id="svg_84" height="13" width="40" y="431.5" x="158" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_85" y="443.5" x="204" stroke-width="0" stroke="#000" fill="#000000">error3</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_86" y="461.5" x="150" stroke-width="0" stroke="#000" fill="#000000">σ'(output3)</text>
+  <rect filter="url(#svg_11_blur)" id="svg_87" height="13" width="40" y="431.5" x="408" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_88" height="40" width="49" y="380.5" x="458" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_89" height="13" width="49" y="431.5" x="458" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_90" y="461.5" x="413" stroke-width="0" stroke="#000" fill="#000000">error3</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_91" y="373.5" x="458" stroke-width="0" stroke="#000" fill="#000000">output2^T</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_92" y="461.5" x="461" stroke-width="0" stroke="#000" fill="#000000">W23+=η*</text>
+  <rect filter="url(#svg_11_blur)" id="svg_93" height="13" width="40" y="431.5" x="568" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_94" y="461.5" x="573" stroke-width="0" stroke="#000" fill="#000000">error3</text>
+  <rect filter="url(#svg_11_blur)" id="svg_95" height="40" width="1" y="380.5" x="638" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_96" y="373.5" x="620" stroke-width="0" stroke="#000" fill="#000000">allOnes</text>
+  <rect filter="url(#svg_11_blur)" id="svg_97" height="13" width="1" y="431.5" x="638" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_98" y="461.5" x="615" stroke-width="0" stroke="#000" fill="#000000">bias3+=η*</text>
+  <rect filter="url(#svg_11_blur)" id="svg_99" height="43" width="13" y="661.5" x="36" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_100" y="721.5" x="25" stroke-width="0" stroke="#000" fill="#000000">W23^T</text>
+  <rect filter="url(#svg_11_blur)" id="svg_101" height="13" width="40" y="637.5" x="61" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_102" height="43" width="40" y="661.5" x="60" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_103" y="629.5" x="66" stroke-width="0" stroke="#000" fill="#000000">error3</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_104" y="721.5" x="65" stroke-width="0" stroke="#000" fill="#000000">error2</text>
+  <rect filter="url(#svg_11_blur)" id="svg_105" height="49" width="40" y="655.5" x="186" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_106" y="721.5" x="180" stroke-width="0" stroke="#000" fill="#000000">σ'(output2)</text>
+  <rect filter="url(#svg_11_blur)" id="svg_107" height="49" width="40" y="655.5" x="366" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_108" y="721.5" x="360" stroke-width="0" stroke="#000" fill="#000000">σ'(output2)</text>
+  <rect filter="url(#svg_11_blur)" id="svg_109" height="49" width="40" y="655.5" x="300" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_110" y="721.5" x="305" stroke-width="0" stroke="#000" fill="#000000">error2</text>
+  <rect filter="url(#svg_11_blur)" id="svg_111" height="49" width="40" y="655.5" x="436" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_112" y="721.5" x="441" stroke-width="0" stroke="#000" fill="#000000">error2</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_113" y="684.5" x="351" stroke-width="0" stroke="#000" fill="#000000">*</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_115" y="684.5" x="419" stroke-width="0" stroke="#000" fill="#000000">=</text>
+  <rect filter="url(#svg_11_blur)" id="svg_116" height="49" width="40" y="655.5" x="546" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_117" y="721.5" x="551" stroke-width="0" stroke="#000" fill="#000000">error2</text>
+  <rect filter="url(#svg_11_blur)" id="svg_118" height="40" width="91" y="605.5" x="596" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <rect filter="url(#svg_11_blur)" id="svg_119" height="49" width="91" y="655.5" x="596" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_120" y="721.5" x="619" stroke-width="0" stroke="#000" fill="#000000">W12+=η*</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_121" y="597.5" x="618" stroke-width="0" stroke="#000" fill="#000000">images^T</text>
+  <rect filter="url(#svg_11_blur)" id="svg_122" height="49" width="40" y="655.5" x="756" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_123" y="721.5" x="761" stroke-width="0" stroke="#000" fill="#000000">error2</text>
+  <rect filter="url(#svg_11_blur)" id="svg_124" height="49" width="1" y="655.5" x="826" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_126" y="721.5" x="803" stroke-width="0" stroke="#000" fill="#000000">bias2+=η*</text>
+  <rect filter="url(#svg_11_blur)" id="svg_127" height="40" width="1" y="605.5" x="826" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_128" y="597.5" x="808" stroke-width="0" stroke="#000" fill="#000000">allOnes</text>
+  <text transform="matrix(1, 0, 0, 1, 0, 0)" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_129" y="298.5" x="37.25" stroke-width="0" stroke="#000" fill="#000000">backpropagate Output</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_130" y="561.5" x="35.25" stroke-width="0" stroke="#000" fill="#000000">backpropagate Hidden</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="18" id="svg_131" y="43.5" x="435.25" stroke-width="0" stroke="#000" fill="#000000">Feed Forward</text>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_132" y2="214" x2="780" y1="30" x1="780" stroke-width="1.5" stroke="#000" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_133" y2="464" x2="390" y1="280" x1="390" stroke-width="1.5" stroke="#000" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_134" y2="724" x2="510" y1="540" x1="510" stroke-width="1.5" stroke="#000" fill="none"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_136" y="251.5" x="862" stroke-width="0" stroke="#000" fill="#000000">feedForwardLayer&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_137" y="251.5" x="500" stroke-width="0" stroke="#000" fill="#000000">feedForwardLayer&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;</text>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_138" y="501.5" x="422" stroke-width="0" stroke="#000" fill="#000000">UpdateWeightsAndBias&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_139" y="501.5" x="100" stroke-width="0" stroke="#000" fill="#000000">calculateOutputError&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_140" y="761.5" x="592" stroke-width="0" stroke="#000" fill="#000000">UpdateWeightsAndBias&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;</text>
+  <text style="cursor: move;" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="11" id="svg_141" y="761.5" x="130" stroke-width="0" stroke="#000" fill="#000000">calculateHiddenError&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;</text>
+ </g>
+</svg>
