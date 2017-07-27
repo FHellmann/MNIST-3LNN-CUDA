@@ -37,7 +37,7 @@ NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 	layers.push_back(
 			new Layer(outCount, hidCount, OUTPUT, SIGMOID, layers.back()));
 
-	for (int l = 0; l < layers.size() - 1; l++) { // leave out the output layer
+	for (int l = 0; l < layers.size(); l++) { // leave out the output layer TODO: Why?
 		Layer* layer = layers.at(l);
 		for (int i = 0; i < layer->nodes.size(); i++) {
 			Layer::Node *node = layer->getNode(i);
@@ -46,11 +46,15 @@ NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 				node->weights[j] = 0.7 * (rand() / (double) (RAND_MAX));
 				if (j % 2)
 					node->weights[j] = -node->weights[j]; // make half of the weights negative
+//				node->weights[j] = static_cast<double>(j) / 1000.0;
+//				node->weights[j] = 0.0;
 			}
 
 			node->bias = rand() / (double) (RAND_MAX);
 			if (i % 2)
 				node->bias = -node->bias; // make half of the bias weights negative
+//			node->bias = static_cast<double>(i) / 1000.0;
+//			node->bias = 0.0;
 		}
 	}
 }
@@ -318,7 +322,7 @@ NeuralNetwork::Layer::Node::Node(const int weightCount, const double bias,
 		weights.push_back(0);
 }
 
-NeuralNetwork NeuralNetwork::LoadYAML(string const& path) {
+void NeuralNetwork::loadYAML(string const& path) {
 
 	YAML::Node netDef = YAML::LoadFile(path);
 
@@ -344,13 +348,14 @@ NeuralNetwork NeuralNetwork::LoadYAML(string const& path) {
 	hidLayer->previousLayer = inpLayer;
 	outLayer->previousLayer = hidLayer;
 
-	NeuralNetwork net;
-	net.learningRate = learningRate;
-	net.layers.push_back(inpLayer);
-	net.layers.push_back(hidLayer);
-	net.layers.push_back(outLayer);
-
-	return net;
+	this->learningRate = learningRate;
+	for (Layer* layer : layers) {
+		delete layer;
+	}
+	layers.clear();
+	layers.push_back(inpLayer);
+	layers.push_back(hidLayer);
+	layers.push_back(outLayer);
 }
 
 NeuralNetwork::Layer* NeuralNetwork::Layer::LoadLayer(

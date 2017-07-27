@@ -13,6 +13,9 @@
 #include "utils/Log.hpp"
 #include "utils/MNISTStats.h"
 
+#define NUM_DIGITS 10
+#define BATCH_SIZE 1
+
 class NeuralNetwork {
 private:
 	MNISTStats mnistStats;
@@ -52,7 +55,7 @@ public:
 	/**
 	 * Loads a NeuralNetwork from a given YAML file.
 	 */
-	static NeuralNetwork LoadYAML(std::string const& path);
+	virtual void loadYAML(std::string const& path);
 
 	/**
 	 * Releases all layers and nodes.

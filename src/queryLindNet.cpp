@@ -1,6 +1,8 @@
 #include <string>
 #include <tclap/CmdLine.h>
 #include "NeuralNetwork.h"
+#include "NeuralNetworkParallel.h"
+#include "NeuralNetworkCUDA.h"
 #include "MNISTDataset.h"
 #include "utils/MNISTStats.h"
 
@@ -16,6 +18,9 @@ int main(int argc, char* argv[]) {
 
 	ValueArg<string> mnistPath("", "mnist",
 			"Folder containing the MNIST files.", true, "", "path", parser);
+
+	ValueArg<string> networkType("t", "networkType",
+			"The neural network type (sequentiell, parallel, cuda).", false, "sequentiell", "type", parser);
 
 	try {
 		parser.parse(argc, argv);
@@ -33,7 +38,22 @@ int main(int argc, char* argv[]) {
 	MNISTLableDataset testingLabels(labelPath);
 	testingLabels.load();
 
-	NeuralNetwork net = NeuralNetwork::LoadYAML(netDefinitionPath.getValue());
+	// Default is sequentiell
+	NeuralNetwork* net = nullptr;
+
+	string networkTypeSelection = networkType.getValue();
+	if(networkTypeSelection.compare("parallel") == 0) {
+		net = new NeuralNetworkParallel(0, 0, 0, 0.0);
+		cout << "Neural Network - Parallel" << endl;
+	} else if (networkTypeSelection.compare("cuda") == 0) {
+		net = new NeuralNetworkCUDA(0, 0, 0, 0.0);
+		cout << "Neural Network - CUDA" << endl;
+	} else {
+		net = new NeuralNetwork(0, 0, 0, 0.0);
+		cout << "Neural Network - Sequentiell" << endl;
+	}
+
+	net->loadYAML(netDefinitionPath.getValue());
 
 	size_t const showProgressEach = 1000;
 	MNISTStats mnistStats;
@@ -42,9 +62,9 @@ int main(int argc, char* argv[]) {
 	int error = 0;
 	for (size_t i = 0; i < testingImages.size(); ++i) {
 
-		net.feedInput(testingImages[i]);
-		net.feedForward();
-		int const classification = net.getNetworkClassification();
+		net->feedInput(testingImages[i]);
+		net->feedForward();
+		int const classification = net->getNetworkClassification();
 		if (classification != testingLabels[i]) {
 			++error;
 		}
@@ -55,5 +75,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	delete net;
 	exit(EXIT_SUCCESS);
 }

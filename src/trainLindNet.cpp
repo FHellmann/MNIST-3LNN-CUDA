@@ -13,6 +13,7 @@
 #include "NeuralNetworkParallel.h"
 #include "NeuralNetworkDistributed.h"
 #include "NeuralNetworkCUDA.h"
+#include "NeuralNetworkEigen.h"
 
 using namespace std;
 using namespace TCLAP;
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]) {
 			"path", parser);
 
 	ValueArg<string> networkType("t", "networkType",
-			"The neural network type (sequentiell, parallel, cuda).", false,
+			"The neural network type (sequentiell, parallel, cuda, eigen).", false,
 			"sequentiell", "type", parser);
 
 	SwitchArg distributed("d", "distributed",
@@ -61,6 +62,10 @@ int main(int argc, char* argv[]) {
 			"The max derivation between to erros after two train samples where proceed.",
 			false, 0.005, "maxDerivation", parser);
 
+	ValueArg<size_t> iterations("", "iterations",
+			"Maximum number of iterations over the whole data set. Currenlty only supported for the cuda and eigen versions.",
+			false, 1, "positive integer", parser);
+
 	try {
 		parser.parse(argc, argv);
 	} catch (ArgParseException const& e) {
@@ -89,8 +94,13 @@ int main(int argc, char* argv[]) {
 	} else if (networkTypeSelection.compare("cuda") == 0) {
 		lindNet = new NeuralNetworkCUDA(inputLayerNodes.getValue(),
 				hiddenLayerNodes.getValue(), outputLayerNodes.getValue(),
-				learningRate.getValue());
+				learningRate.getValue(), iterations.getValue());
 		cout << "Neural Network - CUDA" << endl;
+	} else if (networkTypeSelection.compare("eigen") == 0) {
+		lindNet = new NeuralNetworkEigen(inputLayerNodes.getValue(),
+				hiddenLayerNodes.getValue(), outputLayerNodes.getValue(),
+				learningRate.getValue(), iterations.getValue());
+		cout << "Neural Network - Eigen" << endl;
 	} else {
 		lindNet = new NeuralNetwork(inputLayerNodes.getValue(),
 				hiddenLayerNodes.getValue(), outputLayerNodes.getValue(),
