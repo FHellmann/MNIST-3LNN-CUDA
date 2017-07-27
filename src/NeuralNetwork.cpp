@@ -46,15 +46,11 @@ NeuralNetwork::NeuralNetwork(const int inpCount, const int hidCount,
 				node->weights[j] = 0.7 * (rand() / (double) (RAND_MAX));
 				if (j % 2)
 					node->weights[j] = -node->weights[j]; // make half of the weights negative
-//				node->weights[j] = static_cast<double>(j) / 1000.0;
-//				node->weights[j] = 0.0;
 			}
 
 			node->bias = rand() / (double) (RAND_MAX);
 			if (i % 2)
 				node->bias = -node->bias; // make half of the bias weights negative
-//			node->bias = static_cast<double>(i) / 1000.0;
-//			node->bias = 0.0;
 		}
 	}
 }
