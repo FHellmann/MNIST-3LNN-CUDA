@@ -14,7 +14,7 @@
 #include "utils/MNISTStats.h"
 
 #define NUM_DIGITS 10
-#define BATCH_SIZE 1
+#define BATCH_SIZE 1000
 
 class NeuralNetwork {
 private:
