@@ -104,11 +104,11 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 			error2 = W23.transpose() * error3;
 			error2 = error2.cwiseProduct(output2.cwiseProduct(ones2 - output2));
 
-			W12 += learningRate * error2 * imageBatch.transpose();
-			bias2 += learningRate * error2 * Eigen::MatrixXf::Ones(error2.cols(), 1);
+			W12 += learningRate * error2 * imageBatch.transpose() / batchSize;
+			bias2 += learningRate * error2 * Eigen::MatrixXf::Ones(error2.cols(), 1) / batchSize;
 
-			W23 += learningRate * error3 * output2.transpose();
-			bias3 += learningRate * error3 * Eigen::MatrixXf::Ones(error3.cols(), 1);
+			W23 += learningRate * error3 * output2.transpose() / batchSize;
+			bias3 += learningRate * error3 * Eigen::MatrixXf::Ones(error3.cols(), 1) / batchSize;
 		}
 	}
 
