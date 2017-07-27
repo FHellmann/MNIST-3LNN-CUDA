@@ -5,10 +5,9 @@ Based on the blog [Simple 3-Layer Neural Network for MNIST Handwriting Recogniti
 
 ## Dependencies
 Depends on
-- OMP
-- MPI
-- OpenCV 2
-- TCLAP
+- OMP (gomp 1.0.0)
+- MPI 20.0.1
+- OpenCV 2.4.9
 
 ## Build
 To build the project it is necessary to initialize the submodule (yaml-cpp). Afterwards you can build the 
@@ -25,66 +24,9 @@ git submodule update
    Note that it's sufficient to only build the project. Installing it is not necessary.
 
 ## Run
-The Neural Network can be trained with the following options:
+For an overview over the available training options, run:
 ```
-USAGE: 
-
-   trainer-Debug/trainLindNet  [--derivation <maxDerivation>]
-                               [--trainingError <trainingError>] [-l
-                               <learningRate>] [--outputNodes
-                               <outputLayerNodes>] [--hiddenNodes
-                               <hiddenLayerNodes>] [--inputNodes
-                               <inputLayerNodes>] [-d] [-t <type>] [-n
-                               <path>] --mnist <path> [--] [--version]
-                               [-h]
-
-
-Where: 
-
-   --derivation <maxDerivation>
-     The max derivation between to erros after two train samples where
-     proceed.
-
-   --trainingError <trainingError>
-     The training error when the neural network should quit work if the
-     value is reached.
-
-   -l <learningRate>,  --learningRate <learningRate>
-     The learning rate of the neural network.
-
-   --outputNodes <outputLayerNodes>
-     The amount of output nodes.
-
-   --hiddenNodes <hiddenLayerNodes>
-     The amount of hidden nodes.
-
-   --inputNodes <inputLayerNodes>
-     The amount of input nodes.
-
-   -d,  --distributed
-     The neural network will be executed distributed.
-
-   -t <type>,  --networkType <type>
-     The neural network type (sequentiell, parallel, cuda).
-
-   -n <path>,  --lindNet <path>
-     yaml file for saving the resulting net.
-
-   --mnist <path>
-     (required)  Folder containing the MNIST files.
-
-   --,  --ignore_rest
-     Ignores the rest of the labeled arguments following this flag.
-
-   --version
-     Displays version information and exits.
-
-   -h,  --help
-     Displays usage information and exits.
-
-
-   Train the LindNet with the MNIST database.
-
+trainLindNet -h
 ```
 
 ### Distributed
@@ -93,6 +35,7 @@ with [mpirun](https://www.open-mpi.org/doc/v1.8/man1/mpirun.1.php).
 
 ## Realisiation
 The Realisiation is based on the blog [Simple 3-Layer Neural Network for MNIST Handwriting Recognition](https://mmlind.github.io/Simple_3-Layer_Neural_Network_for_MNIST_Handwriting_Recognition/) of Matt Lind.
+
 ### Parallel
 There are different Parallelization Strategies\[4\] how to implement a parallel Neural Network.
 - Session Parallelism - Run independent neural network with different initial weights to find in one instance the best solution.
@@ -101,7 +44,13 @@ There are different Parallelization Strategies\[4\] how to implement a parallel 
 - Weight Parallelism - The synapse input is calculated parallel for each node.
 
 We decided to use the Exemplar Parallelism due to the low I/O which is needed to communicate between all threads. The implementation is based on the Parallel Static Gradient Descent Algorithm\[3\] (Algorithm 2).
+
 ### CUDA
+The CUDA version tries to speed up the neural network training by parallelizing matrix operations and processing multiple training samples in one weight update step. If the feed-forward and back-propagation steps can be expressed by matrix operations, they can be performed efficiently by a GPU. Also applying the non-linear activation function is only done component-wise which benefits from the highly parallel nature of the GPU.
+
+The output and errors of to the same set of weights can be computed simultaneously by multiplying the weight matrices onto inputs/outputs matrices which contain one training example in each column.
+
+The whole approach is summarized in this ![image](presentation/images/cudaConcept.svg).
 
 ### Distributed
 Distribution in Neural Networks can be effort with Model Parallelism or Data Parallelism or a combination of both \[2\].
