@@ -5,6 +5,8 @@ Based on the blog [Simple 3-Layer Neural Network for MNIST Handwriting Recogniti
 
 ## Dependencies
 Depends on
+- OMP
+- MPI
 - OpenCV 2
 - TCLAP
 
