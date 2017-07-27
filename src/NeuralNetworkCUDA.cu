@@ -503,8 +503,8 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 //	getTrainingParametersFromGPU(gDebugParams, params);
 //	cout << gDebugParams << endl;
 
-	Matrix const output2Transposed = matrix_transpose(params.output2);
-	updateWeightsAndBias<<<blocks, threads>>>(params.W23, params.bias3, params.error3, output2Transposed, params.learningRate);
+	Matrix const imagesTransposed = matrix_transpose(params.images);
+	updateWeightsAndBias<<<blocks, threads>>>(params.W12, params.bias2, params.error2, imagesTransposed, params.learningRate);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
@@ -512,8 +512,8 @@ void backPropagateBatch(GPUTrainingParameters const& params) {
 //	getTrainingParametersFromGPU(gDebugParams, params);
 //	cout << gDebugParams << endl;
 
-	Matrix const imagesTransposed = matrix_transpose(params.images);
-	updateWeightsAndBias<<<blocks, threads>>>(params.W12, params.bias2, params.error2, imagesTransposed, params.learningRate);
+	Matrix const output2Transposed = matrix_transpose(params.output2);
+	updateWeightsAndBias<<<blocks, threads>>>(params.W23, params.bias3, params.error3, output2Transposed, params.learningRate);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 

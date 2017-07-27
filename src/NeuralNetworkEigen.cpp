@@ -23,7 +23,7 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 		MNISTLableDataset const& labels, double const training_error_threshold,
 		double const max_derivation) {
 
-	size_t const batchSize = 60;
+	size_t const batchSize = BATCH_SIZE;
 
 	initMatrices(batchSize);
 
@@ -59,7 +59,7 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 	Eigen::MatrixXf const ones3 = Eigen::MatrixXf::Ones(output3.rows(), output3.cols());
 
 	int it = 0;
-	//for (; it < 6; ++it)
+	for (; it < 6; ++it)
 	{
 		cout << "Iteration " << it << endl;
 
@@ -67,7 +67,7 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 		MNISTLableDataset::const_iterator lbl = labels.begin();
 
 		size_t i = 0;
-		//for (; i < images.size() / batchSize; ++i)
+		for (; i < images.size() / batchSize; ++i)
 		{
 			for (size_t b = 0; b < batchSize; ++b) {
 				uint8_t* src = img->datastart;
@@ -85,8 +85,8 @@ void NeuralNetworkEigen::train(MNISTImageDataset const& images,
 				++lbl;
 			}
 
-			cout << imageBatch << endl << endl;
-			cout << labelBatch << endl << endl;
+//			cout << imageBatch << endl << endl;
+//			cout << labelBatch << endl << endl;
 
 			// feed forward
 			output2 = bias2 * Eigen::MatrixXf::Ones(1, batchSize);
