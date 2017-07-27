@@ -31,33 +31,8 @@ __global__ void calculateOutputError(Matrix const error, Matrix const output, Ma
 
 	/* No thread synchronization should be required in this method
 	 * because it only uses component wise operations. */
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < output.cols && threadIdx.y < output.rows) {
-//			printf("output(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(output, threadIdx.y, threadIdx.x));
-//		}
-//	}
-//
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < labels.cols && threadIdx.y < labels.rows) {
-//			printf("labels(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(labels, threadIdx.y, threadIdx.x));
-//		}
-//	}
-
 	d_cwise_sub(error, labels, output);
-
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < error.cols && threadIdx.y < error.rows) {
-//			printf("error(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(error, threadIdx.y, threadIdx.x));
-//		}
-//	}
-
 	d_cwise_mul_act_deriv(error, error, output, actFct);
-
-//	if (blockIdx.x == 0 && blockIdx.y == 0) {
-//		if (threadIdx.x < error.cols && threadIdx.y < error.rows) {
-//			printf("outError(%u, %u): %f\n", threadIdx.y, threadIdx.x, d_matrix_get(error, threadIdx.y, threadIdx.x));
-//		}
-//	}
 }
 
 __global__ void calculateHiddenError(Matrix const error, Matrix const transposedPreviousWeight,
@@ -65,9 +40,6 @@ __global__ void calculateHiddenError(Matrix const error, Matrix const transposed
 
 	// Backpropagate the error.
 	d_mul(error, transposedPreviousWeight, previousError);
-	//d_cwise_mul(outError, outError, learningRate);
-
-	//d_apply_activation_derivative(hiddenOutput, actFct);
 	d_cwise_mul_act_deriv(error, error, hiddenOutput, actFct);
 }
 
